@@ -1,7 +1,11 @@
+using Lamazon.Services.Extensions;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.InjectDbContext(builder.Configuration.GetConnectionString("DefaultConnection"));
 
 var app = builder.Build();
 

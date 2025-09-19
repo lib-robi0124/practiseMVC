@@ -6,7 +6,7 @@
         public int OrderLineItemId { get; set; }
         public int ProductId { get; set; }
         public string ProductName { get; set; }
-        public decimal PrudctPrice { get; set; }
+        public decimal ProductPrice { get; set; }
         public int Quantity { get; set; }
         public int DiscountProcentage { get; set; }
         public decimal TotalPrice { get; set; }

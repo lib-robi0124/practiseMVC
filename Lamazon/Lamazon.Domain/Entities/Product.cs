@@ -10,7 +10,7 @@ namespace Lamazon.Domain.Entities
         public int ProductCategoryId { get; set; }
         public decimal Price { get; set; }
         public int ProductStatusId { get; set; }
-        public int DiscountProcentage { get; set; }
+        public int DiscountPercentage { get; set; }
         public bool IsFeatured { get; set; }
         public virtual ProductStatus ProductStatus { get; set; }
         public virtual ProductCategory ProductCategory { get; set; }
