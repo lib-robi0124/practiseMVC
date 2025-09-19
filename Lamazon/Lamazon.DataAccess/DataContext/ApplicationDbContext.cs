@@ -18,7 +18,11 @@ namespace Lamazon.DataAccess.DataContext
         {
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
-           
+           modelBuilder
+                .SeedProductCategoryStatus()
+                .SeedProductStatus()
+                .SeedProductCategory()
+                .SeedProducts();
 
         }
         public DbSet<Invoice> Invoices { get; set; }
