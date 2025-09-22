@@ -7,11 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="14.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="8.0.20" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Lamazon.DataAccess\Lamazon.DataAccess.csproj" />
+    <ProjectReference Include="..\Lamazon.ViewModels\Lamazon.ViewModels.csproj" />
   </ItemGroup>
 
 </Project>
