@@ -5,7 +5,7 @@
 namespace Avenga.MovieApp.DataAccess.Migrations
 {
     /// <inheritdoc />
-    public partial class addNewUser : Migration
+    public partial class initone : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
