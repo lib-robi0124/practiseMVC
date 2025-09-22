@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Avenga.MovieApp.DataAccess.Migrations
 {
     [DbContext(typeof(MoviesDbContext))]
-    [Migration("20250901170304_addNewUser")]
-    partial class addNewUser
+    [Migration("20250922082903_initone")]
+    partial class initone
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

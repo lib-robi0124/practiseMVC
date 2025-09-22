@@ -11,7 +11,7 @@ namespace Avenga.MovieApp.Helpers
     {
         public static void InjectDbContext(IServiceCollection services)
         {
-            services.AddDbContext<MoviesDbContext>(x => x.UseSqlServer("Server=DANILO\\SQLEXPRESS;Database=MovieAppNew;Trusted_Connection=True;TrustServerCertificate=True"));
+            services.AddDbContext<MoviesDbContext>(x => x.UseSqlServer("Server=.;Database=MovieAppOffice;Trusted_Connection=True;TrustServerCertificate=True"));
         }
 
         public static void InjectRepositories(IServiceCollection services) 
