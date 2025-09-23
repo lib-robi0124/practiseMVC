@@ -1,8 +1,8 @@
 using System.Diagnostics;
-using Evaluation.Models;
 using Microsoft.AspNetCore.Mvc;
+using Prasalnik.Anketa.Models;
 
-namespace Evaluation.Controllers
+namespace Prasalnik.Anketa.Controllers
 {
     public class HomeController : Controller
     {

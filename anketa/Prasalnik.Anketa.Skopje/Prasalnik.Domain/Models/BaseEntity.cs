@@ -1,4 +1,4 @@
-﻿namespace Domain.Models
+﻿namespace Prasalnik.Domain.Models
 {
     public class BaseEntity
     {

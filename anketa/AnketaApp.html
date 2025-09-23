@@ -144,6 +144,7 @@ EvolutionFormsApp/
 │
 ├── Data/
 │   ├── AppDbContext.cs
+│   ├── StaticDb.cs
 │   ├── Repositories/
 │   │   ├── IUserRepository.cs
 │   │   ├── IQuestionnaireRepository.cs
@@ -178,10 +179,61 @@ EvolutionFormsApp/
 ## 📦 Project Structure
 **Models**
 User.cs
+```cs
+public class User
+{
+    public int Id { get; set; }
+    public int CompanyId { get; set; }
+    public string FullName { get; set; }
+    public string OU { get; set; } // Organizational Unit
+    public Role Role { get; set; }
+}
+``
 Questionnaire.cs
+````cs
+public class Questionnaire
+{
+    public int Id { get; set; }
+    public string Title { get; set; }
+    public List<QuestionItem> QuestionItems { get; set; } = new();
+    public string Status { get; set; } // Draft, Published, Closed
+}
+
 QuestionItem.cs
+````cs
+public class QuestionItem
+{
+    public int Id { get; set; }
+    public string QuestionText { get; set; }
+    public QuestionType Type { get; set; }
+}
 Answer.cs
+````cs
+public class Answer
+{
+    public int Id { get; set; }
+    public int QuestionnaireId { get; set; }
+    public int QuestionId { get; set; }
+    public int UserId { get; set; }
+    public string Response { get; set; }
+}
+
 Enums.cs
+````cs
+public enum Role
+{
+    Admin,
+    Manager,
+    Employee
+}
+
+public enum QuestionType
+{
+    Text,   // 255 char
+    Radio,  // Yes/No
+    Scale   // 1-10
+}
+````
 
 ##**DTOs **
 UserDto.cs

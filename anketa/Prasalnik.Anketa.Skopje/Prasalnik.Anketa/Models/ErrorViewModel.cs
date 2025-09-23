@@ -1,4 +1,4 @@
-namespace Evaluation.Models
+namespace Prasalnik.Anketa.Models
 {
     public class ErrorViewModel
     {
