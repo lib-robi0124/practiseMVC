@@ -21,7 +21,7 @@ namespace Prasalnik.DataAccess.ModelsConfig
             builder.HasOne<Questionnaire>()
                 .WithMany()
                 .HasForeignKey(x => x.QuestionnaireId)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_Answer_Questionnaire");
 
             builder.HasOne<QuestionItem>()

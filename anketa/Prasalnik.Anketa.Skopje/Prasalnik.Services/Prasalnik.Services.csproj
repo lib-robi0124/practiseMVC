@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Prasalnik.DataAccess\Prasalnik.DataAccess.csproj" />
+  </ItemGroup>
+
 </Project>
