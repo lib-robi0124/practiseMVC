@@ -1,0 +1,42 @@
+﻿@model Prasalnik.Dtos.QuestionnaireDto
+
+@{
+    ViewData["Title"] = "Questionnaire";
+}
+
+<h2>@Model.Title</h2>
+<p>Status: @Model.Status</p>
+
+<form asp-action="SubmitAnswers" method="post">
+    @for (int i = 0; i < Model.QuestionItems.Count; i++)
+    {
+        <div class="form-group mb-3">
+            <label>@Model.QuestionItems[i].QuestionText</label>
+
+            @if (Model.QuestionItems[i].Type == "Text")
+            {
+                <input type="text" class="form-control" name="Answers[@i].Response" />
+            }
+            else if (Model.QuestionItems[i].Type == "Radio")
+            {
+                <div>
+                    <input type="radio" name="Answers[@i].Response" value="Yes" /> Yes
+                    <input type="radio" name="Answers[@i].Response" value="No" /> No
+                </div>
+            }
+            else if (Model.QuestionItems[i].Type == "Scale")
+            {
+                <select class="form-select" name="Answers[@i].Response">
+                    @for (int j = 1; j <= 10; j++)
+                    {
+                        <option value="@j">@j</option>
+                    }
+                </select>
+            }
+
+            <input type="hidden" name="Answers[@i].QuestionId" value="@Model.QuestionItems[i].Id" />
+        </div>
+    }
+
+    <button type="submit" class="btn btn-success">Submit</button>
+</form>

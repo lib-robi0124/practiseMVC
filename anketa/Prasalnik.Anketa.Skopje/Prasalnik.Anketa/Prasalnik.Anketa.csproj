@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Prasalnik.DataAccess\Prasalnik.DataAccess.csproj" />
+    <ProjectReference Include="..\Prasalnik.Dtos\Prasalnik.Dtos.csproj" />
     <ProjectReference Include="..\Prasalnik.Services\Prasalnik.Services.csproj" />
   </ItemGroup>
 

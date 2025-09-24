@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Prasalnik.DataAccess.DataContext;
+using Prasalnik.DataAccess.Implementations;
+using Prasalnik.DataAccess.Interaces;
 using Prasalnik.Services.Implementations;
 using Prasalnik.Services.Interfaces;
 
@@ -12,6 +14,14 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(conn
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// Repositories
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IQuestionnaireRepository, QuestionnaireRepository>();
+builder.Services.AddScoped<IQuestionItemRepository, QuestionItemRepository>();
+builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
+builder.Services.AddScoped<IStatusRepository, StatusRepository>();
+
+// Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IQuestionnaireService, QuestionnaireService>();
 builder.Services.AddScoped<IQuestionItemService, QuestionItemService>();
