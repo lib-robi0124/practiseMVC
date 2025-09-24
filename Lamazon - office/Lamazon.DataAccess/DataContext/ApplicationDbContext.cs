@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Lamazon.DataAccess.DataContext
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : DbContext //IdentityDbContext<User, Role, int> usually for Identity
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -22,7 +22,9 @@ namespace Lamazon.DataAccess.DataContext
                 .SeedProductCategoryStatus()
                 .SeedProductStatus()
                 .SeedProductCategory()
-                .SeedProducts();
+                .SeedProducts()
+                .SeedRoles()
+                .SeedUsers();
 
         }
         public DbSet<Invoice> Invoices { get; set; }
