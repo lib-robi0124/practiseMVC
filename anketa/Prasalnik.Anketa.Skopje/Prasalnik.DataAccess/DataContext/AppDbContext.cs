@@ -12,6 +12,7 @@ namespace Prasalnik.DataAccess.DataContext
         public DbSet<Questionnaire> Questionnaires { get; set; }
         public DbSet<QuestionItem> QuestionItems { get; set; }
         public DbSet<Answer> Answers { get; set; }
+        public DbSet<Status> Statuses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -19,6 +20,7 @@ namespace Prasalnik.DataAccess.DataContext
             modelBuilder.ApplyConfiguration(new QuestionnaireConfig());
             modelBuilder.ApplyConfiguration(new QuestionItemConfig());
             modelBuilder.ApplyConfiguration(new AnswerConfig());
+            modelBuilder.ApplyConfiguration(new StatusConfigure());
 
             base.OnModelCreating(modelBuilder);
         }

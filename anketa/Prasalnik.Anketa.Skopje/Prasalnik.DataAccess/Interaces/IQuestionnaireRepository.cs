@@ -2,7 +2,7 @@
 
 namespace Prasalnik.DataAccess.Interaces
 {
-    public interface IQuestionnaire : IRepository<Questionnaire>
+    public interface IQuestionnaireRepository : IRepository<Questionnaire>
     {
         Questionnaire GetbyUserId(int userId);
     }

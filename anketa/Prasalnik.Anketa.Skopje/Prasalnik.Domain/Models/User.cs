@@ -9,5 +9,6 @@ namespace Prasalnik.Domain.Models
         public string FullName { get; set; }
         public string OU { get; set; } // Organizational Unit
         public RoleEnum Role { get; set; }
+        
     }
 }

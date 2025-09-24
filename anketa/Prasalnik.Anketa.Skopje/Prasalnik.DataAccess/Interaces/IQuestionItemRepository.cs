@@ -2,7 +2,7 @@
 
 namespace Prasalnik.DataAccess.Interaces
 {
-    public interface IQuestionItem : IRepository<QuestionItem>
+    public interface IQuestionItemRepository : IRepository<QuestionItem>
     {
         QuestionItem GetByType(Type type);
     }

@@ -6,5 +6,6 @@ namespace Prasalnik.Domain.Models
     {
         public string QuestionText { get; set; }
         public QuestionTypeEnum Type { get; set; }
+        public int QuestionnaireId { get; set; }
     }
 }

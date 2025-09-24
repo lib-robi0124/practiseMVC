@@ -4,6 +4,6 @@
     {
         public string Title { get; set; }
         public List<QuestionItem> QuestionItems { get; set; } = new();
-        public string Status { get; set; } // Draft, Published, Closed
+        public string Status { get; set; } // Answered, Skipped
     }
 }
