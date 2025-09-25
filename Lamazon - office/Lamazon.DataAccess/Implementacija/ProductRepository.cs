@@ -27,7 +27,7 @@ namespace Lamazon.DataAccess.Implementacija
         public Product GetById(int id)
         {
             return _applicationDbContext.Products.Include(x => x.ProductCategory)
-                .FirstOrDefault(x => x.Id == id && x.ProductStatusId != (int)ProductStatusEnum.Deleted);
+                .FirstOrDefault(x => x.Id == id & x.ProductStatusId != (int)ProductStatusEnum.Deleted);
         }
     }
 }

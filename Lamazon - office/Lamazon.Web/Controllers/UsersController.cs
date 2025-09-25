@@ -23,7 +23,7 @@ namespace Lamazon.Web.Controllers
         {
             if(string.IsNullOrEmpty(userCredentialsViewModel.Email))
             {
-                ModelState.AddModelError("UserLoginError", "Email is required");
+                ModelState.AddModelError("UserLoginError", "Email is invalid and required");
                 return View(userCredentialsViewModel);
             }
             var userValidationResult = _userService.ValidateUser(userCredentialsViewModel);

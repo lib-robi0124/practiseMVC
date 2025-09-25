@@ -16,16 +16,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         option.LoginPath = "/User/Login";
         option.ExpireTimeSpan = TimeSpan.FromHours(1);
         option.SlidingExpiration = true; // Renew - reset the cookie on each request
-        option.AccessDeniedPath = "/User/AccessDenied";
+        
     });
 
 builder.Services.AddAuthorization();
-//    (options =>
-//{
-//    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-//    options.AddPolicy("UserOnly", policy => policy.RequireRole("User"));
-//    options.AddPolicy("AdminAndUser", policy => policy.RequireRole("Admin", "User"));
-//});
 
 var app = builder.Build();
 
