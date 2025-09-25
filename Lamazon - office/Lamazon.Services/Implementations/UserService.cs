@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Lamazon.DataAccess.Interfaces;
-using Lamazon.DataAccess.Migrations;
 using Lamazon.Domain.Constants;
 using Lamazon.Domain.Entities;
 using Lamazon.Services.Helpers;

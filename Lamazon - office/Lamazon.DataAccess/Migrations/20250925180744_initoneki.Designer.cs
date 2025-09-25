@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lamazon.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250922075220_initone")]
-    partial class initone
+    [Migration("20250925180744_initoneki")]
+    partial class initoneki
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -476,6 +476,18 @@ namespace Lamazon.DataAccess.Migrations
                     b.HasKey("Key");
 
                     b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Key = "admin",
+                            Name = "Administrator"
+                        },
+                        new
+                        {
+                            Key = "user",
+                            Name = "User"
+                        });
                 });
 
             modelBuilder.Entity("Lamazon.Domain.Entities.User", b =>
@@ -513,6 +525,24 @@ namespace Lamazon.DataAccess.Migrations
                     b.HasIndex("RoleKey");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Email = "admin@admin.com",
+                            FullName = "Admin User",
+                            PasswordHash = "AQAAAAEAACcQAAAAECJCSH7Y7+DSAD+UKEnb6fjgOROzppnUpop5/kVMcBDjzOVaLz0vts978iw4ooBhhQ==",
+                            RoleKey = "admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Email = "user@user.com",
+                            FullName = "User",
+                            PasswordHash = "AQAAAAEAACcQAAAAEH2PV/R1HciXgHqwrYcEp/32IrxaQ44wcbBnM6EHK2FXA5wZRYXN6pddtVKNqTpTxg==",
+                            RoleKey = "user"
+                        });
                 });
 
             modelBuilder.Entity("Lamazon.Domain.Entities.Invoice", b =>

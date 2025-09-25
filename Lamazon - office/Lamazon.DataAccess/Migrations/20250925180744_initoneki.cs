@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Lamazon.DataAccess.Migrations
 {
     /// <inheritdoc />
-    public partial class initone : Migration
+    public partial class initoneki : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -289,6 +289,15 @@ namespace Lamazon.DataAccess.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "Roles",
+                columns: new[] { "Key", "Name" },
+                values: new object[,]
+                {
+                    { "admin", "Administrator" },
+                    { "user", "User" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "ProductCategories",
                 columns: new[] { "Id", "Name", "ProductCategoryStatusId" },
                 values: new object[,]
@@ -298,6 +307,15 @@ namespace Lamazon.DataAccess.Migrations
                     { 3, "Books", 1 },
                     { 4, "Software", 1 },
                     { 5, "Computers", 1 }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "Email", "FullName", "PasswordHash", "RoleKey" },
+                values: new object[,]
+                {
+                    { 1, "admin@admin.com", "Admin User", "AQAAAAEAACcQAAAAECJCSH7Y7+DSAD+UKEnb6fjgOROzppnUpop5/kVMcBDjzOVaLz0vts978iw4ooBhhQ==", "admin" },
+                    { 2, "user@user.com", "User", "AQAAAAEAACcQAAAAEH2PV/R1HciXgHqwrYcEp/32IrxaQ44wcbBnM6EHK2FXA5wZRYXN6pddtVKNqTpTxg==", "user" }
                 });
 
             migrationBuilder.InsertData(
