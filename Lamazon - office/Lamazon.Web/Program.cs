@@ -1,4 +1,5 @@
 using Lamazon.Services.Extensions;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,23 @@ builder.Services.InjectDbContext(builder.Configuration.GetConnectionString("Defa
 builder.Services.InjectRepositories();
 builder.Services.InjectServices();
 builder.Services.InjectAutoMapper();
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(option =>
+    {
+        option.LoginPath = "/User/Login";
+        option.ExpireTimeSpan = TimeSpan.FromHours(1);
+        option.SlidingExpiration = true; // Renew - reset the cookie on each request
+        option.AccessDeniedPath = "/User/AccessDenied";
+    });
+
+builder.Services.AddAuthorization();
+//    (options =>
+//{
+//    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+//    options.AddPolicy("UserOnly", policy => policy.RequireRole("User"));
+//    options.AddPolicy("AdminAndUser", policy => policy.RequireRole("Admin", "User"));
+//});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -18,12 +36,13 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-
+// Enable authentication middleware - flow should be: UseRouting -> UseAuthentication -> UseAuthorization -> UseEndpoints
+// This order is important
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

@@ -1,0 +1,35 @@
+﻿@model RegisterUserViewModel
+
+<div class="mt-5">
+    <form asp-action="Register" method="post">
+
+        <div class="row centered-content">
+            <div class="col-md-4">
+
+                <h4 class="login-title">Please Register</h4>
+            </div>
+            
+        </div>
+
+        <div class="row centered-content">
+            <div class="col-md-4 form-group">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" class="form-control" type="text" asp-format="Email"/>
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row centered-content">
+            <div class="col-md-4 form-group">
+                <label asp-for="Password"></label>
+                <input asp-for="Password" class="form-control" type="password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row centered-content">
+            <div class="col-md-4 form-group">
+                <label asp-for="FullName"></label>
+                <input asp-for="FullName" class="form-control" type="fullname" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+    </form>
+</div>

@@ -22,6 +22,7 @@ namespace Lamazon.Services.Extensions
             // Here you can add your repository injections, for example:
             // services.AddScoped<IYourRepository, YourRepositoryImplementation>();
             services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
         }
         public static void InjectServices(this IServiceCollection services)
         {
@@ -29,6 +30,7 @@ namespace Lamazon.Services.Extensions
             // services.AddScoped<IYourService, YourServiceImplementation>();
             // services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IUserService, UserService>();
         }
         public static void InjectAutoMapper(this IServiceCollection services)
         {
