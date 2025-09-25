@@ -1,6 +1,4 @@
-﻿using System.Security.Cryptography.X509Certificates;
-
-namespace Lamazon.Domain.Entities
+﻿namespace Lamazon.Domain.Entities
 {
     public class Role
     {

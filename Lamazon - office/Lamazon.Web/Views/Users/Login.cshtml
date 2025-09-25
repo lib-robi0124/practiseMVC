@@ -18,7 +18,7 @@
         <div class="row centered-content">
             <div class="col-md-4 form-group">
                 <label asp-for="Password"></label>
-                <input asp-for="Password" class="form-control" type="password" />
+                <input asp-for="Password" class="form-control" type="text" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
         </div>
@@ -38,10 +38,8 @@
         {
             <div class="mt-3 text-lg-center text-danger">
                 <h5>Login failed!</h5>
-                Message: @ViewData.ModelState["UserLOginError"].Errors[0].ErrorMessage
+                Message: @ViewData.ModelState["UserLOginError"].Errors.FirstOrDefault().ErrorMessage
             </div>
         }
     }
-
-
 </div>

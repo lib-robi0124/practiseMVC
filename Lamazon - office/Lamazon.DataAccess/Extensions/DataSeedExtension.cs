@@ -120,7 +120,7 @@ namespace Lamazon.DataAccess.DataContext
         {
             modelBuilder.Entity<Role>().HasData(
                 new Role { Key = "admin", Name = "Administrator" },
-            new Role { Key = "user", Name = "User" }
+                new Role { Key = "user", Name = "User" }
             );
 
             return modelBuilder;
@@ -146,9 +146,7 @@ namespace Lamazon.DataAccess.DataContext
                     PasswordHash = "AQAAAAEAACcQAAAAEH2PV/R1HciXgHqwrYcEp/32IrxaQ44wcbBnM6EHK2FXA5wZRYXN6pddtVKNqTpTxg=="
                 }); // (User123) Placeholder for hashed password
 
-            return modelBuilder;
-
-           
+            return modelBuilder; 
         }
         #endregion
     }

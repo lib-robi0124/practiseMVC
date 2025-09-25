@@ -4,6 +4,7 @@ using Lamazon.DataAccess.DataContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lamazon.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250925091716_AddUsersAndRools")]
+    partial class AddUsersAndRools
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -473,6 +476,18 @@ namespace Lamazon.DataAccess.Migrations
                     b.HasKey("Key");
 
                     b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Key = "admin",
+                            Name = "Administrator"
+                        },
+                        new
+                        {
+                            Key = "user",
+                            Name = "User"
+                        });
                 });
 
             modelBuilder.Entity("Lamazon.Domain.Entities.User", b =>
@@ -510,6 +525,24 @@ namespace Lamazon.DataAccess.Migrations
                     b.HasIndex("RoleKey");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Email = "admin@admin.com",
+                            FullName = "Admin User",
+                            PasswordHash = "AQAAAAEAACcQAAAAECJCSH7Y7+DSAD+UKEnb6fjgOROzppnUpop5/kVMcBDjzOVaLz0vts978iw4ooBhhQ==",
+                            RoleKey = "admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Email = "user@user.com",
+                            FullName = "User",
+                            PasswordHash = "AQAAAAEAACcQAAAAEH2PV/R1HciXgHqwrYcEp/32IrxaQ44wcbBnM6EHK2FXA5wZRYXN6pddtVKNqTpTxg==",
+                            RoleKey = "user"
+                        });
                 });
 
             modelBuilder.Entity("Lamazon.Domain.Entities.Invoice", b =>

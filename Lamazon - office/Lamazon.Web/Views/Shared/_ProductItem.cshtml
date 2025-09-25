@@ -6,7 +6,6 @@
         <div class="product-content">
             <a asp-controller="Products" asp-action="ProductDetails" asp-route-id="@Model.Id">
                 <p class="product-name">@Model.Name</p>
-
             </a>
             <p class="product-category">@Model.ProductCategory</p>
             @if(Model.DiscountedPrice != Model.Price)
@@ -40,7 +39,5 @@
                     <button data-id="@Model.Id" class="btn btn-add-to-cart btn-success ">Add to Cart</button>
                 }
             </div>
-
-        
     </div>
 </div>

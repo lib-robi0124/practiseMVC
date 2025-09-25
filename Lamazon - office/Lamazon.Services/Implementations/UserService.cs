@@ -48,7 +48,7 @@ namespace Lamazon.Services.Implementations
             }
             var result = PasswordHasherHelper.VerifyHashedPassword(user, userCredentialsViewModel.Password);
             if(result == Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed)
-                {
+            {
                 return new UserViewModel();
             }
             return _mapper.Map<UserViewModel>(user);
