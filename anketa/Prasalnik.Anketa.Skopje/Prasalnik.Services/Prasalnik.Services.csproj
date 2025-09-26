@@ -8,6 +8,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Prasalnik.DataAccess\Prasalnik.DataAccess.csproj" />
+    <ProjectReference Include="..\Prasalnik.ViewModels\Prasalnik.ViewModels.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="14.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="8.0.20" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.20" />
   </ItemGroup>
 
 </Project>

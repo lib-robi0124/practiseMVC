@@ -15,6 +15,13 @@ namespace Prasalnik.Domain.Models
         public string FullName { get; set; }
         public string OU { get; set; } // Organizational Unit
         public RoleEnum Role { get; set; }
+        public virtual ICollection<Questionnaire> Questionnaires { get; set; }
+        public virtual ICollection<QuestionItem> QuestionItems { get; set; }
+        public User()
+        {
+            Questionnaires = new HashSet<Questionnaire>();
+            QuestionItems = new HashSet<QuestionItem>();
+        }
     }
 }
 namespace Prasalnik.Domain.Models
@@ -22,17 +29,23 @@ namespace Prasalnik.Domain.Models
     public class Questionnaire : BaseEntity
     {
         public string Title { get; set; }
-        public List<QuestionItem> QuestionItems { get; set; } = new();
-        public string Status { get; set; } // Draft, Published, Closed
+        public int CreatedByUserId { get; set; }
+        public ICollection<QuestionItem> QuestionItems { get; set; }
+        public string Status { get; set; } // Answered, Skipped
+        public Questionnaire()
+        {
+            QuestionItems = new HashSet<QuestionItem>();
+        }
     }
 }
 namespace Prasalnik.Domain.Models
 {
     public class QuestionItem : BaseEntity
     {
+        public int QuestionnaireId { get; set; }
+        public Questionnaire Questionnaire { get; set; }
         public string QuestionText { get; set; }
         public QuestionTypeEnum Type { get; set; }
-        public int QuestionnaireId { get; set; } 
     }
 }
 namespace Prasalnik.Domain.Models
@@ -83,6 +96,8 @@ namespace Prasalnik.DataAccess.ModelsConfig
             builder.Property(x => x.OU).HasMaxLength(128);
             builder.Property(x => x.Role).IsRequired();
 
+            builder.HasIndex(x => x.CompanyId).IsUnique(); // Assuming CompanyId is unique for each user
+
             builder.HasData(
                  new User { Id = 1, CompanyId = 12345, FullName = "Alice Johnson", OU = "HR", Role = (RoleEnum)1 },
                 new User { Id = 2, CompanyId = 12345, FullName = "Bob Smith", OU = "IT", Role = (RoleEnum)2 },
@@ -100,6 +115,13 @@ namespace Prasalnik.DataAccess.ModelsConfig
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Title).IsRequired().HasMaxLength(200);
             builder.Property(x => x.Status).IsRequired().HasMaxLength(50);
+
+            //foreign key relationship with User
+            builder.HasOne<User>()
+                    .WithMany(u => u.Questionnaires)
+                    .HasForeignKey(q => q.CreatedByUserId)
+                    .OnDelete(DeleteBehavior.NoAction)
+                    .HasConstraintName("FK_Questionnaire_User");
 
             builder.HasData(
                 new Questionnaire { Id = 1, Title = "Customer Satisfaction Survey", Status = "Answered" },
@@ -179,6 +201,30 @@ namespace Prasalnik.DataAccess.ModelsConfig
         }
     }
 }
+namespace Prasalnik.DataAccess.DataContext
+{
+    public class AppDbContext : DbContext
+    {
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+
+        public DbSet<User> Users { get; set; }
+        public DbSet<Questionnaire> Questionnaires { get; set; }
+        public DbSet<QuestionItem> QuestionItems { get; set; }
+        public DbSet<Answer> Answers { get; set; }
+        public DbSet<Status> Statuses { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new UserConfig());
+            modelBuilder.ApplyConfiguration(new QuestionnaireConfig());
+            modelBuilder.ApplyConfiguration(new QuestionItemConfig());
+            modelBuilder.ApplyConfiguration(new AnswerConfig());
+            modelBuilder.ApplyConfiguration(new StatusConfigure());
+
+            base.OnModelCreating(modelBuilder);
+        }
+    }
+}
 namespace Prasalnik.DataAccess.Interaces
 {
     public interface IRepository<T> where T : BaseEntity
@@ -226,30 +272,6 @@ namespace Prasalnik.DataAccess.Interaces
     public interface IStatusRepository : IRepository<Status>
     {
         Status GetByName(string name);
-    }
-}
-namespace Prasalnik.DataAccess.DataContext
-{
-    public class AppDbContext : DbContext
-    {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-
-        public DbSet<User> Users { get; set; }
-        public DbSet<Questionnaire> Questionnaires { get; set; }
-        public DbSet<QuestionItem> QuestionItems { get; set; }
-        public DbSet<Answer> Answers { get; set; }
-        public DbSet<Status> Statuses { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.ApplyConfiguration(new UserConfig());
-            modelBuilder.ApplyConfiguration(new QuestionnaireConfig());
-            modelBuilder.ApplyConfiguration(new QuestionItemConfig());
-            modelBuilder.ApplyConfiguration(new AnswerConfig());
-            modelBuilder.ApplyConfiguration(new StatusConfigure());
-
-            base.OnModelCreating(modelBuilder);
-        }
     }
 }
 namespace Prasalnik.DataAccess.Implementations
@@ -523,3 +545,247 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+namespace Prasalnik.ViewModels.Models
+{
+    public class UserViewModel
+    {
+        public int CompanyId { get; set; }
+        public string FullName { get; set; }
+        public string OU { get; set; }
+        public string Role { get; set; } = string.Empty;
+    }
+}
+namespace Prasalnik.ViewModels.Models
+{
+    public class UserCredentialsViewModel
+    {
+        public int CompanyId { get; set; }
+        public string FullName { get; set; }
+    }
+}
+namespace Prasalnik.ViewModels.Models
+{
+    public class RegisterUserViewModel
+    {
+        public int Id { get; set; }
+        public int CompanyId { get; set; }
+        public string FullName { get; set; }
+        public string OU { get; set; }
+        public string Role { get; set; } = string.Empty;
+    }
+}
+namespace Prasalnik.ViewModels.Models
+{
+    public class QuestionnaireViewModel
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Status { get; set; }
+        public QuestionItemViewModel QuestionItems { get; set; }
+    }
+}
+namespace Prasalnik.ViewModels.Models
+{
+    public class QuestionItemViewModel
+    {
+        public int Id { get; set; }
+        public string QuestionText { get; set; }
+        public int QuestionType { get; set; }
+        public int QuestionnaireId { get; set; }
+        public bool IsRequired { get; set; }
+    }
+}
+namespace Prasalnik.ViewModels.Models
+{
+    public class AnswerViewModel
+    {
+        public int QuestionId { get; set; }
+        public string Response { get; set; }
+    }
+}
+namespace Prasalnik.Services.AutoMapperProfiles
+{
+    public class UserMappingProfile : Profile
+    {
+        public UserMappingProfile()
+        {
+            // Create your mappings here
+            // Example:
+            // CreateMap<Source, Destination>();
+            CreateMap<User, UserViewModel>().ReverseMap();
+            CreateMap<User, RegisterUserViewModel>().ReverseMap();
+        }
+    }
+}
+namespace Prasalnik.Services.AutoMapperProfiles
+{
+    public class QuestionnaireMappingProfile : Profile
+    {
+        public QuestionnaireMappingProfile()
+        {
+            // CreateMap<Source, Destination>();
+            CreateMap<Questionnaire, QuestionnaireViewModel>();
+        }
+    }
+}
+namespace Prasalnik.Services.AutoMapperProfiles
+{
+    public class QuestionItemMappingProfile : Profile
+    {
+        public QuestionItemMappingProfile()
+        {
+            // CreateMap<Source, Destination>();
+            CreateMap<QuestionItem, QuestionItemViewModel>();
+        }
+    }
+}
+namespace Prasalnik.Services.Interfaces
+{
+    public interface IUserService
+    {
+        IEnumerable<User> GetAllUsers();
+        User GetUserById(int id);
+        User Login(int companyId, string fullName);
+        void CreateUser(User user);
+        void UpdateUser(User user);
+        void DeleteUser(int id);
+    }
+}
+namespace Prasalnik.Services.Interfaces
+{
+    public interface IStatusService
+    {
+        IEnumerable<Status> GetAllStatuses();
+        Status GetStatusById(int id);
+        Status GetByName(string name);
+        void CreateStatus(Status status);
+        void UpdateStatus(Status status);
+        void DeleteStatus(int id);
+    }
+}
+namespace Prasalnik.Services.Interfaces
+{
+    public interface IQuestionnaireService
+    {
+        IEnumerable<Questionnaire> GetAllQuestionnaires();
+        Questionnaire GetQuestionnaireById(int id);
+        Questionnaire GetByUserId(int userId);
+        void CreateQuestionnaire(Questionnaire questionnaire);
+        void UpdateQuestionnaire(Questionnaire questionnaire);
+        void DeleteQuestionnaire(int id);
+    }
+}
+namespace Prasalnik.Services.Interfaces
+{
+    public interface IQuestionItemService
+    {
+        IEnumerable<QuestionItem> GetAllItems();
+        QuestionItem GetItemById(int id);
+        QuestionItem GetByType(QuestionTypeEnum type);
+        void CreateItem(QuestionItem item);
+        void UpdateItem(QuestionItem item);
+        void DeleteItem(int id);
+    }
+}
+namespace Prasalnik.Services.Interfaces
+{
+    public interface IAnswerService
+    {
+        IEnumerable<Answer> GetAllAnswers();
+        Answer GetAnswerById(int id);
+        Answer GetByUserId(int userId);
+        void CreateAnswer(Answer answer);
+        void UpdateAnswer(Answer answer);
+        void DeleteAnswer(int id);
+    }
+}
+namespace Prasalnik.Services.Implementations
+{
+    public class UserService : IUserService
+    {
+        private readonly IUserRepository _userRepository;
+        public UserService(IUserRepository userRepository)
+        {
+            _userRepository = userRepository;
+        }
+
+        public IEnumerable<User> GetAllUsers() => _userRepository.GetAll();
+        public User GetUserById(int id) => _userRepository.GetById(id);
+        public User Login(int companyId, string fullName) => _userRepository.LoginUser(companyId, fullName);
+        public void CreateUser(User user) => _userRepository.Create(user);
+        public void UpdateUser(User user) => _userRepository.Update(user);
+        public void DeleteUser(int id) => _userRepository.Delete(id);
+    }
+}
+namespace Prasalnik.Services.Implementations
+{
+    public class StatusService : IStatusService
+    {
+        private readonly IStatusRepository _statusRepository;
+        public StatusService(IStatusRepository statusRepository)
+        {
+            _statusRepository = statusRepository;
+        }
+
+        public IEnumerable<Status> GetAllStatuses() => _statusRepository.GetAll();
+        public Status GetStatusById(int id) => _statusRepository.GetById(id);
+        public Status GetByName(string name) => _statusRepository.GetByName(name);
+        public void CreateStatus(Status status) => _statusRepository.Create(status);
+        public void UpdateStatus(Status status) => _statusRepository.Update(status);
+        public void DeleteStatus(int id) => _statusRepository.Delete(id);
+    }
+}
+namespace Prasalnik.Services.Implementations
+{
+    public class QuestionnaireService : IQuestionnaireService
+    {
+        private readonly IQuestionnaireRepository _questionnaireRepository;
+        public QuestionnaireService(IQuestionnaireRepository questionnaireRepository)
+        {
+            _questionnaireRepository = questionnaireRepository;
+        }
+
+        public IEnumerable<Questionnaire> GetAllQuestionnaires() => _questionnaireRepository.GetAll();
+        public Questionnaire GetQuestionnaireById(int id) => _questionnaireRepository.GetById(id);
+        public Questionnaire GetByUserId(int userId) => _questionnaireRepository.GetbyUserId(userId);
+        public void CreateQuestionnaire(Questionnaire questionnaire) => _questionnaireRepository.Create(questionnaire);
+        public void UpdateQuestionnaire(Questionnaire questionnaire) => _questionnaireRepository.Update(questionnaire);
+        public void DeleteQuestionnaire(int id) => _questionnaireRepository.Delete(id);
+    }
+}
+namespace Prasalnik.Services.Implementations
+{
+    public class QuestionItemService : IQuestionItemService
+    {
+        private readonly IQuestionItemRepository _questionItemRepository;
+        public QuestionItemService(IQuestionItemRepository questionItemRepository)
+        {
+            _questionItemRepository = questionItemRepository;
+        }
+
+        public IEnumerable<QuestionItem> GetAllItems() => _questionItemRepository.GetAll();
+        public QuestionItem GetItemById(int id) => _questionItemRepository.GetById(id);
+        public QuestionItem GetByType(QuestionTypeEnum type) => _questionItemRepository.GetByType(type.GetType());
+        public void CreateItem(QuestionItem item) => _questionItemRepository.Create(item);
+        public void UpdateItem(QuestionItem item) => _questionItemRepository.Update(item);
+        public void DeleteItem(int id) => _questionItemRepository.Delete(id);
+    }
+}
+namespace Prasalnik.Services.Implementations
+{
+    public class AnswerService : IAnswerService
+    {
+        private readonly IAnswerRepository _answerRepository;
+        public AnswerService(IAnswerRepository answerRepository)
+        {
+            _answerRepository = answerRepository;
+        }
+
+        public IEnumerable<Answer> GetAllAnswers() => _answerRepository.GetAll();
+        public Answer GetAnswerById(int id) => _answerRepository.GetById(id);
+        public Answer GetByUserId(int userId) => _answerRepository.GetByUserId(userId);
+        public void CreateAnswer(Answer answer) => _answerRepository.Create(answer);
+        public void UpdateAnswer(Answer answer) => _answerRepository.Update(answer);
+        public void DeleteAnswer(int id) => _answerRepository.Delete(id);
+    }
+}

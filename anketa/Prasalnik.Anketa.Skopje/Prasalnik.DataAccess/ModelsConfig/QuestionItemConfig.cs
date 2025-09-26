@@ -16,12 +16,11 @@ namespace Prasalnik.DataAccess.ModelsConfig
 
             builder.HasOne<Questionnaire>()
                 .WithMany(q => q.QuestionItems)
-                .HasForeignKey("QuestionnaireId")
-                .OnDelete(DeleteBehavior.Cascade)
+                .HasForeignKey(x => x.QuestionnaireId)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_QuestionItem_Questionnaire");
 
-            
-            builder.HasData(
+           builder.HasData(
                      new QuestionItem { Id = 1, QuestionText = "How satisfied are you with our service?", Type = QuestionTypeEnum.Scale, QuestionnaireId = 1 },
                      new QuestionItem { Id = 2, QuestionText = "Would you recommend us to others?", Type = QuestionTypeEnum.Radio, QuestionnaireId = 1 },
                      new QuestionItem { Id = 3, QuestionText = "What can we improve?", Type = QuestionTypeEnum.Text, QuestionnaireId = 2 },

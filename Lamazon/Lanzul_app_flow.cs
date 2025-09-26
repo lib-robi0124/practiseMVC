@@ -213,44 +213,7 @@ namespace Lamazon.Domain.Enums
         Deleted = 255
     }
 }
-namespace Lamazon.DataAccess.DataContext
-{
-    public class ApplicationDbContext : DbContext //IdentityDbContext<User, Role, int> usually for Identity
-    {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-        {
-        }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlServer("Server=.;Database=LamazonDb;Trusted_Connection=True;TrustServerCertificate=True");
-        }
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
-            modelBuilder
-                 .SeedProductCategoryStatus()
-                 .SeedProductStatus()
-                 .SeedProductCategory()
-                 .SeedProducts()
-                 .SeedRoles()
-                 .SeedUsers();
-
-        }
-        public DbSet<Invoice> Invoices { get; set; }
-        public DbSet<InvoiceLineItem> InvoiceLineItems { get; set; }
-        public DbSet<InvoiceStatus> InvoiceStatuses { get; set; }
-        public DbSet<Order> Orders { get; set; }
-        public DbSet<OrderLineItem> OrderLineItems { get; set; }
-        public DbSet<OrderStatus> OrderStatuses { get; set; }
-        public DbSet<Product> Products { get; set; }
-        public DbSet<ProductCategory> ProductCategories { get; set; }
-        public DbSet<ProductCategoryStatus> ProductCategoryStatuses { get; set; }
-        public DbSet<ProductStatus> ProductStatuses { get; set; }
-        public DbSet<User> Users { get; set; }
-        public DbSet<Role> Roles { get; set; }
-    }
-}
 namespace Lamazon.DataAccess.EntitiesConfig
 {
     public class UserConfig : IEntityTypeConfiguration<User>
@@ -641,6 +604,44 @@ namespace Lamazon.DataAccess.DataContext
             return modelBuilder;
         }
         #endregion
+    }
+}
+namespace Lamazon.DataAccess.DataContext
+{
+    public class ApplicationDbContext : DbContext //IdentityDbContext<User, Role, int> usually for Identity
+    {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+        {
+        }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer("Server=.;Database=LamazonDb;Trusted_Connection=True;TrustServerCertificate=True");
+        }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+            modelBuilder
+                 .SeedProductCategoryStatus()
+                 .SeedProductStatus()
+                 .SeedProductCategory()
+                 .SeedProducts()
+                 .SeedRoles()
+                 .SeedUsers();
+
+        }
+        public DbSet<Invoice> Invoices { get; set; }
+        public DbSet<InvoiceLineItem> InvoiceLineItems { get; set; }
+        public DbSet<InvoiceStatus> InvoiceStatuses { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderLineItem> OrderLineItems { get; set; }
+        public DbSet<OrderStatus> OrderStatuses { get; set; }
+        public DbSet<Product> Products { get; set; }
+        public DbSet<ProductCategory> ProductCategories { get; set; }
+        public DbSet<ProductCategoryStatus> ProductCategoryStatuses { get; set; }
+        public DbSet<ProductStatus> ProductStatuses { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Role> Roles { get; set; }
     }
 }
 namespace Lamazon.DataAccess.Interfaces
@@ -1205,7 +1206,7 @@ app.Run();
     Layout = "~/Views/Shared/_LayoutProducts.cshtml";
 }
 
-<h2>Products</h2>
+<h2> Featured Products</h2>
 
 <div class="row">
     @foreach(var product in Model)
@@ -1316,13 +1317,40 @@ namespace Lamazon.Web.Controllers
         }
     }
 }
+//vo DbContext ima paket Micr.Entity.Identity.EF koj ja kontrolira autheticate 
+//posle kreiranje IRepository (interface za request logika i baza) - Repository - ViewModels -Authomaper Profile - Services (logika za model)
+//logika vo Services za HasPass kreirame Helper vo Services proekt
+namespace Lamazon.Services.Helpers
+{
+    public static class PasswordHasherHelper // no external libraries , send password and make hash - install MS.Identity.EF paket
+    {
+        private static PasswordHasher<User> _passwordHasher = new();
+        public static void HashPassword(User user, string password)
+        {
+            user.PasswordHash = _passwordHasher.HashPassword(user, password);
+        }
+        public static PasswordVerificationResult VerifyHashedPassword(User user, string password)
+        {
+            return _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
+        }
+    }
+}
+//vo Domain folder Constants - dostapni za site proekti i cs..
+namespace Lamazon.Domain.Constants
+{
+    public class Roles
+    {
+        public const string Admin = "admin";
+        public const string User = "user";
+    }
+}
 namespace Lamazon.Web.Controllers
 {
     public class UsersController : Controller
     {
         private readonly IUserService _userService;
-        public UsersController(IUserService userService) 
-        { 
+        public UsersController(IUserService userService)
+        {
             _userService = userService;
         }
         public IActionResult Login()
@@ -1333,20 +1361,20 @@ namespace Lamazon.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(UserCredentialsViewModel userCredentialsViewModel, string returnUrl)
         {
-            if(string.IsNullOrEmpty(userCredentialsViewModel.Email))
+            if (string.IsNullOrEmpty(userCredentialsViewModel.Email))
             {
                 ModelState.AddModelError("UserLoginError", "Email is invalid and required");
                 return View(userCredentialsViewModel);
             }
             var userValidationResult = _userService.ValidateUser(userCredentialsViewModel);
-            if(userValidationResult is null)
+            if (userValidationResult is null)
             {
                 ModelState.AddModelError("UserLoginError", "User not found");
                 return View(userCredentialsViewModel);
             }
             //sign in user
             await AuthHelper.SignInUser(userValidationResult, HttpContext);
-            if(string.IsNullOrEmpty(returnUrl))
+            if (string.IsNullOrEmpty(returnUrl))
             {
                 return RedirectToAction("/");
             }
@@ -1360,9 +1388,9 @@ namespace Lamazon.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterUserViewModel registerUserViewModel)
         {
-            
+
             var registeredUser = _userService.RegisterUser(registerUserViewModel);
-            if(registeredUser != null)
+            if (registeredUser != null)
             {
                 await AuthHelper.SignInUser(registeredUser, HttpContext);
                 return Redirect("/");
@@ -1377,3 +1405,37 @@ namespace Lamazon.Web.Controllers
 
     }
 }
+//za sign in/out user potrebno ni e helper vo wep.app
+namespace Lamazon.Web.Helpers
+{
+    public static class AuthHelper
+    {
+        public static async Task SignInUser(UserViewModel userViewModel, HttpContext httpContext)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, userViewModel.Id.ToString()),
+                new Claim(ClaimTypes.Email, userViewModel.Email),
+                new Claim(ClaimTypes.Name, userViewModel.FullName),
+                new Claim(ClaimTypes.Role, userViewModel.RoleKey),
+                new Claim(ClaimTypes.PrimaryGroupSid, userViewModel.Id.ToString())
+            };
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            await httpContext.SignInAsync(
+                scheme: CookieAuthenticationDefaults.AuthenticationScheme,
+                principal: new ClaimsPrincipal(claimsIdentity),
+                properties: new AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    ExpiresUtc = DateTime.UtcNow.AddHours(1)
+                }
+                );
+        }
+        public static async Task SignOutUser(HttpContext context)
+        {
+            await context.SignOutAsync();
+        }
+    }
+}
+//registracija na Services vo Program.cs za Authentication
+//User folder in View - web.app proekt login i register cshtml

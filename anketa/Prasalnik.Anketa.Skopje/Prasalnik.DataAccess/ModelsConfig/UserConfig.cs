@@ -16,6 +16,8 @@ namespace Prasalnik.DataAccess.ModelsConfig
             builder.Property(x => x.OU).HasMaxLength(128);
             builder.Property(x => x.Role).IsRequired();
 
+            builder.HasIndex(x => x.CompanyId).IsUnique(); // Assuming CompanyId is unique for each user
+
             builder.HasData(
                  new User { Id = 1, CompanyId = 12345, FullName = "Alice Johnson", OU = "HR", Role = (RoleEnum)1 },
                 new User { Id = 2, CompanyId = 12345, FullName = "Bob Smith", OU = "IT", Role = (RoleEnum)2 },
