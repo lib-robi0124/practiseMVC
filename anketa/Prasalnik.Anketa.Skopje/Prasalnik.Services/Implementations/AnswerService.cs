@@ -1,22 +1,46 @@
-﻿using Prasalnik.DataAccess.Interaces;
+﻿using AutoMapper;
+using Prasalnik.DataAccess.Interaces;
 using Prasalnik.Domain.Models;
 using Prasalnik.Services.Interfaces;
+using Prasalnik.ViewModels.Models;
 
 namespace Prasalnik.Services.Implementations
 {
     public class AnswerService : IAnswerService
     {
-        private readonly IAnswerRepository _answerRepository;
-        public AnswerService(IAnswerRepository answerRepository)
+        private readonly IAnswerRepository _repo;
+        private readonly IMapper _mapper;
+
+        public AnswerService(IAnswerRepository repo, IMapper mapper)
         {
-            _answerRepository = answerRepository;
+            _repo = repo;
+            _mapper = mapper;
         }
 
-        public IEnumerable<Answer> GetAllAnswers() => _answerRepository.GetAll();
-        public Answer GetAnswerById(int id) => _answerRepository.GetById(id);
-        public Answer GetByUserId(int userId) => _answerRepository.GetByUserId(userId);
-        public void CreateAnswer(Answer answer) => _answerRepository.Create(answer);
-        public void UpdateAnswer(Answer answer) => _answerRepository.Update(answer);
-        public void DeleteAnswer(int id) => _answerRepository.Delete(id);
+        public IEnumerable<AnswerViewModel> GetAll()
+        {
+            var answers = _repo.GetAll();
+            return _mapper.Map<IEnumerable<AnswerViewModel>>(answers);
+        }
+
+        public AnswerViewModel GetById(int id)
+        {
+            var answer = _repo.GetById(id);
+            return _mapper.Map<AnswerViewModel>(answer);
+        }
+
+        public void Create(AnswerViewModel vm)
+        {
+            var entity = _mapper.Map<Answer>(vm);
+            _repo.Create(entity);
+        }
+
+        public void Update(AnswerViewModel vm)
+        {
+            var entity = _mapper.Map<Answer>(vm);
+            _repo.Update(entity);
+        }
+
+        public void Delete(int id) => _repo.Delete(id);
     }
 }

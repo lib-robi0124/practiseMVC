@@ -1,0 +1,18 @@
+﻿@model Prasalnik.ViewModels.Models.QuestionnaireViewModel
+
+@{
+    ViewData["Title"] = "Questionnaire Details";
+}
+
+<h2>@Model.Title</h2>
+
+<form asp-action="SubmitAnswers" method="post">
+    <input type="hidden" name="QuestionnaireId" value="@Model.Id" />
+
+    <div class="form-group">
+        <label>@Model.QuestionItems.QuestionText</label>
+        <input type="text" name="Answers[@Model.QuestionItems.Id]" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-success">Submit</button>
+</form>

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Prasalnik.DataAccess.DataContext;
 using Prasalnik.DataAccess.Implementations;
 using Prasalnik.DataAccess.Interaces;
+using Prasalnik.Services.AutoMapperProfiles;
 using Prasalnik.Services.Implementations;
 using Prasalnik.Services.Interfaces;
 
@@ -13,6 +14,10 @@ string connectionString = builder.Configuration.GetConnectionString("DefaultConn
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// ... add others
+builder.Services.AddAutoMapper(typeof(UserMappingProfile).Assembly);
+builder.Services.AddSession();
 
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -40,7 +45,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
+app.UseSession();
 app.UseRouting();
 
 app.UseAuthorization();

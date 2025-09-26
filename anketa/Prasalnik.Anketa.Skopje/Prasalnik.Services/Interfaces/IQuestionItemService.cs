@@ -1,16 +1,15 @@
-﻿using Prasalnik.Domain.Enums;
-using Prasalnik.Domain.Models;
+﻿using Prasalnik.ViewModels.Models;
+using Prasalnik.Domain.Enums;
 
 namespace Prasalnik.Services.Interfaces
 {
     public interface IQuestionItemService
     {
-        IEnumerable<QuestionItem> GetAllItems();
-        QuestionItem GetItemById(int id);
-        QuestionItem GetByType(QuestionTypeEnum type);
-        void CreateItem(QuestionItem item);
-        void UpdateItem(QuestionItem item);
-        void DeleteItem(int id);
+        IEnumerable<QuestionItemViewModel> GetAll();
+        QuestionItemViewModel GetById(int id);
+        IEnumerable<QuestionItemViewModel> GetByType(QuestionTypeEnum type);
+        void Create(QuestionItemViewModel questionItem);
+        void Update(QuestionItemViewModel questionItem);
+        void Delete(int id);
     }
 }
-

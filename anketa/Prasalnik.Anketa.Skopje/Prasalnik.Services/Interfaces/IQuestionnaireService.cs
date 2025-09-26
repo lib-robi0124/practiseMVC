@@ -1,14 +1,13 @@
-﻿using Prasalnik.Domain.Models;
+﻿using Prasalnik.ViewModels.Models;
 
 namespace Prasalnik.Services.Interfaces
 {
     public interface IQuestionnaireService
     {
-        IEnumerable<Questionnaire> GetAllQuestionnaires();
-        Questionnaire GetQuestionnaireById(int id);
-        Questionnaire GetByUserId(int userId);
-        void CreateQuestionnaire(Questionnaire questionnaire);
-        void UpdateQuestionnaire(Questionnaire questionnaire);
-        void DeleteQuestionnaire(int id);
+        IEnumerable<QuestionnaireViewModel> GetAll();
+        QuestionnaireViewModel GetById(int id);
+        void Create(QuestionnaireViewModel questionnaire);
+        void Update(QuestionnaireViewModel questionnaire);
+        void Delete(int id);
     }
 }

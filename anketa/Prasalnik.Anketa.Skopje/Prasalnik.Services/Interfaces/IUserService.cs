@@ -1,15 +1,14 @@
-﻿using Prasalnik.Domain.Models;
+﻿using Prasalnik.ViewModels.Models;
 
 namespace Prasalnik.Services.Interfaces
 {
     public interface IUserService
     {
-        IEnumerable<User> GetAllUsers();
-        User GetUserById(int id);
-        User Login(int companyId, string fullName);
-        void CreateUser(User user);
-        void UpdateUser(User user);
+        IEnumerable<UserViewModel> GetAllUsers();
+        UserViewModel GetUserById(int id);
+        UserViewModel Login(UserCredentialsViewModel creds);
+        void CreateUser(RegisterUserViewModel registerVm);
+        void UpdateUser(UserViewModel userVm);
         void DeleteUser(int id);
     }
 }
-

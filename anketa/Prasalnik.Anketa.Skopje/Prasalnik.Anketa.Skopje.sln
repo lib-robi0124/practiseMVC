@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prasalnik.DataAccess", "Pra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prasalnik.Services", "Prasalnik.Services\Prasalnik.Services.csproj", "{B48CB91E-6AE3-4813-9540-89969BDCEE30}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prasalnik.Mapers", "Prasalnik.Mapers\Prasalnik.Mapers.csproj", "{42E4B0DF-B67B-4252-8916-C788128844DE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prasalnik.Mappers", "Prasalnik.Mapers\Prasalnik.Mappers.csproj", "{42E4B0DF-B67B-4252-8916-C788128844DE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prasalnik.ViewModels", "Prasalnik.ViewModels\Prasalnik.ViewModels.csproj", "{F7EA3E26-A825-42A0-A90D-6A0FAB1D37B4}"
 EndProject

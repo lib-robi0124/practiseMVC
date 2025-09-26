@@ -1,14 +1,13 @@
-﻿using Prasalnik.Domain.Models;
+﻿using Prasalnik.ViewModels.Models;
 
 namespace Prasalnik.Services.Interfaces
 {
     public interface IAnswerService
     {
-        IEnumerable<Answer> GetAllAnswers();
-        Answer GetAnswerById(int id);
-        Answer GetByUserId(int userId);
-        void CreateAnswer(Answer answer);
-        void UpdateAnswer(Answer answer);
-        void DeleteAnswer(int id);
+        IEnumerable<AnswerViewModel> GetAll();
+        AnswerViewModel GetById(int id);
+        void Create(AnswerViewModel answer);
+        void Update(AnswerViewModel answer);
+        void Delete(int id);
     }
 }

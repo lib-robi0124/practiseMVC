@@ -1,9 +1,11 @@
 ﻿using Prasalnik.DataAccess.DataContext;
 using Prasalnik.DataAccess.Interaces;
+using Prasalnik.Domain.Enums;
 using Prasalnik.Domain.Models;
 
 namespace Prasalnik.DataAccess.Implementations
 {
+
     public class QuestionItemRepository : IQuestionItemRepository
     {
         private readonly AppDbContext _context;
@@ -39,6 +41,11 @@ namespace Prasalnik.DataAccess.Implementations
         public QuestionItem GetByType(Type type)
         {
             throw new NotSupportedException("Use QuestionTypeEnum instead of System.Type");
+        }
+
+        public QuestionItem GetByType(QuestionTypeEnum type)
+        {
+            throw new NotImplementedException();
         }
 
         public void Update(QuestionItem entity)

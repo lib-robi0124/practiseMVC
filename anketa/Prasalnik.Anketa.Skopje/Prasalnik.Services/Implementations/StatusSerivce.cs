@@ -1,22 +1,31 @@
-﻿using Prasalnik.DataAccess.Interaces;
-using Prasalnik.Domain.Models;
+﻿using AutoMapper;
+using Prasalnik.DataAccess.Interaces;
 using Prasalnik.Services.Interfaces;
+using Prasalnik.ViewModels.Models;
 
 namespace Prasalnik.Services.Implementations
 {
     public class StatusService : IStatusService
     {
-        private readonly IStatusRepository _statusRepository;
-        public StatusService(IStatusRepository statusRepository)
+        private readonly IStatusRepository _repo;
+        private readonly IMapper _mapper;
+
+        public StatusService(IStatusRepository repo, IMapper mapper)
         {
-            _statusRepository = statusRepository;
+            _repo = repo;
+            _mapper = mapper;
         }
 
-        public IEnumerable<Status> GetAllStatuses() => _statusRepository.GetAll();
-        public Status GetStatusById(int id) => _statusRepository.GetById(id);
-        public Status GetByName(string name) => _statusRepository.GetByName(name);
-        public void CreateStatus(Status status) => _statusRepository.Create(status);
-        public void UpdateStatus(Status status) => _statusRepository.Update(status);
-        public void DeleteStatus(int id) => _statusRepository.Delete(id);
+        public IEnumerable<StatusViewModel> GetAll()
+        {
+            var statuses = _repo.GetAll();
+            return _mapper.Map<IEnumerable<StatusViewModel>>(statuses);
+        }
+
+        public StatusViewModel GetById(int id)
+        {
+            var status = _repo.GetById(id);
+            return _mapper.Map<StatusViewModel>(status);
+        }
     }
 }

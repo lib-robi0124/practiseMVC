@@ -1,42 +1,25 @@
-﻿@model Prasalnik.ViewModels.Models.QuestionnaireViewModel
+﻿@model IEnumerable<Prasalnik.ViewModels.Models.QuestionnaireViewModel>
 
 @{
-    ViewData["Title"] = "Questionnaire";
+    ViewData["Title"] = "Questionnaires";
 }
 
-<h2>@Model.Title</h2>
-<p>Status: @Model.Status</p>
+<h2>Available Questionnaires</h2>
 
-<form asp-action="SubmitAnswers" method="post">
-    @for (int i = 0; i < Model.QuestionItemViewModel.Count; i++)
-    {
-        <div class="form-group mb-3">
-            <label>@Model.QuestionItemViewModel[i].QuestionText</label>
-
-            @if (Model.QuestionItemViewModel[i].Type == "Text")
-            {
-                <input type="text" class="form-control" name="Answers[@i].Response" />
-            }
-            else if (Model.QuestionItemViewModel[i].Type == "Radio")
-            {
-                <div>
-                    <input type="radio" name="Answers[@i].Response" value="Yes" /> Yes
-                    <input type="radio" name="Answers[@i].Response" value="No" /> No
-                </div>
-            }
-            else if (Model.QuestionItemViewModel[i].Type == "Scale")
-            {
-                <select class="form-select" name="Answers[@i].Response">
-                    @for (int j = 1; j <= 10; j++)
-                    {
-                        <option value="@j">@j</option>
-                    }
-                </select>
-            }
-
-            <input type="hidden" name="Answers[@i].QuestionId" value="@Model.QuestionItemViewModel[i].Id" />
-        </div>
-    }
-
-    <button type="submit" class="btn btn-success">Submit</button>
-</form>
+@if (!Model.Any())
+{
+    <p>No questionnaires available.</p>
+}
+else
+{
+    <ul>
+        @foreach (var q in Model)
+        {
+            <li>
+                <a asp-controller="Questionnaire" asp-action="Details" asp-route-id="@q.Id">
+                    @q.Title - Status: @q.Status
+                </a>
+            </li>
+        }
+    </ul>
+}
