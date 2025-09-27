@@ -1080,26 +1080,669 @@ ________________________________________
 Login.cshtml
 •	Accepts card number or admin password
 •	Displays error if not found
-Index.cshtml
-•	Displays all movies using MovieDto
-•	Enables renting only when logged in
-Details.cshtml
-•	Displays full movie info
-•	Allows renting based on login status
-Return.cshtml
-•	Shows user’s currently rented movies
-•	Allows returning
-Register.cshtml
-•	Form registration of new user
-•	Displays error if not found
+** views - admin -index , login, create, edit, delete
+@model List<MovieDto>
+@{
+    // Ensure adminId is available in the view. 
+    // If it's passed via ViewData, ViewBag, or as part of the model, assign it here.
+    // Example using ViewBag:
+    var adminId = ViewBag.AdminId;
+}
+
+<div class="container py-5">
+    <h2 class="mb-4">Available Movies</h2>
+
+    <form asp-controller="Admin" asp-action="Logout" method="post" class="d-inline mb-5">
+        <button type="submit" class="btn btn-danger">Logout</button>
+    </form>
+   
+        <a asp-controller="Admin" asp-action="Create" asp-route-adminId="@adminId" class="btn btn-success mb-3">Create Movie</a>
+   
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        @foreach (var movie in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+                    <img src="@movie.ImagePath" class="card-img-top" alt="@movie.Title" style="height: 400px; object-fit: cover;" />
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@movie.Title</h5>
+                        <p class="card-text mb-1"><strong>Genre:</strong> @movie.Genre</p>
+                        <p class="card-text mb-3">
+                            <strong>Status:</strong>
+                            @if (movie.IsAvailable)
+                            {
+                                <span class="badge bg-success">Available</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Unavailable</span>
+                            }
+                        </p>
+                        <div class="mt-auto d-flex gap-2">
+                            <a asp-controller="Admin" asp-action="Details" asp-route-id="@movie.Id" asp-route-adminId="@adminId" class="btn btn-outline-secondary w-50">
+                                Details
+                            </a>
+                           
+                                <button class="btn btn-secondary w-50" disabled>Rent</button>
+                            
+                        </div>
+                      
+                            <a asp-controller="Admin" asp-action="DeleteMovie" asp-route-id="@movie.Id" asp-route-adminId="@adminId" class="btn btn-danger w-100 mt-2">
+                                Delete
+                            </a>
+                            <a asp-controller="Admin" asp-action="Edit" asp-route-id="@movie.Id" asp-route-adminId="@adminId" class="btn btn-warning w-100 mt-2">
+                                Update
+                            </a>
+                       
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@{
+    ViewData["Title"] = "Admin Login";
+}
+
+<h2>Admin Login</h2>
+
+<form asp-action="Login" method="post">
+    <div class="mb-3">
+        <label>Username</label>
+        <input type="text" name="username" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label>Password</label>
+        <input type="password" name="password" class="form-control" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary" > Login </ button >
+</ form >
+@if (ViewBag.Error != null)
+{
+    <p class="text-danger mt-2">@ViewBag.Error</p>
+}
+
+@model MovieDetailsDto
+
+@{
+    ViewData["Title"] = "Create Movie";
+    var adminId = ViewBag.AdminId; // Fix: define adminId from ViewBag or ViewData
+}
 Create.cshtml
 •	Create movies using MovieDetailsDto
 •	Includes all movie metadata fields
+<h2>Create New Movie</h2>
+<form asp-action="Create" asp-route-adminId="@adminId" method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label class="form-label">Title</label>
+        <input type="text" class="form-control" name="Title" required />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Genre</label>
+        <select class="form-control" name="Genre">
+            @foreach (var genre in Enum.GetValues(typeof(VideoMovieRent.Domain.Enums.Genre)))
+            {
+                <option value="@genre">@genre</option>
+            }
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Language</label>
+        <select class="form-control" name="Language">
+            @foreach (var lang in Enum.GetValues(typeof(VideoMovieRent.Domain.Enums.Language)))
+            {
+                <option value="@lang">@lang</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Release Date</label>
+        <input type="date" class="form-control" name="ReleaseDate" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Length (hh:mm)</label>
+        <input type="text" class="form-control" name="Length" placeholder="e.g. 02:30" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Age Restriction</label>
+        <input type="number" class="form-control" name="AgeRestriction" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Quantity</label>
+        <input type="number" class="form-control" name="Quantity" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Movie Image</label>
+        <input type="file" class="form-control" name="ImageFile" accept="image/*" />
+    </div>
+    <button type="submit" class="btn btn-success">Create</button>
+
+    <button type="submit" class="btn btn-success">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
+
+@model MovieDetailsDto
+
+@{
+    ViewData["Title"] = "Edit Movie";
+    var adminId = ViewBag.AdminId; // Fix: define adminId from ViewBag or ViewData
+
+}
 Edit.cshtml
 •	Pre-populated form for movie details
 •	Allows updating all fields
-Delete.cshtml
-•	Delete movies
+<h2>Edit Movie</h2>
+
+<form asp-action="Edit" asp-route-adminId="@adminId" method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label class="form-label">Title</label>
+        <input type="text" class="form-control" name="Title" required />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Genre</label>
+        <select class="form-control" name="Genre">
+            @foreach (var genre in Enum.GetValues(typeof(VideoMovieRent.Domain.Enums.Genre)))
+            {
+                <option value="@genre">@genre</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Language</label>
+        <select class="form-control" name="Language">
+            @foreach (var lang in Enum.GetValues(typeof(VideoMovieRent.Domain.Enums.Language)))
+            {
+                <option value="@lang">@lang</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Release Date</label>
+        <input type="date" class="form-control" name="ReleaseDate" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Length (hh:mm)</label>
+        <input type="text" class="form-control" name="Length" placeholder="e.g. 02:30" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Age Restriction</label>
+        <input type="number" class="form-control" name="AgeRestriction" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Quantity</label>
+        <input type="number" class="form-control" name="Quantity" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Movie Image</label>
+        <input type="file" class="form-control" name="ImageFile" accept="image/*" />
+    </div>
+    <button type="submit" class="btn btn-success">Update</button>
+
+    <button type="submit" class="btn btn-success">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
+@model DeleteDto
+@{
+    ViewData["Title"] = "Delete Movie";
+    var adminId = ViewBag.AdminId; // Fix: define adminId from ViewBag or ViewData
+}
+<h2>Delete Movie</h2>
+<form asp-action="Delete" asp-route-adminId="@adminId" method="post" id="deleteForm">
+    <div class="mb-3">
+        <label class="form-label">Title</label>
+        <input type="text" class="form-control" value="@Model.Title" disabled />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Genre</label>
+        <input type="text" class="form-control" value="@Model.Genre" disabled />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Quantity</label>
+        <input type="number" class="form-control" value="@Model.Quantity" disabled />
+    </div>
+    <input type="hidden" name="id" value="@ViewBag.MovieId" />
+    <button type="button" class="btn btn-danger" onclick="showModal()">Delete</button>
+     <a asp-action="Index" class="btn btn-secondary" > Cancel </ a >
+</ form >
+** views - movie - index - login - register - Details - Return - check card
+Index.cshtml
+•	Displays all movies using MovieDto
+•	Enables renting only when logged in
+@model List<MovieDto>
+@{
+    var userIdStr = Context.Request.Query["userId"].ToString();
+    int userId = 0;
+    int.TryParse(userIdStr, out userId);
+    bool isLoggedIn = userId > 0;
+}
+<div class="container py-5">
+    <h2 class="mb-4">Available Movies</h2>
+    @if (userId > 0)
+    {
+        <form asp-controller="Movie" asp-action="Logout" method="post" class="d-inline mb-5">
+            <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
+        <a asp-controller="Movie" asp-action="Return" asp-route-userId="@userId" class="btn btn-info mb-3 ms-2">My Rentals</a>
+    }
+       <form method="get" asp-action="Search">
+        <input type="text" name="title" placeholder="Title" />
+        <select name="genre">
+            <option value="">All Genres</option>
+            <option value="Action">Action</option>
+            <option value="Comedy">Comedy</option>
+            <option value="Drama">Drama</option>
+            <option value="Horror">Horror</option>
+            <option value="Sci-Fi">Sci-Fi</option>
+        </select>
+        <select name="language">
+            <option value="">All Languages</option>
+            <option value="English">English</option>
+            <option value="Spanish">Spanish</option>
+            <option value="French">French</option>
+            <option value="German">German</option>
+            <option value="Japanese">Japanese</option>
+        </select>
+        <button type="submit">Search</button>
+    </form>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        @foreach (var movie in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+                    <img src="@movie.ImagePath" class="card-img-top" alt="@movie.Title" style="height: 400px; object-fit: cover;" />
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@movie.Title</h5>
+                        <p class="card-text mb-1"><strong>Genre:</strong> @movie.Genre</p>
+                        <p class="card-text mb-3">
+                            <strong>Status:</strong>
+                            @if (movie.IsAvailable)
+                            {
+                                <span class="badge bg-success">Available</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Unavailable</span>
+                            }
+                        </p>
+                        <div class="mt-auto d-flex gap-2">
+                            <a asp-controller="Movie" asp-action="Details" asp-route-id="@movie.Id" asp-route-userId="@userId" class="btn btn-outline-secondary w-50">
+                                Details
+                            </a>
+                            @if (!isLoggedIn || !movie.IsAvailable)
+                            {
+                                <button class="btn btn-secondary w-50" disabled>Rent</button>
+                            }
+                            else
+                            {
+                                <form asp-controller="Movie" asp-action="Rent" method="post" class="w-50">
+                                    <input type="hidden" name="movieId" value="@movie.Id" />
+                                    <input type="hidden" name="userId" value="@userId" />
+                                    <button type="submit" class="btn btn-primary w-100">Rent</button>
+                                </form>
+                            }
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+login.cshtml
+@{
+    ViewData["Title"] = "Login";
+    var error = ViewBag.Error as string;
+}
+
+<h2>Login</h2>
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger">@error</div>
+}
+<form asp-action="Login" method="post">
+    <div class="mb-3">
+        <label for="cardNumber" class="form-label">Card Number</label>
+        <input type="text" class="form-control" id="cardNumber" name="cardNumber" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Login</button>
+</form>
+Details.cshtml
+•	Displays full movie info
+•	Allows renting based on login status
+@model MovieDetailsDto
+@{
+    var userIdObj = ViewBag.UserId ?? Context.Request.Query["userId"];
+    var userIdStr = userIdObj != null ? userIdObj.ToString() : "";
+    int userId = 0;
+    int.TryParse(userIdStr, out userId);
+    bool isLoggedIn = userId > 0;
+}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="row g-0">
+                    <div class="col-md-5">
+                        <img src="@Model.ImagePath" alt="@Model.Title" class="img-fluid h-100 w-100 rounded-start" style="object-fit: cover;" />
+                    </div>
+                    <div class="col-md-7">
+                        <div class="card-body p-4 d-flex flex-column h-100">
+                            <h2 class="card-title mb-3">@Model.Title</h2>
+                            <ul class="list-unstyled mb-4">
+                                <li><strong>Genre:</strong> @Model.Genre</li>
+                                <li><strong>Length:</strong> @Model.Length.Hours @("hr") @Model.Length.Minutes @("min")</li>
+                                <li><strong>Age Restriction:</strong> @Model.AgeRestriction+</li>
+                                <li><strong>Release Date:</strong> @Model.ReleaseDate</li>
+                                <li><strong>Quantity Available:</strong> @Model.Quantity</li>
+                                <li><strong>Language:</strong> @Model.Language</li>
+                            </ul>
+
+                            <div class="mt-auto d-flex gap-2">
+                                <a asp-action="Index" asp-controller="Movie" asp-route-userId="@userId" class="btn btn-outline-secondary w-50">
+                                    ← Back to List
+                                </a>
+                                @if (!isLoggedIn || Model.Quantity <= 0)
+                                {
+                                    <button class="btn btn-secondary w-50" disabled>Rent This Movie</button>
+                                }
+                                else
+                                {
+                                    <form asp-action="Rent" asp-controller="Movie" method="post" class="w-50">
+                                        <input type="hidden" name="movieId" value="@Model.Id" />
+                                        <input type="hidden" name="userId" value="@userId" />
+                                        <button type="submit" class="btn btn-primary w-100">Rent This Movie</button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+Return.cshtml
+•	Shows user’s currently rented movies
+•	Allows returning
+@model IEnumerable<Rental>
+@{
+    var userIdObj = ViewBag.UserId ?? Context.Request.Query["userId"];
+    var userIdStr = userIdObj != null ? userIdObj.ToString() : "";
+    int userId = 0;
+    int.TryParse(userIdStr, out userId);
+}
+<div class="container py-5">
+    <h2 class="mb-4">Your Rented Movies</h2>
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">You have no active rentals.</div>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Rental Id</th>
+                    <th>Movie Id</th>
+                    <th>Title</th>
+                    <th>Rented On</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var rental in Model)
+                {
+                    <tr>
+                        <td>@rental.Id</td>
+                        <td>@rental.MovieId</td>
+                        <td>@rental.Title</td>
+                        <td>@rental.RentedOn</td>
+                        <td>
+                            <form asp-action="ReturnMovie" asp-controller="Movie" method="post">
+                                <input type="hidden" name="rentalId" value="@rental.Id" />
+                                <input type="hidden" name="userId" value="@userId" />
+                                <button type="submit" class="btn btn-success">Return</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    }
+    <a asp-action="Index" asp-controller="Movie" asp-route-userId="@userId" class="btn btn-outline-secondary w-50">
+        ← Back to List
+    </a>
+</div>
+Register.cshtml
+•	Form registration of new user
+•	Displays error if not found
+@model RegisterDto
+@{
+    ViewData["Title"] = "Register new User";
+}
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+<h2>User Registration</h2>
+
+<form asp-action="Register" method="post">
+    <div class="form-group">
+        <label asp-for="FullName"></label>
+        <input asp-for="FullName" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Age"></label>
+        <input asp-for="Age" type="number" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="CardNumber"></label>
+        <input asp-for="CardNumber" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Register</button>
+    <a asp-action="Index" class="btn btn-secondary" > Cancel </ a >
+</ form >
+
+@model MovieDetailsDto
+@{
+    var userIdObj = ViewBag.UserId ?? Context.Request.Query["userId"];
+    var userIdStr = userIdObj != null ? userIdObj.ToString() : "";
+    int userId = 0;
+    int.TryParse(userIdStr, out userId);
+    bool isLoggedIn = userId > 0;
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="row g-0">
+                    <div class="col-md-5">
+                        <img src="@Model.ImagePath" alt="@Model.Title" class="img-fluid h-100 w-100 rounded-start" style="object-fit: cover;" />
+                    </div>
+                    <div class="col-md-7">
+                        <div class="card-body p-4 d-flex flex-column h-100">
+                            <h2 class="card-title mb-3">@Model.Title</h2>
+                            <ul class="list-unstyled mb-4">
+                                <li><strong>Genre:</strong> @Model.Genre</li>
+                                <li><strong>Length:</strong> @Model.Length.Hours @("hr") @Model.Length.Minutes @("min")</li>
+                                <li><strong>Age Restriction:</strong> @Model.AgeRestriction+</li>
+                                <li><strong>Release Date:</strong> @Model.ReleaseDate</li>
+                                <li><strong>Quantity Available:</strong> @Model.Quantity</li>
+                                <li><strong>Language:</strong> @Model.Language</li>
+                            </ul>
+
+                            <div class="mt-auto d-flex gap-2">
+                                <a asp-action="Index" asp-controller="Movie" asp-route-userId="@userId" class="btn btn-outline-secondary w-50">
+                                    ← Back to List
+                                </a>
+                                @if (!isLoggedIn || Model.Quantity <= 0)
+                                {
+                                    <button class="btn btn-secondary w-50" disabled>Rent This Movie</button>
+                                }
+                                else
+                                {
+                                    <form asp-action="Rent" asp-controller="Movie" method="post" class="w-50">
+                                        <input type="hidden" name="movieId" value="@Model.Id" />
+                                        <input type="hidden" name="userId" value="@userId" />
+                                        <button type="submit" class="btn btn-primary w-100">Rent This Movie</button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@{
+    ViewData["Title"] = "Check Card Number";
+}
+
+<h2>Check Card Number</h2>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+<form asp-action="CheckCard" method="post">
+    <div class="form-group">
+        <label for="cardNumber">Card Number</label>
+        <input name="cardNumber" class="form-control" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Continue</button>
+</form>
+** Shared _Layout.cshtml
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - VideoMovieRentapp</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/VideoMovieRentapp.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">VideoMovieRentapp</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Movie" asp-action="Login">User Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Login">Admin Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Movie" asp-action="CheckCard">Register new User</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2025 - VideoMovieRentapp - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+** Program.cs
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddControllersWithViews();
+
+
+
+builder.Services.Configure<FormOptions>(options => {
+    options.MultipartBodyLengthLimit = 104857600; // 100 MB
+});
+
+builder.Services.AddDbContext<VideoMovieRentDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnString")));
+
+builder.Services.AddScoped<IRepository<Movie>, MovieRepository>();
+builder.Services.AddScoped<IMovieService, MovieService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRentalRepository, RentalRepository>();
+builder.Services.AddScoped<IRentalService, RentalService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IAdminRepository, AdminRepository>();
+builder.Services.AddHttpContextAccessor(); // needed for session inside service
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // optional: session lifetime
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+builder.Services.AddSession();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseAuthorization();
+
+app.UseSession(); 
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Movie}/{action=Index}/{id?}");
+
+app.Run();
+
 🎯 Functionality Flow
 •	🔐 Login Flow
 Login View → MovieController.Login() → UserService.GetUserByCardNumber()
