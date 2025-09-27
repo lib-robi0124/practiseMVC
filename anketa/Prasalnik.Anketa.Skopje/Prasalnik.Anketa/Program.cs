@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Prasalnik.DataAccess.DataContext;
 using Prasalnik.DataAccess.Implementations;
 using Prasalnik.DataAccess.Interaces;
-using Prasalnik.Services.AutoMapperProfiles;
+using Prasalnik.Mappers.AutoMapperProfiles;
 using Prasalnik.Services.Implementations;
 using Prasalnik.Services.Interfaces;
 
@@ -16,7 +16,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(conn
 builder.Services.AddControllersWithViews();
 
 // ... add others
-builder.Services.AddAutoMapper(typeof(UserMappingProfile).Assembly);
+IServiceCollection serviceCollection = builder.Services.AddAutoMapper(typeof(UserMappingProfile).Assembly);
 builder.Services.AddSession();
 
 // Repositories

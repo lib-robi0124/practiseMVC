@@ -15,18 +15,15 @@ namespace Prasalnik.Mappers.AutoMapperProfiles
                 .ForMember(d => d.Role, opt => opt.MapFrom(s => s.Role.ToString()));
 
             // ViewModel -> Domain
-            
-            CreateMap<UserViewModel, User>()
+              CreateMap<UserViewModel, User>()
                 .ForMember(d => d.Role, opt => opt.MapFrom<RoleResolver>());
 
-            // RegisterUserViewModel <-> User
+            // RegisterUserViewModel -> User
             CreateMap<RegisterUserViewModel, User>()
-                        .ForMember(d => d.Role, opt => opt.MapFrom(s =>
-                                   string.IsNullOrWhiteSpace(s.Role)
-                                   ? RoleEnum.Employee
-                                   : (Enum.TryParse<RoleEnum>(s.Role.Trim(), true, out var parsed)
-                && Enum.IsDefined(typeof(RoleEnum), parsed)) ? parsed : RoleEnum.Employee
-    ));
+                .ForMember(d => d.Role, opt => opt.MapFrom((src, dest, destMember, context) =>
+                    Enum.TryParse<RoleEnum>(src.Role, out var role) ? role : RoleEnum.Employee));
+
+            // User -> RegisterUserViewModel
             CreateMap<User, RegisterUserViewModel>()
                 .ForMember(d => d.Role, opt => opt.MapFrom(s => s.Role.ToString()));
 

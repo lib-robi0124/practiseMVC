@@ -9,10 +9,16 @@
 <form asp-action="SubmitAnswers" method="post">
     <input type="hidden" name="QuestionnaireId" value="@Model.Id" />
 
-    <div class="form-group">
-        <label>@Model.QuestionItems.QuestionText</label>
-        <input type="text" name="Answers[@Model.QuestionItems.Id]" class="form-control" />
-    </div>
+    @foreach (var question in Model.QuestionItems)
+    {
+        <div class="form-group">
+            <label>@question.QuestionText</label>
+
+            <!-- Use question.Id as key in Answers[] -->
+            <input type="text" name="Answers[@question.Id]" class="form-control" />
+        </div>
+    }
 
     <button type="submit" class="btn btn-success">Submit</button>
 </form>
+
