@@ -29,9 +29,17 @@ namespace Prasalnik.Services.Implementations
             return _mapper.Map<UserViewModel>(user);
         }
 
-        public UserViewModel Login(UserCredentialsViewModel creds)
+        public UserViewModel Login(UserCredentialsViewModel credentials)
         {
-            var user = _userRepository.LoginUser(creds.CompanyId, creds.FullName);
+            // Repository works with Domain Models
+            var user = _userRepository.LoginUser(credentials.CompanyId, credentials.FullName);
+
+            if (user == null)
+            {
+                return null; // not found, invalid login
+            }
+
+            // AutoMapper converts Domain → ViewModel
             return _mapper.Map<UserViewModel>(user);
         }
 
@@ -48,5 +56,10 @@ namespace Prasalnik.Services.Implementations
         }
 
         public void DeleteUser(int id) => _userRepository.Delete(id);
+
+        public UserViewModel Login(int companyId, UserCredentialsViewModel creds)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

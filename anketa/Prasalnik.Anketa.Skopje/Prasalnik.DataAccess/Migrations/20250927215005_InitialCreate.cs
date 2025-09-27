@@ -7,25 +7,11 @@
 namespace Prasalnik.DataAccess.Migrations
 {
     /// <inheritdoc />
-    public partial class initone : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "Questionnaires",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Questionnaires", x => x.Id);
-                });
-
             migrationBuilder.CreateTable(
                 name: "Statuses",
                 columns: table => new
@@ -56,14 +42,40 @@ namespace Prasalnik.DataAccess.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Questionnaires",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    CreatedByUserId = table.Column<int>(type: "int", nullable: false),
+                    StatusId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Questionnaires", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Questionnaire_Status",
+                        column: x => x.StatusId,
+                        principalTable: "Statuses",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Questionnaire_User",
+                        column: x => x.CreatedByUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "QuestionItems",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    QuestionnaireId = table.Column<int>(type: "int", nullable: false),
                     QuestionText = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Type = table.Column<int>(type: "int", nullable: false),
-                    QuestionnaireId = table.Column<int>(type: "int", nullable: false)
+                    UserId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -72,8 +84,12 @@ namespace Prasalnik.DataAccess.Migrations
                         name: "FK_QuestionItem_Questionnaire",
                         column: x => x.QuestionnaireId,
                         principalTable: "Questionnaires",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_QuestionItems_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -110,15 +126,6 @@ namespace Prasalnik.DataAccess.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "Questionnaires",
-                columns: new[] { "Id", "Status", "Title" },
-                values: new object[,]
-                {
-                    { 1, "Answered", "Customer Satisfaction Survey" },
-                    { 2, "Skipped", "Employee Feedback Form" }
-                });
-
-            migrationBuilder.InsertData(
                 table: "Statuses",
                 columns: new[] { "Id", "Name" },
                 values: new object[,]
@@ -132,20 +139,29 @@ namespace Prasalnik.DataAccess.Migrations
                 columns: new[] { "Id", "CompanyId", "FullName", "OU", "Role" },
                 values: new object[,]
                 {
-                    { 1, 12345, "Alice Johnson", "HR", 1 },
-                    { 2, 12345, "Bob Smith", "IT", 2 },
-                    { 3, 12345, "Charlie Brown", "Finance", 3 }
+                    { 1, 12345, "Sara Sara", "HR", 1 },
+                    { 2, 24680, "Robi Robi", "IT", 2 },
+                    { 3, 13579, "Ada Ada", "Finance", 3 }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Questionnaires",
+                columns: new[] { "Id", "CreatedByUserId", "StatusId", "Title" },
+                values: new object[,]
+                {
+                    { 1, 1, 1, "Customer Satisfaction Survey" },
+                    { 2, 2, 2, "Employee Feedback Form" }
                 });
 
             migrationBuilder.InsertData(
                 table: "QuestionItems",
-                columns: new[] { "Id", "QuestionText", "QuestionnaireId", "Type" },
+                columns: new[] { "Id", "QuestionText", "QuestionnaireId", "Type", "UserId" },
                 values: new object[,]
                 {
-                    { 1, "How satisfied are you with our service?", 1, 3 },
-                    { 2, "Would you recommend us to others?", 1, 2 },
-                    { 3, "What can we improve?", 2, 1 },
-                    { 4, "How do you rate the work environment?", 2, 3 }
+                    { 1, "How satisfied are you with our service?", 1, 3, null },
+                    { 2, "Would you recommend us to others?", 1, 2, null },
+                    { 3, "What can we improve?", 2, 1, null },
+                    { 4, "How do you rate the work environment?", 2, 3, null }
                 });
 
             migrationBuilder.CreateIndex(
@@ -167,6 +183,27 @@ namespace Prasalnik.DataAccess.Migrations
                 name: "IX_QuestionItems_QuestionnaireId",
                 table: "QuestionItems",
                 column: "QuestionnaireId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_QuestionItems_UserId",
+                table: "QuestionItems",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Questionnaires_CreatedByUserId",
+                table: "Questionnaires",
+                column: "CreatedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Questionnaires_StatusId",
+                table: "Questionnaires",
+                column: "StatusId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_CompanyId",
+                table: "Users",
+                column: "CompanyId",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -176,16 +213,16 @@ namespace Prasalnik.DataAccess.Migrations
                 name: "Answers");
 
             migrationBuilder.DropTable(
-                name: "Statuses");
-
-            migrationBuilder.DropTable(
                 name: "QuestionItems");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Questionnaires");
 
             migrationBuilder.DropTable(
-                name: "Questionnaires");
+                name: "Statuses");
+
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }

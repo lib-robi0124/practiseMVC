@@ -19,9 +19,9 @@ namespace Prasalnik.DataAccess.ModelsConfig
             builder.HasIndex(x => x.CompanyId).IsUnique(); // Assuming CompanyId is unique for each user
 
             builder.HasData(
-                 new User { Id = 1, CompanyId = 12345, FullName = "Alice Johnson", OU = "HR", Role = (RoleEnum)1 },
-                new User { Id = 2, CompanyId = 12345, FullName = "Bob Smith", OU = "IT", Role = (RoleEnum)2 },
-                new User { Id = 3, CompanyId = 12345, FullName = "Charlie Brown", OU = "Finance", Role = (RoleEnum)3 });
-        }
+            new User { Id = 1, CompanyId = 12345, FullName = "Sara Sara", OU = "HR", Role = RoleEnum.Admin },
+            new User { Id = 2, CompanyId = 24680, FullName = "Robi Robi", OU = "IT", Role = RoleEnum.Manager },
+            new User { Id = 3, CompanyId = 13579, FullName = "Ada Ada", OU = "Finance", Role = RoleEnum.Employee }
+);        }
     }
 }

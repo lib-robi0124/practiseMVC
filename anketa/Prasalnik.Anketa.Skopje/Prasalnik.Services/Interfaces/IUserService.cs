@@ -6,9 +6,10 @@ namespace Prasalnik.Services.Interfaces
     {
         IEnumerable<UserViewModel> GetAllUsers();
         UserViewModel GetUserById(int id);
-        UserViewModel Login(UserCredentialsViewModel creds);
+        UserViewModel Login(int companyId, UserCredentialsViewModel creds);
         void CreateUser(RegisterUserViewModel registerVm);
         void UpdateUser(UserViewModel userVm);
         void DeleteUser(int id);
+        UserViewModel Login(UserCredentialsViewModel credentials);
     }
 }

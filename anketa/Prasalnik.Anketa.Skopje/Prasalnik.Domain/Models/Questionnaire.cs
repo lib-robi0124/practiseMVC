@@ -5,7 +5,11 @@
         public string Title { get; set; }
         public int CreatedByUserId { get; set; }
         public ICollection<QuestionItem> QuestionItems { get; set; }
-        public string Status { get; set; } // Answered, Skipped
+
+        // Use FK to Status table
+        public int StatusId { get; set; }
+        public Status Status { get; set; }  // navigation property
+
         public Questionnaire()
         {
             QuestionItems = new HashSet<QuestionItem>();

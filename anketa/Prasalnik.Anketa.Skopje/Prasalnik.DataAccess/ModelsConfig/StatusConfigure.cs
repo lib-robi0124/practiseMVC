@@ -13,9 +13,8 @@ namespace Prasalnik.DataAccess.ModelsConfig
             builder.Property(x => x.Name).IsRequired().HasMaxLength(50);
             // Seed initial data
             builder.HasData(
-                new Status { Id = 1, Name = "Answered" },
-                new Status { Id = 2, Name = "Skipped" }
-            );
+                    new Status { Id = 1, Name = "Answered" },
+                    new Status { Id = 2, Name = "Skipped" });
         }
     }
-    }
+}

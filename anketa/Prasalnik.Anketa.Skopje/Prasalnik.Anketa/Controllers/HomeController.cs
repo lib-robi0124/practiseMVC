@@ -15,7 +15,8 @@ namespace Prasalnik.Anketa.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            // Redirect to login page
+            return RedirectToAction("Login", "User");
         }
 
         public IActionResult Privacy()

@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
 using Prasalnik.Domain.Models;
-using AutoMapper;
-using Prasalnik.Domain.Models;
 using Prasalnik.ViewModels.Models;
 
 namespace Prasalnik.Mappers.AutoMapperProfiles

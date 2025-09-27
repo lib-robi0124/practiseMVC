@@ -1,25 +1,21 @@
-﻿@model IEnumerable<Prasalnik.ViewModels.Models.QuestionnaireViewModel>
+﻿@model Prasalnik.ViewModels.Models.QuestionnaireViewModel
 
 @{
-    ViewData["Title"] = "Questionnaires";
+    ViewData["Title"] = "Questionnaire";
 }
 
-<h2>Available Questionnaires</h2>
+<h2>@Model.Title</h2>
 
-@if (!Model.Any())
-{
-    <p>No questionnaires available.</p>
-}
-else
-{
-    <ul>
-        @foreach (var q in Model)
-        {
-            <li>
-                <a asp-controller="Questionnaire" asp-action="Details" asp-route-id="@q.Id">
-                    @q.Title - Status: @q.Status
-                </a>
-            </li>
-        }
-    </ul>
-}
+<form asp-action="SubmitAnswers" method="post">
+    <input type="hidden" name="QuestionnaireId" value="@Model.Id" />
+
+    @for (int i = 0; i < Model.QuestionItems.Count; i++)
+    {
+        <div class="form-group">
+            <label>@Model.QuestionItems[i].QuestionText</label>
+            <input type="text" name="Answers[@Model.QuestionItems[i].Id]" class="form-control" />
+        </div>
+    }
+
+    <button type="submit" class="btn btn-success">Submit</button>
+</form>

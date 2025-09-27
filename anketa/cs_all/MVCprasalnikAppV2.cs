@@ -231,7 +231,9 @@ namespace Prasalnik.DataAccess.DataContext
         }
     }
 }
-
+** Repository Pattern = abstraction over EF queries.
+** Keeps controllers/services free of LINQ clutter.
+** Specialized repos (UserRepository, AnswerRepository) add custom queries.
 namespace Prasalnik.DataAccess.Interaces
 {
     public interface IRepository<T> where T : BaseEntity
@@ -552,6 +554,9 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+** ViewModels are shaped for UI (forms, pages).
+** Unlike Domain Models, they don’t need all DB fields.
+** Example: UserCredentialsViewModel is only for login form.
 namespace Prasalnik.ViewModels.Models
 {
     public class UserViewModel
@@ -610,6 +615,9 @@ namespace Prasalnik.ViewModels.Models
         public string Response { get; set; }
     }
 }
+** AutoMapper converts between Domain Models ↔ DTOs/ViewModels.
+** Keeps controllers clean (no manual mapping).
+** Example: DB User.Role = RoleEnum.Manager → VM "Manager".
 namespace Prasalnik.Mappers.AutoMapperProfiles
 {
     public class UserMappingProfile : Profile
@@ -696,6 +704,11 @@ namespace Prasalnik.Mappers.AutoMapperProfiles
         }
     }
 }
+** Services = business logic layer.
+** They consume repositories and add validation, rules, or transactions.
+** Good that you don’t call repositories directly from controllers.
+**⚠️ Note: You currently return Domain Models from services.
+**👉 Better practice: return DTOs/ViewModels so controllers don’t leak DB entities.
 namespace Prasalnik.Services.Interfaces
 {
     public interface IUserService
@@ -868,6 +881,9 @@ namespace Prasalnik.Mapers
         }
     }
 }
+** Controllers = entry point from HTTP → Service Layer.
+** They accept ViewModels, call Services, then return Views.
+** Good: You use Session to keep logged user.
 namespace Prasalnik.Controllers
 {
     public class UserController : Controller
@@ -912,6 +928,9 @@ namespace Prasalnik.Controllers
         }
     }
 }
+** Simple Razor form bound to UserCredentialsViewModel.
+** Posts back to UserController.Login().
+** After login → redirect to Questionnaire page.
 ** Views\User\Login.cshtml
 @model Prasalnik.ViewModels.Models.UserCredentialsViewModel
 
