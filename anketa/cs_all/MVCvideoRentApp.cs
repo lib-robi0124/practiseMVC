@@ -43,26 +43,6 @@ Defines and implements data access contracts:
 •	Razor Views for:
 o	Movie - Login, Index (Movie list), Details, Return, CheckCard, Register
 o	Admin - Login, Index (Movie list), Edit, Create, Delete
-
-🔁 Dependency Injection (in Program.cs)
-// Configure maximum file size for form uploads (image upload readiness)
-builder.Services.Configure<FormOptions>(options => {
-    options.MultipartBodyLengthLimit = 104857600; // 100 MB});
-// Inject EF Core with SQL Server
-builder.Services.AddDbContext<VideoMovieRentDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnString")));
-// Repositories
-builder.Services.AddScoped<IRepository<Movie>, MovieRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IRentalRepository, RentalRepository>();
-builder.Services.AddScoped<IAdminRepository, AdminRepository>();
-// Services
-builder.Services.AddScoped<IMovieService, MovieService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IRentalService, RentalService>();
-builder.Services.AddScoped<IAdminService, AdminService>();
-// Enable Session for login simulation
-builder.Services.AddSession();
 📁 Domain Models
 BaseEntity.cs
 public abstract class BaseEntity
@@ -108,7 +88,6 @@ namespace VideoMovieRent.Domain
         public int UserId { get; set; }
         public DateTime RentedOn { get; set; }
         public DateTime? ReturnedOn { get; set; } = null;
-
     }
 }
 namespace VideoMovieRent.Domain
@@ -118,7 +97,6 @@ namespace VideoMovieRent.Domain
         public int MovieId { get; set; }
         public string Name { get; set; } = null!;
         public Part Part { get; set; }
-
     }
 }
 # Enum
@@ -147,7 +125,6 @@ namespace VideoMovieRent.Domain.Enums
         Japanese = 5,
         Korean = 6,
         Mandarin = 7
-
     }
 }
 namespace VideoMovieRent.Domain.Enums
@@ -167,10 +144,6 @@ namespace VideoMovieRent.Domain.Enums
         Yearly = 2
     }
 }
-using Microsoft.EntityFrameworkCore;
-using VideoMovieRent.Domain;
-using VideoMovieRent.Domain.Enums;
-
 namespace VideoMovieRent.DataAccess
 {
     public class VideoMovieRentDbContext : DbContext
@@ -244,7 +217,6 @@ namespace VideoMovieRent.DataAccess
 
     }
 }
-
 📂 Repositories
 IRepository<T>
 Generic CRUD contract:
@@ -280,6 +252,41 @@ namespace VideoMovieRent.DataAccess.Interfaces
         IEnumerable<Rental> GetRentalsByUserId(int userId);
         public bool MarkAsReturned(int rentalId, int userId);
         bool Rent(int movieId, int userId);
+    }
+}
+** DbContext inject to Repository
+** AdminRepository.cs
+namespace VideoMovieRent.DataAccess.Implementation
+{
+    public class AdminRepository : IAdminRepository
+    {
+        private readonly VideoMovieRentDbContext _db;
+** Domain model in Repositories
+        public AdminRepository(VideoMovieRentDbContext db)
+        {
+            _db = db;
+        }
+        public Admin? Login(string username, string password)
+        {
+            return _db.Admins.FirstOrDefault(a =>
+                a.Username == username && a.Password == password);
+        }
+        public void Create(Movie entity)
+        {
+            _db.Movies.Add(entity);
+            _db.SaveChanges();
+        }
+
+        public void Update(Movie entity)
+        {
+            throw new NotImplementedException();
+        }
+        public void Delete(int id)
+        {
+            var movie = _db.Movies.FirstOrDefault(x => x.Id == id);
+            _db.Movies.Remove(movie);
+            _db.SaveChanges();
+        }
     }
 }
 UserRepository.cs
@@ -415,39 +422,7 @@ namespace VideoMovieRent.DataAccess.Implementation
       
     }
 }
-namespace VideoMovieRent.DataAccess.Implementation
-{
-    public class AdminRepository : IAdminRepository
-    {
-        private readonly VideoMovieRentDbContext _db;
-
-        public AdminRepository(VideoMovieRentDbContext db)
-        {
-            _db = db;
-        }
-        public Admin? Login(string username, string password)
-        {
-            return _db.Admins.FirstOrDefault(a =>
-                a.Username == username && a.Password == password);
-        }
-        public void Create(Movie entity)
-        {
-            _db.Movies.Add(entity);
-            _db.SaveChanges();
-        }
-
-        public void Update(Movie entity)
-        {
-            throw new NotImplementedException();
-        }
-        public void Delete(int id)
-        {
-            var movie = _db.Movies.FirstOrDefault(x => x.Id == id);
-            _db.Movies.Remove(movie);
-            _db.SaveChanges();
-        }
-    }
-}
+** DbContext in Repository and Repositories in Services
 🔧 Services
 MovieService.cs
 •	Uses repository to return movie list and details
@@ -460,7 +435,6 @@ namespace VideoMovieRent.Services.Interfaces
         MovieDetailsDto GetMovieDetails(int id);
         Movie GetById(int id);
         IEnumerable<MovieDto> SearchMovies(string? title, Genre? genre, Language? language);
-
     }
 }
 namespace VideoMovieRent.Services.Services
@@ -472,7 +446,7 @@ namespace VideoMovieRent.Services.Services
         {
             _movieRepository = movieRepository;
         }
-
+** Converts domain model to DTOs for views
         public IEnumerable<MovieDto> GetAllMovies()
         {
             var movieDto = new List<MovieDto>();
@@ -493,7 +467,6 @@ namespace VideoMovieRent.Services.Services
                 return movieDto;
             }
             return movieDto;
-           
         }
 
         // Replace the GetById method with the correct return type and logic
@@ -502,7 +475,6 @@ namespace VideoMovieRent.Services.Services
             return _movieRepository.GetById(id);
           
         }
-
         public MovieDetailsDto GetMovieDetails(int id)
         {
             var movie = _movieRepository.GetById(id);
@@ -527,8 +499,6 @@ namespace VideoMovieRent.Services.Services
                 throw new KeyNotFoundException($"Movie with ID {id} not found.");
             }
         }
-
-        
         public IEnumerable<MovieDto> SearchMovies(string? title, Genre? genre, Language? language)
         {
             var query = _movieRepository.GetAll().AsQueryable();
@@ -612,7 +582,6 @@ namespace VideoMovieRent.Services.Services
         {
             _adminRepository = adminRepository;
         }
-
         public void CreateMovie(MovieDetailsDto dto)
         {
             var movie = new Movie
@@ -625,12 +594,10 @@ namespace VideoMovieRent.Services.Services
             };
             _adminRepository.Create(movie);
         }
-
         public void DeleteMovie(int id)
         {
             _adminRepository.Delete(id);
         }
-
         public Admin? Login(string username, string password)
         {
             return _adminRepository.Login(username, password);
@@ -658,6 +625,7 @@ namespace VideoMovieRent.Services.Interfaces
     {
         User GetUserByCardNumber(string cardNumber);
         void CreateUser(User user);
+        void Login(string cardNumber);
     }
 }
 namespace VideoMovieRent.Services.Services
@@ -1686,36 +1654,24 @@ Register.cshtml
 </body>
 </html>
 ** Program.cs
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-
-
-
+🔁 Dependency Injection (in Program.cs)
+// Configure maximum file size for form uploads (image upload readiness)
 builder.Services.Configure<FormOptions>(options => {
-    options.MultipartBodyLengthLimit = 104857600; // 100 MB
-});
-
+    options.MultipartBodyLengthLimit = 104857600; // 100 MB});
+// Inject EF Core with SQL Server
 builder.Services.AddDbContext<VideoMovieRentDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnString")));
-
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnString")));
+// Repositories
 builder.Services.AddScoped<IRepository<Movie>, MovieRepository>();
-builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRentalRepository, RentalRepository>();
-builder.Services.AddScoped<IRentalService, RentalService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IAdminRepository, AdminRepository>();
-builder.Services.AddHttpContextAccessor(); // needed for session inside service
-
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(30); // optional: session lifetime
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-});
+// Services
+builder.Services.AddScoped<IMovieService, MovieService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IRentalService, RentalService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+// Enable Session for login simulation
 builder.Services.AddSession();
 
 var app = builder.Build();
@@ -1742,6 +1698,7 @@ app.MapControllerRoute(
     pattern: "{controller=Movie}/{action=Index}/{id?}");
 
 app.Run();
+
 
 🎯 Functionality Flow
 •	🔐 Login Flow
