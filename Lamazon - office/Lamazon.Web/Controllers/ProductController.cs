@@ -47,7 +47,7 @@ namespace Lamazon.Web.Controllers
             }
             Response.Cookies.Append(
                 key: Cookies.ShoppingCart, 
-                value: JsonConvert.SerializeObject(shoppingCart)
+                value: JsonConvert.SerializeObject(shoppingCart),
                 options: new CookieOptions { Expires = DateTimeOffset.Now.AddDays(2) }
                 );
             return shoppingCart.ShoppingCartItems.Count;

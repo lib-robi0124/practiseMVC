@@ -37,9 +37,9 @@ namespace Lamazon.Web.Controllers
                         ProductPrice = product.DiscountedPrice,
                         ProductDescription = product.Description,
                         ProductImage = product.ImageUrl,
-                        DiscountedPercentage = product.DiscountPercentage,
+                        DiscountPercentage = product.DiscountPercentage,
                  };
-                orderLineItem.TotalPrice = orderLineItem.Quantity * orderLineItem.ProductPrice * (1 - orderLineItem.DiscountedPercentage / 100);
+                orderLineItem.TotalPrice = orderLineItem.Quantity * orderLineItem.ProductPrice * (1 - orderLineItem.DiscountPercentage / 100);
                 orderLineItems.Add(orderLineItem);
             }
             return View(orderLineItems);

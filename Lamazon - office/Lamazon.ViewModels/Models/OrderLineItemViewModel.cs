@@ -10,7 +10,7 @@
         public string ProductImage { get; set; }
         public decimal ProductPrice { get; set; }
         public int Quantity { get; set; }
-        public int DiscountedPercentage { get; set; }
+        public int DiscountPercentage { get; set; }
         public decimal TotalPrice { get; set; }
     }
 }
