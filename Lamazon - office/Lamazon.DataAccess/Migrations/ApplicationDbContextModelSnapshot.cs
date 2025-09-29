@@ -122,6 +122,23 @@ namespace Lamazon.DataAccess.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("InvoiceStatuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "PendingPayment"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Paid"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Cancelled"
+                        });
                 });
 
             modelBuilder.Entity("Lamazon.Domain.Entities.Order", b =>
@@ -225,6 +242,23 @@ namespace Lamazon.DataAccess.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("OrderStatuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Pending"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Accepting"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Rejected"
+                        });
                 });
 
             modelBuilder.Entity("Lamazon.Domain.Entities.Product", b =>

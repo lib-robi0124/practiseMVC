@@ -24,7 +24,9 @@ namespace Lamazon.DataAccess.DataContext
                 .SeedProductCategory()
                 .SeedProducts()
                 .SeedRoles()
-                .SeedUsers();
+                .SeedUsers()
+                .SeedInvoiceStatuses()
+                .SeedOrderStatuses();
 
         }
         public DbSet<Invoice> Invoices { get; set; }

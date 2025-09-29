@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VideoMovieRent.DataAccess\VideoMovieRent.DataAccess.csproj" />
+    <ProjectReference Include="..\VideoMovieRent.Domain\VideoMovieRent.Domain.csproj" />
+    <ProjectReference Include="..\VideoMovieRent.Filters\VideoMovieRent.Filters.csproj" />
+  </ItemGroup>
+
+</Project>

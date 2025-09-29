@@ -13,5 +13,14 @@ namespace Lamazon.Web.Extensions
         {
             return principal.IsInRole(Roles.Admin);
         }
+        public static int GetUserId(this ClaimsPrincipal principal)
+        {
+            var primarySid = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.PrimaryGroupSid)?.Value ?? string.Empty;
+            if(string.IsNullOrEmpty(primarySid))
+            {
+                return 0;
+            }
+            return int.Parse(primarySid);
+        }
     }
 }

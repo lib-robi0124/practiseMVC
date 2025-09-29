@@ -1,0 +1,28 @@
+﻿@model List<OrderLineItemViewModel>
+
+    <h2>Shopping Cart</h2>
+
+    @using(Html.BeginForm("CreateOrder", "Orders", FormMethod.Post))
+    {
+    @Html.AntiForgeryToken()
+        <div class="row">
+            <div class="col-md-8">
+                @for(int i = 0; i < Model.Count; i++)
+                {
+                var orderLineItem = Model[i];
+                @Html.HiddenFor(m => Model[i].DiscountedPercentage);
+                @Html.HiddenFor(m => Model[i].ProductId);
+                @Html.HiddenFor(m => Model[i].ProductPrice);
+                @Html.HiddenFor(m => Model[i].ProductName);
+                @Html.HiddenFor(m => Model[i].Quantity);
+                @Html.HiddenFor(m => Model[i].TotalPrice);
+
+
+            }
+            </div>
+            <div class="w-100">
+                <p class="order-label">Total: </p>
+            </div>
+        </div>
+}
+))

@@ -1,0 +1,17 @@
+﻿@{
+    ViewData["Title"] = "Login";
+    var error = ViewBag.Error as string;
+}
+
+<h2>Login</h2>
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger">@error</div>
+}
+<form asp-action="Login" method="post">
+    <div class="mb-3">
+        <label for="cardNumber" class="form-label">Card Number</label>
+        <input type="text" class="form-control" id="cardNumber" name="cardNumber" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Login</button>
+</form>

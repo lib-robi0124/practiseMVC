@@ -1,0 +1,51 @@
+﻿@model IEnumerable<Rental>
+@{
+    var userIdObj = ViewBag.UserId ?? Context.Request.Query["userId"];
+    var userIdStr = userIdObj != null ? userIdObj.ToString() : "";
+    int userId = 0;
+    int.TryParse(userIdStr, out userId);
+}
+
+<div class="container py-5">
+    <h2 class="mb-4">Your Rented Movies</h2>
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">You have no active rentals.</div>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Rental Id</th>
+                    <th>Movie Id</th>
+                    <th>Title</th>
+                    <th>Rented On</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var rental in Model)
+                {
+                    <tr>
+                        <td>@rental.Id</td>
+                        <td>@rental.MovieId</td>
+                        <td>@rental.Title</td>
+                        <td>@rental.RentedOn</td>
+                        <td>
+                            <form asp-action="ReturnMovie" asp-controller="Movie" method="post">
+                                <input type="hidden" name="rentalId" value="@rental.Id" />
+                                <input type="hidden" name="userId" value="@userId" />
+                                <button type="submit" class="btn btn-success">Return</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    }
+    <a asp-action="Index" asp-controller="Movie" asp-route-userId="@userId" class="btn btn-outline-secondary w-50">
+        ← Back to List
+    </a>
+</div>

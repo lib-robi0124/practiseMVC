@@ -1,0 +1,18 @@
+﻿@{
+    ViewData["Title"] = "Check Card Number";
+}
+
+<h2>Check Card Number</h2>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+<form asp-action="CheckCard" method="post">
+    <div class="form-group">
+        <label for="cardNumber">Card Number</label>
+        <input name="cardNumber" class="form-control" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Continue</button>
+</form>

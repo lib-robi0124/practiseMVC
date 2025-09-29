@@ -1,0 +1,62 @@
+﻿@using VideoMovieRent.Domain.Enums
+@model MovieDetailsDto
+
+@{
+    ViewData["Title"] = "Create Movie";
+    var adminId = ViewBag.AdminId; // Fix: define adminId from ViewBag or ViewData
+}
+
+<h2>Create New Movie</h2>
+
+<form asp-action="Create" asp-route-adminId="@adminId" method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label class="form-label">Title</label>
+        <input type="text" class="form-control" name="Title" required />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Genre</label>
+        <select class="form-control" name="Genre">
+            @foreach (var genre in Enum.GetValues(typeof(VideoMovieRent.Domain.Enums.Genre)))
+            {
+                <option value="@genre">@genre</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Language</label>
+        <select class="form-control" name="Language">
+            @foreach (var lang in Enum.GetValues(typeof(VideoMovieRent.Domain.Enums.Language)))
+            {
+                <option value="@lang">@lang</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Release Date</label>
+        <input type="date" class="form-control" name="ReleaseDate" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Length (hh:mm)</label>
+        <input type="text" class="form-control" name="Length" placeholder="e.g. 02:30" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Age Restriction</label>
+        <input type="number" class="form-control" name="AgeRestriction" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Quantity</label>
+        <input type="number" class="form-control" name="Quantity" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Movie Image</label>
+        <input type="file" class="form-control" name="ImageFile" accept="image/*" />
+    </div>
+    <button type="submit" class="btn btn-success">Create</button>
+
+    <button type="submit" class="btn btn-success">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
