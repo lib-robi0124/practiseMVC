@@ -33,7 +33,9 @@ namespace Prasalnik.Domain.Models
         public string Title { get; set; }
         public int CreatedByUserId { get; set; }
         public ICollection<QuestionItem> QuestionItems { get; set; }
-        public string Status { get; set; } // Answered, Skipped
+         // Use FK to Status table
+        public int StatusId { get; set; }
+        public Status Status { get; set; }  // navigation property
         public Questionnaire()
         {
             QuestionItems = new HashSet<QuestionItem>();
@@ -565,6 +567,8 @@ namespace Prasalnik.ViewModels.Models
         public string FullName { get; set; }
         public string OU { get; set; }
         public string Role { get; set; } = string.Empty;
+        public object Id { get; set; }
+
     }
 }
 namespace Prasalnik.ViewModels.Models
@@ -593,7 +597,7 @@ namespace Prasalnik.ViewModels.Models
         public int Id { get; set; }
         public string Title { get; set; }
         public string Status { get; set; }
-        public QuestionItemViewModel QuestionItems { get; set; }
+        public List<QuestionItemViewModel> QuestionItems { get; set; } = new();
     }
 }
 namespace Prasalnik.ViewModels.Models
@@ -602,9 +606,11 @@ namespace Prasalnik.ViewModels.Models
     {
         public int Id { get; set; }
         public string QuestionText { get; set; }
-        public int QuestionType { get; set; }
+        public QuestionTypeEnum Type { get; set; }
         public int QuestionnaireId { get; set; }
         public bool IsRequired { get; set; }
+        public string? UserResponse { get; set; } // To capture user's answer
+        public object QuestionType { get; set; }
     }
 }
 namespace Prasalnik.ViewModels.Models
@@ -613,6 +619,18 @@ namespace Prasalnik.ViewModels.Models
     {
         public int QuestionId { get; set; }
         public string Response { get; set; }
+        public List<QuestionItemViewModel> QuestionItems { get; set; } = new List<QuestionItemViewModel>();
+        public int UserId { get; set; }
+        public int QuestionnaireId { get; set; }
+        public int Id { get; set; }
+    }
+}
+namespace Prasalnik.ViewModels.Models
+{
+    public class StatusViewModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 }
 ** AutoMapper converts between Domain Models ↔ DTOs/ViewModels.
@@ -656,6 +674,8 @@ namespace Prasalnik.Mappers.AutoMapperProfiles
             // Domain -> ViewModel (including child items)
             CreateMap<Questionnaire, QuestionnaireViewModel>()
                 .ForMember(d => d.QuestionItems, opt => opt.MapFrom(s => s.QuestionItems));
+
+            CreateMap<QuestionItem, QuestionItemViewModel>();
 
             // ViewModel -> Domain
             CreateMap<QuestionnaireViewModel, Questionnaire>()
@@ -704,159 +724,6 @@ namespace Prasalnik.Mappers.AutoMapperProfiles
         }
     }
 }
-** Services = business logic layer.
-** They consume repositories and add validation, rules, or transactions.
-** Good that you don’t call repositories directly from controllers.
-**⚠️ Note: You currently return Domain Models from services.
-**👉 Better practice: return DTOs/ViewModels so controllers don’t leak DB entities.
-namespace Prasalnik.Services.Interfaces
-{
-    public interface IUserService
-    {
-        IEnumerable<User> GetAllUsers();
-        User GetUserById(int id);
-        User Login(int companyId, string fullName);
-        void CreateUser(User user);
-        void UpdateUser(User user);
-        void DeleteUser(int id);
-    }
-}
-namespace Prasalnik.Services.Interfaces
-{
-    public interface IStatusService
-    {
-        IEnumerable<Status> GetAllStatuses();
-        Status GetStatusById(int id);
-        Status GetByName(string name);
-        void CreateStatus(Status status);
-        void UpdateStatus(Status status);
-        void DeleteStatus(int id);
-    }
-}
-namespace Prasalnik.Services.Interfaces
-{
-    public interface IQuestionnaireService
-    {
-        IEnumerable<Questionnaire> GetAllQuestionnaires();
-        Questionnaire GetQuestionnaireById(int id);
-        Questionnaire GetByUserId(int userId);
-        void CreateQuestionnaire(Questionnaire questionnaire);
-        void UpdateQuestionnaire(Questionnaire questionnaire);
-        void DeleteQuestionnaire(int id);
-    }
-}
-namespace Prasalnik.Services.Interfaces
-{
-    public interface IQuestionItemService
-    {
-        IEnumerable<QuestionItem> GetAllItems();
-        QuestionItem GetItemById(int id);
-        QuestionItem GetByType(QuestionTypeEnum type);
-        void CreateItem(QuestionItem item);
-        void UpdateItem(QuestionItem item);
-        void DeleteItem(int id);
-    }
-}
-namespace Prasalnik.Services.Interfaces
-{
-    public interface IAnswerService
-    {
-        IEnumerable<Answer> GetAllAnswers();
-        Answer GetAnswerById(int id);
-        Answer GetByUserId(int userId);
-        void CreateAnswer(Answer answer);
-        void UpdateAnswer(Answer answer);
-        void DeleteAnswer(int id);
-    }
-}
-namespace Prasalnik.Services.Implementations
-{
-    public class UserService : IUserService
-    {
-        private readonly IUserRepository _userRepository;
-        public UserService(IUserRepository userRepository)
-        {
-            _userRepository = userRepository;
-        }
-
-        public IEnumerable<User> GetAllUsers() => _userRepository.GetAll();
-        public User GetUserById(int id) => _userRepository.GetById(id);
-        public User Login(int companyId, string fullName) => _userRepository.LoginUser(companyId, fullName);
-        public void CreateUser(User user) => _userRepository.Create(user);
-        public void UpdateUser(User user) => _userRepository.Update(user);
-        public void DeleteUser(int id) => _userRepository.Delete(id);
-    }
-}
-namespace Prasalnik.Services.Implementations
-{
-    public class QuestionnaireService : IQuestionnaireService
-    {
-        private readonly IQuestionnaireRepository _questionnaireRepository;
-        public QuestionnaireService(IQuestionnaireRepository questionnaireRepository)
-        {
-            _questionnaireRepository = questionnaireRepository;
-        }
-
-        public IEnumerable<Questionnaire> GetAllQuestionnaires() => _questionnaireRepository.GetAll();
-        public Questionnaire GetQuestionnaireById(int id) => _questionnaireRepository.GetById(id);
-        public Questionnaire GetByUserId(int userId) => _questionnaireRepository.GetbyUserId(userId);
-        public void CreateQuestionnaire(Questionnaire questionnaire) => _questionnaireRepository.Create(questionnaire);
-        public void UpdateQuestionnaire(Questionnaire questionnaire) => _questionnaireRepository.Update(questionnaire);
-        public void DeleteQuestionnaire(int id) => _questionnaireRepository.Delete(id);
-    }
-}
-namespace Prasalnik.Services.Implementations
-{
-    public class QuestionItemService : IQuestionItemService
-    {
-        private readonly IQuestionItemRepository _questionItemRepository;
-        public QuestionItemService(IQuestionItemRepository questionItemRepository)
-        {
-            _questionItemRepository = questionItemRepository;
-        }
-
-        public IEnumerable<QuestionItem> GetAllItems() => _questionItemRepository.GetAll();
-        public QuestionItem GetItemById(int id) => _questionItemRepository.GetById(id);
-        public QuestionItem GetByType(QuestionTypeEnum type) => _questionItemRepository.GetByType(type.GetType());
-        public void CreateItem(QuestionItem item) => _questionItemRepository.Create(item);
-        public void UpdateItem(QuestionItem item) => _questionItemRepository.Update(item);
-        public void DeleteItem(int id) => _questionItemRepository.Delete(id);
-    }
-}
-namespace Prasalnik.Services.Implementations
-{
-    public class AnswerService : IAnswerService
-    {
-        private readonly IAnswerRepository _answerRepository;
-        public AnswerService(IAnswerRepository answerRepository)
-        {
-            _answerRepository = answerRepository;
-        }
-        public IEnumerable<Answer> GetAllAnswers() => _answerRepository.GetAll();
-        public Answer GetAnswerById(int id) => _answerRepository.GetById(id);
-        public Answer GetByUserId(int userId) => _answerRepository.GetByUserId(userId);
-        public void CreateAnswer(Answer answer) => _answerRepository.Create(answer);
-        public void UpdateAnswer(Answer answer) => _answerRepository.Update(answer);
-        public void DeleteAnswer(int id) => _answerRepository.Delete(id);
-    }
-}
-namespace Prasalnik.Services.Implementations
-{
-    public class StatusService : IStatusService
-    {
-        private readonly IStatusRepository _statusRepository;
-        public StatusService(IStatusRepository statusRepository)
-        {
-            _statusRepository = statusRepository;
-        }
-        public IEnumerable<Status> GetAllStatuses() => _statusRepository.GetAll();
-        public Status GetStatusById(int id) => _statusRepository.GetById(id);
-        public Status GetByName(string name) => _statusRepository.GetByName(name);
-        public void CreateStatus(Status status) => _statusRepository.Create(status);
-        public void UpdateStatus(Status status) => _statusRepository.Update(status);
-        public void DeleteStatus(int id) => _statusRepository.Delete(id);
-    }
-}
 namespace Prasalnik.Mapers
 {
     public class RoleResolver : IValueResolver<UserViewModel, User, RoleEnum>
@@ -881,50 +748,478 @@ namespace Prasalnik.Mapers
         }
     }
 }
+** Services = business logic layer.
+** They consume repositories and add validation, rules, or transactions.
+** Good that you don’t call repositories directly from controllers.
+**⚠️ Note: You currently return Domain Models from services.
+**👉 Better practice: return DTOs/ViewModels so controllers don’t leak DB entities.
+namespace Prasalnik.Services.Interfaces
+{
+    public interface IUserService
+    {
+        IEnumerable<UserViewModel> GetAllUsers();
+        UserViewModel GetUserById(int id);
+        UserViewModel Login(int companyId, UserCredentialsViewModel creds);
+        void CreateUser(RegisterUserViewModel registerVm);
+        void UpdateUser(UserViewModel userVm);
+        void DeleteUser(int id);
+        UserViewModel Login(UserCredentialsViewModel credentials);
+    }
+}
+namespace Prasalnik.Services.Interfaces
+{
+    public interface IStatusService
+    {
+        IEnumerable<StatusViewModel> GetAll();
+        StatusViewModel GetById(int id);
+    }
+}
+namespace Prasalnik.Services.Interfaces
+{
+    public interface IQuestionnaireService
+    {
+        IEnumerable<QuestionnaireViewModel> GetAll();
+        QuestionnaireViewModel GetById(int id);
+        void Create(QuestionnaireViewModel questionnaire);
+        void Update(QuestionnaireViewModel questionnaire);
+        void Delete(int id);
+    }
+}
+namespace Prasalnik.Services.Interfaces
+{
+    public interface IQuestionItemService
+    {
+        IEnumerable<QuestionItemViewModel> GetAll();
+        QuestionItemViewModel GetById(int id);
+        IEnumerable<QuestionItemViewModel> GetByType(QuestionTypeEnum type);
+        void Create(QuestionItemViewModel questionItem);
+        void Update(QuestionItemViewModel questionItem);
+        void Delete(int id);
+    }
+}
+namespace Prasalnik.Services.Interfaces
+{
+    public interface IAnswerService
+    {
+        IEnumerable<AnswerViewModel> GetAll();
+        AnswerViewModel GetById(int id);
+        void Create(AnswerViewModel answer);
+        void Update(AnswerViewModel answer);
+        void Delete(int id);
+        void SubmitAnswer(Answer answer);
+        void SubmitAnswers(IEnumerable<Answer> answers);
+    }
+}
+namespace Prasalnik.Services.Implementations
+{
+    public class UserService : IUserService
+    {
+        private readonly IUserRepository _userRepository;
+        private readonly IMapper _mapper;
+
+        public UserService(IUserRepository userRepository, IMapper mapper)
+        {
+            _userRepository = userRepository;
+            _mapper = mapper;
+        }
+
+        public IEnumerable<UserViewModel> GetAllUsers()
+        {
+            var users = _userRepository.GetAll();
+            return _mapper.Map<IEnumerable<UserViewModel>>(users);
+        }
+
+        public UserViewModel GetUserById(int id)
+        {
+            var user = _userRepository.GetById(id);
+            return _mapper.Map<UserViewModel>(user);
+        }
+
+        public UserViewModel Login(UserCredentialsViewModel credentials)
+        {
+            // Repository works with Domain Models
+            var user = _userRepository.LoginUser(credentials.CompanyId, credentials.FullName);
+
+            if (user == null)
+            {
+                return null; // not found, invalid login
+            }
+
+            // AutoMapper converts Domain → ViewModel
+            return _mapper.Map<UserViewModel>(user);
+        }
+
+        public void CreateUser(RegisterUserViewModel registerVm)
+        {
+            var user = _mapper.Map<User>(registerVm);
+            _userRepository.Create(user);
+        }
+
+        public void UpdateUser(UserViewModel userVm)
+        {
+            var user = _mapper.Map<User>(userVm);
+            _userRepository.Update(user);
+        }
+
+        public void DeleteUser(int id) => _userRepository.Delete(id);
+
+        public UserViewModel Login(int companyId, UserCredentialsViewModel creds)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
+namespace Prasalnik.Services.Implementations
+{
+    public class QuestionnaireService : IQuestionnaireService
+    {
+        private readonly IQuestionnaireRepository _repo;
+        private readonly IMapper _mapper;
+
+        public QuestionnaireService(IQuestionnaireRepository repo, IMapper mapper)
+        {
+            _repo = repo;
+            _mapper = mapper;
+        }
+
+        public IEnumerable<QuestionnaireViewModel> GetAll()
+        {
+            var questionnaires = _repo.GetAll();
+            return _mapper.Map<IEnumerable<QuestionnaireViewModel>>(questionnaires);
+        }
+
+        public QuestionnaireViewModel GetById(int id)
+        {
+            var questionnaire = _repo.GetById(id);
+            return _mapper.Map<QuestionnaireViewModel>(questionnaire);
+        }
+
+        public void Create(QuestionnaireViewModel questionnaireVm)
+        {
+            var entity = _mapper.Map<Questionnaire>(questionnaireVm);
+            _repo.Create(entity);
+        }
+
+        public void Update(QuestionnaireViewModel questionnaireVm)
+        {
+            var entity = _mapper.Map<Questionnaire>(questionnaireVm);
+            _repo.Update(entity);
+        }
+
+        public void Delete(int id) => _repo.Delete(id);
+    }
+}
+namespace Prasalnik.Services.Implementations
+{
+    public class QuestionItemService : IQuestionItemService
+    {
+        private readonly IQuestionItemRepository _repo;
+        private readonly IMapper _mapper;
+
+        public QuestionItemService(IQuestionItemRepository repo, IMapper mapper)
+        {
+            _repo = repo;
+            _mapper = mapper;
+        }
+
+        public IEnumerable<QuestionItemViewModel> GetAll()
+        {
+            var items = _repo.GetAll();
+            return _mapper.Map<IEnumerable<QuestionItemViewModel>>(items);
+        }
+
+        public QuestionItemViewModel GetById(int id)
+        {
+            var item = _repo.GetById(id);
+            return _mapper.Map<QuestionItemViewModel>(item);
+        }
+
+        public IEnumerable<QuestionItemViewModel> GetByType(QuestionTypeEnum type)
+        {
+            QuestionItem items = _repo.GetByType(type);
+            return _mapper.Map<IEnumerable<QuestionItemViewModel>>(items);
+        }
+
+        public void Create(QuestionItemViewModel vm)
+        {
+            var entity = _mapper.Map<QuestionItem>(vm);
+            _repo.Create(entity);
+        }
+
+        public void Update(QuestionItemViewModel vm)
+        {
+            var entity = _mapper.Map<QuestionItem>(vm);
+            _repo.Update(entity);
+        }
+
+        public void Delete(int id) => _repo.Delete(id);
+    }
+}
+namespace Prasalnik.Services.Implementations
+{
+    public class AnswerService : IAnswerService
+    {
+        private readonly IAnswerRepository _repo;
+        private readonly IMapper _mapper;
+        private readonly AppDbContext _context;
+
+        public AnswerService(IAnswerRepository repo, IMapper mapper, AppDbContext context)
+        {
+            _repo = repo;
+            _mapper = mapper;
+            _context = context;
+        }
+
+        public IEnumerable<AnswerViewModel> GetAll()
+        {
+            var answers = _repo.GetAll();
+            return _mapper.Map<IEnumerable<AnswerViewModel>>(answers);
+        }
+
+        public AnswerViewModel GetById(int id)
+        {
+            var answer = _repo.GetById(id);
+            return _mapper.Map<AnswerViewModel>(answer);
+        }
+
+        public void Create(AnswerViewModel vm)
+        {
+            var entity = _mapper.Map<Answer>(vm);
+            _repo.Create(entity);
+        }
+
+        public void Update(AnswerViewModel vm)
+        {
+            var entity = _mapper.Map<Answer>(vm);
+            _repo.Update(entity);
+        }
+
+        public void Delete(int id) => _repo.Delete(id);
+
+        public void SubmitAnswer(Answer answer)
+        {
+            _context.Answers.Add(answer);
+            _context.SaveChanges();
+        }
+        public void SubmitAnswers(IEnumerable<Answer> answers)
+        {
+            foreach (var a in answers)
+            {
+                _repo.Create(a); // repository Create() saves each time; OK for small sets
+            }
+        }
+    }
+}
+namespace Prasalnik.Services.Implementations
+{
+    public class StatusService : IStatusService
+    {
+        private readonly IStatusRepository _repo;
+        private readonly IMapper _mapper;
+
+        public StatusService(IStatusRepository repo, IMapper mapper)
+        {
+            _repo = repo;
+            _mapper = mapper;
+        }
+
+        public IEnumerable<StatusViewModel> GetAll()
+        {
+            var statuses = _repo.GetAll();
+            return _mapper.Map<IEnumerable<StatusViewModel>>(statuses);
+        }
+
+        public StatusViewModel GetById(int id)
+        {
+            var status = _repo.GetById(id);
+            return _mapper.Map<StatusViewModel>(status);
+        }
+    }
+}
 ** Controllers = entry point from HTTP → Service Layer.
 ** They accept ViewModels, call Services, then return Views.
 ** Good: You use Session to keep logged user.
 namespace Prasalnik.Controllers
 {
-    public class UserController : Controller
+    namespace Prasalnik.Controllers
     {
-        private readonly IUserService _userService;
-
-        public UserController(IUserService userService)
+        public class UserController : Controller
         {
-            _userService = userService;
-        }
-
-        [HttpGet]
-        public IActionResult Login()
-        {
-            return View(new UserCredentialsViewModel());
-        }
-
-        [HttpPost]
-        public IActionResult Login(UserCredentialsViewModel credentials)
-        {
-            if (!ModelState.IsValid)
-                return View(credentials);
-
-            var user = _userService.Login(credentials);
-            if (user == null)
+            private readonly IUserService _userService;
+            public UserController(IUserService userService)
             {
-                ViewBag.Error = "Invalid credentials";
-                return View(credentials);
+                _userService = userService;
             }
 
-            // Store in session
-            HttpContext.Session.SetString("UserId", user.CompanyId.ToString());
-            HttpContext.Session.SetString("UserName", user.FullName);
+            [HttpGet]
+            public IActionResult Login()
+            {
+                return View(new UserCredentialsViewModel());
+            }
 
-            return RedirectToAction("Index", "Questionnaire");
+            [HttpPost]
+            public IActionResult Login(UserCredentialsViewModel model)
+            {
+                if (!ModelState.IsValid)
+                {
+                    return View(model);
+                }
+
+                try
+                {
+                    var user = _userService.Login(model); // now takes UserCredentialsViewModel
+                    if (user == null)
+                    {
+                        ModelState.AddModelError("", "Invalid login credentials");
+                        return View(model);
+                    }
+
+                    // Redirect to Questionnaire page after login
+                    return RedirectToAction("Index", "Questionnaire");
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", ex.Message);
+                    return View(model);
+                }
+            }
+
+            public IActionResult Logout()
+            {
+                HttpContext.Session.Clear();
+                return RedirectToAction("Login");
+            }
+        }
+    }
+    namespace Prasalnik.Anketa.Controllers
+    {
+        [Route("Questionnaire")]
+        public class QuestionnaireController : Controller
+        {
+            private readonly IQuestionnaireService _questionnaireService;
+            private readonly IAnswerService _answerService;
+            private readonly IMapper _mapper;
+
+            public QuestionnaireController(IQuestionnaireService questionnaireService, IMapper mapper, IAnswerService answerService)
+            {
+                _questionnaireService = questionnaireService;
+                _mapper = mapper;
+                _answerService = answerService;
+            }
+
+            [HttpGet("Index")] // explicitly mapped
+            public IActionResult Index()
+            {
+                var questionnaire = _questionnaireService.GetAll().FirstOrDefault();
+                if (questionnaire == null) return NotFound();
+
+                var vm = _mapper.Map<QuestionnaireViewModel>(questionnaire);
+                return View(vm);
+            }
+
+            [HttpGet("SubmitAnswers")]
+            public IActionResult SubmitAnswers(int id)
+            {
+                var questionnaire = _questionnaireService.GetById(id);
+                if (questionnaire == null) return NotFound();
+                var vm = _mapper.Map<QuestionnaireViewModel>(questionnaire);
+                return View(vm);
+            }
+
+            [HttpPost("SubmitAnswers")]
+            public IActionResult SubmitAnswers(AnswerViewModel model)
+            {
+                if (!ModelState.IsValid)
+                {
+                    return View(model);
+                }
+                // get logged-in user id from session or auth
+                var userIdStr = HttpContext.Session.GetString("UserId");
+                if (!int.TryParse(userIdStr, out var userId)) userId = 0; // handle anonymous as needed
+                                                                          // Assuming model.QuestionItems is a list of question items with user responses
+                var answers = model.QuestionItems.Select(q =>
+                {
+                    // Try to cast q to a type that has Id and UserResponse properties
+                    // If you have a specific type, replace 'dynamic' with that type for better safety
+                    dynamic item = q;
+                    return new Answer
+                    {
+                        UserId = userId, // <-- replace with logged in user
+                        QuestionnaireId = model.Id,
+                        QuestionId = item.Id,
+                        Response = item.UserResponse
+                    };
+                }).ToList();
+                _answerService.SubmitAnswers(answers);
+                // process answers
+                return RedirectToAction("ThankYou");
+            }
+
+            [HttpGet("ThankYou")]
+            public IActionResult ThankYou()
+            {
+                return View();
+            }
         }
 
-        public IActionResult Logout()
+    }
+namespace Prasalnik.Anketa.Controllers
+{
+    [Route("Admin/Questions")]
+    public class AdminController : Controller
+    {
+        private readonly AppDbContext _context;
+
+        public AdminController(AppDbContext context)
         {
-            HttpContext.Session.Clear();
-            return RedirectToAction("Login");
+            _context = context;
+        }
+
+        public IActionResult Index()
+        {
+            var questions = _context.QuestionItems.Include(q => q.Questionnaire).ToList();
+            return View(questions);
+        }
+
+        [HttpGet("Create")]
+        public IActionResult Create()
+        {
+            return View(new QuestionItem());
+        }
+
+        [HttpPost("Create")]
+        public IActionResult Create(QuestionItem model)
+        {
+            if (!ModelState.IsValid) return View(model);
+            _context.QuestionItems.Add(model);
+            _context.SaveChanges();
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet("Edit/{id}")]
+        public IActionResult Edit(int id)
+        {
+            var question = _context.QuestionItems.Find(id);
+            return question == null ? NotFound() : View(question);
+        }
+
+        [HttpPost("Edit/{id}")]
+        public IActionResult Edit(QuestionItem model)
+        {
+            if (!ModelState.IsValid) return View(model);
+            _context.QuestionItems.Update(model);
+            _context.SaveChanges();
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet("Delete/{id}")]
+        public IActionResult Delete(int id)
+        {
+            var q = _context.QuestionItems.Find(id);
+            if (q == null) return NotFound();
+            _context.QuestionItems.Remove(q);
+            _context.SaveChanges();
+            return RedirectToAction("Index");
         }
     }
 }
