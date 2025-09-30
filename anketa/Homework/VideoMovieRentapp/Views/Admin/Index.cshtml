@@ -1,0 +1,60 @@
+﻿@using VideoMovieRent.Services.Dtos;
+@model List<MovieDto>
+@{
+    // Ensure adminId is available in the view. 
+    // If it's passed via ViewData, ViewBag, or as part of the model, assign it here.
+    // Example using ViewBag:
+    var adminId = ViewBag.AdminId;
+}
+
+<div class="container py-5">
+    <h2 class="mb-4">Available Movies</h2>
+
+    <form asp-controller="Admin" asp-action="Logout" method="post" class="d-inline mb-5">
+        <button type="submit" class="btn btn-danger">Logout</button>
+    </form>
+   
+        <a asp-controller="Admin" asp-action="Create" asp-route-adminId="@adminId" class="btn btn-success mb-3">Create Movie</a>
+   
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        @foreach (var movie in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+                    <img src="@movie.ImagePath" class="card-img-top" alt="@movie.Title" style="height: 400px; object-fit: cover;" />
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@movie.Title</h5>
+                        <p class="card-text mb-1"><strong>Genre:</strong> @movie.Genre</p>
+                        <p class="card-text mb-3">
+                            <strong>Status:</strong>
+                            @if (movie.IsAvailable)
+                            {
+                                <span class="badge bg-success">Available</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Unavailable</span>
+                            }
+                        </p>
+                        <div class="mt-auto d-flex gap-2">
+                            <a asp-controller="Admin" asp-action="Details" asp-route-id="@movie.Id" asp-route-adminId="@adminId" class="btn btn-outline-secondary w-50">
+                                Details
+                            </a>
+                           
+                                <button class="btn btn-secondary w-50" disabled>Rent</button>
+                            
+                        </div>
+                      
+                            <a asp-controller="Admin" asp-action="DeleteMovie" asp-route-id="@movie.Id" asp-route-adminId="@adminId" class="btn btn-danger w-100 mt-2">
+                                Delete
+                            </a>
+                            <a asp-controller="Admin" asp-action="Edit" asp-route-id="@movie.Id" asp-route-adminId="@adminId" class="btn btn-warning w-100 mt-2">
+                                Update
+                            </a>
+                       
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

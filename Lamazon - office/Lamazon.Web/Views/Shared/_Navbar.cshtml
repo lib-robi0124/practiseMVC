@@ -19,15 +19,23 @@
 
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link notification-container">
+                    <a asp-controller="Orders" asp-action="ShoppingCart" asp-area="" class="nav-link notification-container">
                         <i class="material-icons">shopping_cart</i>
+                        @if (ViewBag.ShoppingCartItemsCount > 0)
+                        {
+                            <span id="shoppingItemsCount" class="notification">@ViewBag.ShoppingCartItemsCount</span>
+                        }
+                        else
+                        {
+                            <span id="shoppingItemsCount" class="notification hidden">@ViewBag.ShoppingCartItemsCount</span>
+                        }
                     </a>
                 </li>
 
                 @if (User.Identity.IsAuthenticated)
                 {
                     <li class="nav-item dropdown">
-                        <a class="nav-link header-nav" href="javascript:;" data-bs-toggle ="dropdown" aria-haspopup="true" aria-expanded="false" style="text-transform:none !important" >
+                        <a class="nav-link header-nav" href="javascript:;" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="text-transform:none !important">
                             <i class="fas fa-user mr-1"></i>@User.DisplayName()
                         </a>
                         <div class="dropdown-menu dropdown-menu-right">
@@ -42,12 +50,12 @@
                 }
                 else
                 {
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-controller="Users" asp-action="Login">Login</a>
-                </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Users" asp-action="Login">Login</a>
+                    </li>
                 }
 
-               
+
             </ul>
         </div>
     </div>

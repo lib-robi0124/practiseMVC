@@ -1,0 +1,31 @@
+﻿@model RegisterDto
+@{
+    ViewData["Title"] = "Register new User";
+}
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+<h2>User Registration</h2>
+
+<form asp-action="Register" method="post">
+    <div class="form-group">
+        <label asp-for="FullName"></label>
+        <input asp-for="FullName" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Age"></label>
+        <input asp-for="Age" type="number" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="CardNumber"></label>
+        <input asp-for="CardNumber" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Register</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+
+</form>
+

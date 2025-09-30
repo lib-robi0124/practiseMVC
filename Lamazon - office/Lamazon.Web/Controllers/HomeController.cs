@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Lamazon.Web.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
         
         private readonly IProductService _productsService;
@@ -16,7 +16,12 @@ namespace Lamazon.Web.Controllers
 
         public IActionResult Index()
         {
+            var shoppingCart = GetShoppingCart();
             var featuredProducts = _productsService.GetAllFeaturedProducts();
+            featuredProducts.ForEach(product =>
+            {
+                product.IsAddedToCart = shoppingCart.ShoppingCartItems.Any(sci => sci.Id == product.Id);
+            });
             return View(featuredProducts);
         }
 
