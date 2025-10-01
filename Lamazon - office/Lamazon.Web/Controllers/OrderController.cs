@@ -1,21 +1,25 @@
 ﻿using Lamazon.Domain.Constants;
 using Lamazon.Services.Interfaces;
+using Lamazon.Services.Models;
 using Lamazon.ViewModels.Models;
 using Lamazon.Web.Extensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lamazon.Web.Controllers
 {
-    
+    [Authorize]
     public class OrderController : BaseController
     {
         private readonly IOrderService _orderService;
         private readonly IProductService _productService;
+        private readonly IGeoTrackerService _geoTracerService;
 
-        public OrderController(IOrderService orderService, IProductService productService)
+        public OrderController(IOrderService orderService, IProductService productService, IGeoTrackerService geoTracerService)
         {
             _orderService = orderService;
             _productService = productService;
+            _geoTracerService = geoTracerService;
         }
         public IActionResult ShoppingCart()
         {
@@ -55,8 +59,13 @@ namespace Lamazon.Web.Controllers
             orderViewModel.OrderLineItems = orderLineItems;
             orderViewModel.TotalAmount = orderLineItems.Sum(oli => oli.TotalPrice);
 
-            orderViewModel.IpAddress = "123";
-            orderViewModel.CountryCode = "MK";
+            // Getting IP Address and Country Info from Middleware
+            var ipAddress = Request.HttpContext.Connection.RemoteIpAddress;
+            orderViewModel.IpAddress = ipAddress != null ? ipAddress.ToString() : "123";
+            var ipGeoInfo = await _geoTracerService.GetIpGeoInfoAsync(orderViewModel.IpAddress);
+
+            orderViewModel.CountryCode = ipGeoInfo.CountryCode;
+
             orderViewModel.CountryFlagUrl = "url";
 
             await _orderService.CreateOrder(orderViewModel);

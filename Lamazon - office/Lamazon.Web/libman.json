@@ -11,5 +11,10 @@
       "library": "bootstrap@5.3.8",
       "destination": "wwwroot/bootstrap/"
     }
+    {
+      "provider": "unpkg",
+      "library": "material-dashboard@2.1.0",
+      "destination": "wwwroot/lib/material-dashboard/"
+    }
   ]
 }

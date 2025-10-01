@@ -1,4 +1,6 @@
 using Lamazon.Services.Extensions;
+using Lamazon.Services.Implementations;
+using Lamazon.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +12,9 @@ builder.Services.InjectDbContext(builder.Configuration.GetConnectionString("Defa
 builder.Services.InjectRepositories();
 builder.Services.InjectServices();
 builder.Services.InjectAutoMapper();
+
+builder.Services.AddHttpClient<IGeoTrackerService, GeoTrackerService>();
+
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(option =>
     {
@@ -30,6 +35,7 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+app.UseDebugIpAddressMiddleware(); // Custom middleware to show the IP address in the response headers
 // Enable authentication middleware - flow should be: UseRouting -> UseAuthentication -> UseAuthorization -> UseEndpoints
 // This order is important
 app.UseHttpsRedirection();

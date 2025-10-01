@@ -1,1041 +1,307 @@
-﻿** These are Domain Models, the “core truth” of your app.
-**They represent database tables (User, Question,Answer etc.).
-**Enums (AI to suggest) are strongly typed alternatives to raw strings.
-**Relationships (User → QuestionForm, etc.) allow EF Core navigation properties
-namespace Prasalnik.Domain.Models
-{
-    public class BaseEntity
-    {
-        public int Id { get; set; }
-    }
-}
-namespace Prasalnik.Domain.Models
-{
-    public class User : BaseEntity
-    {
-        public int CompanyId { get; set; }
-        public string FullName { get; set; }
-        public string OU { get; set; } // Organizational Unit
-        public RoleEnum Role { get; set; }
-        public virtual ICollection<Questionnaire> Questionnaires { get; set; }
-        public virtual ICollection<QuestionItem> QuestionItems { get; set; }
-        public User()
-        {
-            Questionnaires = new HashSet<Questionnaire>();
-            QuestionItems = new HashSet<QuestionItem>();
-        }
-    }
-}
-namespace Prasalnik.Domain.Models
-{
-    public class Questionnaire : BaseEntity
-    {
-        public string Title { get; set; }
-        public int CreatedByUserId { get; set; }
-        public ICollection<QuestionItem> QuestionItems { get; set; }
-        public string Status { get; set; } // Answered, Skipped
-        public Questionnaire()
-        {
-            QuestionItems = new HashSet<QuestionItem>();
-        }
-    }
-}
-namespace Prasalnik.Domain.Models
-{
-    public class QuestionItem : BaseEntity
-    {
-        public int QuestionnaireId { get; set; }
-        public Questionnaire Questionnaire { get; set; }
-        public string QuestionText { get; set; }
-        public QuestionTypeEnum Type { get; set; }
-    }
-}
-namespace Prasalnik.Domain.Models
-{
-    public class Answer : BaseEntity
-    {
-        public int QuestionnaireId { get; set; }
-        public int QuestionId { get; set; }
-        public int UserId { get; set; }
-        public string Response { get; set; }
-    }
-}
-namespace Prasalnik.Domain.Models
-{
-    public class Status : BaseEntity
-    {
-        public string Name { get; set; }
-    }
-}
-namespace Prasalnik.Domain.Enums
-{
-    public enum RoleEnum
-    {
-        Admin = 1,
-        Manager,
-        Employee
-    }
-}
-namespace Prasalnik.Domain.Enums
-{
-    public enum QuestionTypeEnum
-    {
-        Text = 1,   // 255 char
-        Radio,      // Yes/No
-        Scale       // 1-10
-    }
-}
-🔹 DataAccess (DbContext + Configurations + Repositories)
-** AppDbContext is the bridge between code and DB.
-** Each DbSet<T> maps to a table.
-** OnModelCreating applies Fluent API configs (constraints, FK, seeds).
-namespace Prasalnik.DataAccess.ModelsConfig
-{
-    public class UserConfig : IEntityTypeConfiguration<User>
-    {
-        public void Configure(EntityTypeBuilder<User> builder)
-        {
-            builder.ToTable("Users");
-            builder.HasKey(x => x.Id);
-            builder.Property(x => x.CompanyId).IsRequired();
-            builder.Property(x => x.FullName).IsRequired().HasMaxLength(128);
-            builder.Property(x => x.OU).HasMaxLength(128);
-            builder.Property(x => x.Role).IsRequired();
+﻿Company needs MVC app as Questionnaire for employee satisfactory on different area of workplace. Idea is , Domain.Models to be:
+User , Role , Question, QuestionType, QuestionForm, Answer
+User are Administrators to be able to add, modify(update), delete Questions as per Roles, Users as Employees are Answer the QuestionForm with Question as Type of Scale from 1 to 10, or fill with Text. Answer has to be stored in database for future reporting, with UserId, QuestionFormId, QuestionId.
+Main page will have login screen with CopmanyId and FullName of User
+After successfully login, enter to QuestionForm with 3 Questions , like:
+QuestionForm Title “ Општо задоволство “
+QuestionId 1 Задоволен сум од мојата моментална работа
+Answer is int from Scale 1 2 3 4 5 6 7 8 9 10
+QuestionId 2 Чувствувам дека мојата работа е ценета во рамките на компанијата. 
+Answer is int from Scale 1 2 3 4 5 6 7 8 9 10
+QuestionId 3 Се чувствувам мотивиран да одам на работа секој ден. (1-10)
+Answer is int from Scale 1 2 3 4 5 6 7 8 9 10
+QuestionForm Title “ Отворени прашања” 
+QuestionId 1 Што најмногу ви се допаѓа на вашето сегашно работно место? 
+Answer is string Text (500)
+QuestionId 2 Кои се најголемите предизвици со кои се соочувате на работа? 
+Answer is string Text (500)
+QuestionId 3 Какви предлози имате за подобрување на работната средина или процесите на компанијата? 
+Answer is string Text (500)
 
-            builder.HasIndex(x => x.CompanyId).IsUnique(); // Assuming CompanyId is unique for each user
+Error on Add-Migration is :Could not load assembly 'Questionnaire.DataAccess'. Ensure it is referenced by the startup project 'Questionnaire.Skopje'.
 
-            builder.HasData(
-                 new User { Id = 1, CompanyId = 12345, FullName = "Alice Johnson", OU = "HR", Role = (RoleEnum)1 },
-                new User { Id = 2, CompanyId = 12345, FullName = "Bob Smith", OU = "IT", Role = (RoleEnum)2 },
-                new User { Id = 3, CompanyId = 12345, FullName = "Charlie Brown", OU = "Finance", Role = (RoleEnum)3 });
-        }
+1. Review the code, suggest soluton for error on creation database,
+2. make suggestions for repository, services, controllers, view.models
+
+public abstract class BaseEntity
+{
+    public int Id { get; set; }
+}
+public class User : BaseEntity
+{
+    public int CompanyId { get; set; }
+    public string FullName { get; set; }
+    public string OU { get; set; } // Organizational Unit
+    public string RoleKey { get; set; }
+    public Role Role { get; set; }
+    public virtual ICollection<QuestionForm> QuestionForms { get; set; }
+    public User()
+    {
+        QuestionForms = new HashSet<QuestionForm>();
     }
 }
-namespace Prasalnik.DataAccess.ModelsConfig
+ public class Role
+ {
+     public string Key { get; set; }
+     public string Name { get; set; }
+     public virtual ICollection<User> Users { get; set; }
+     public Role()
+     {
+         Users = new HashSet<User>();
+     }
+ }
+public class Question : BaseEntity
 {
-    public class QuestionnaireConfig : IEntityTypeConfiguration<Questionnaire>
+    public string Name { get; set; }
+    public string QuestionText { get; set; }
+    public int QuestionTypeId { get; set; }
+    public QuestionType QuestionType { get; set; }
+    public virtual ICollection<Answer> Answers { get; set; }
+
+    public Question()
     {
-        public void Configure(EntityTypeBuilder<Questionnaire> builder)
-        {
-            builder.ToTable("Questionnaires");
-            builder.HasKey(x => x.Id);
-            builder.Property(x => x.Title).IsRequired().HasMaxLength(200);
-            builder.Property(x => x.Status).IsRequired().HasMaxLength(50);
-
-            //foreign key relationship with User
-            builder.HasOne<User>()
-                    .WithMany(u => u.Questionnaires)
-                    .HasForeignKey(q => q.CreatedByUserId)
-                    .OnDelete(DeleteBehavior.NoAction)
-                    .HasConstraintName("FK_Questionnaire_User");
-
-            builder.HasData(
-                new Questionnaire { Id = 1, Title = "Customer Satisfaction Survey", Status = "Answered" },
-                new Questionnaire { Id = 2, Title = "Employee Feedback Form", Status = "Skipped" });
-        }
+        Answers = new HashSet<Answer>();
     }
 }
-namespace Prasalnik.DataAccess.ModelsConfig
-{
-    public class QuestionItemConfig : IEntityTypeConfiguration<QuestionItem>
-    {
-        public void Configure(EntityTypeBuilder<QuestionItem> builder)
-        {
-            builder.ToTable("QuestionItems");
-            builder.HasKey(x => x.Id);
-            builder.Property(x => x.QuestionText).IsRequired().HasMaxLength(255);
-            builder.Property(x => x.Type).IsRequired();
+ public class QuestionType : BaseEntity
+ {
+     public string Name { get; set; }
+     public virtual ICollection<Question> Questions { get; set; }
+     public QuestionType()
+     {
+         Questions = new HashSet<Question>();
+     }
+ }
+  public class QuestionForm : BaseEntity
+ {
+     public string Title { get; set; }
+     public int UserId { get; set; }
+     public User User { get; set; }
+     public virtual ICollection<Answer> Answers { get; set; }
+     public virtual ICollection<Question> Questions { get; set; }
+     public QuestionForm()
+     {
+         Answers = new HashSet<Answer>();
+         Questions = new HashSet<Question>();
+     }
+ }
+ public class Answer : BaseEntity
+ {
+     public int QuestionFormId { get; set; }
+     public QuestionForm QuestionForm { get; set; }
+     public int QuestionId { get; set; }
+     public Question Question { get; set; }
+     public string Response { get; set; }
+     public int UserId { get; set; }
+     public User User { get; set; }
+     public Answer()
+     {
+         Response = string.Empty;
+     }
 
-            builder.HasOne<Questionnaire>()
-                .WithMany(q => q.QuestionItems)
-                .HasForeignKey("QuestionnaireId")
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_QuestionItem_Questionnaire");
+ }
+public class UserConfig : IEntityTypeConfiguration<User>
+{
+    public void Configure(EntityTypeBuilder<User> builder)
+    {
+        builder.ToTable("Users");
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.CompanyId).IsRequired();
+        builder.Property(x => x.FullName).IsRequired().HasMaxLength(128);
+        builder.Property(x => x.OU).HasMaxLength(128);
+
+        builder.HasIndex(x => x.CompanyId).IsUnique();
+        //foreign key to UserRole
+        builder.HasOne(x => x.Role)
+            .WithMany(x => x.Users)
+            .HasForeignKey(x => x.RoleKey)
+            .OnDelete(DeleteBehavior.NoAction) //koga ke se izbrise role, da ne se izbriseat i user-ite
+            .HasConstraintName("FK_User_UserRole");
+    }
+}
+ public class RoleConfig : IEntityTypeConfiguration<Role>
+ {
+     public void Configure(EntityTypeBuilder<Role> builder)
+     {
+         builder.ToTable("Role");
+         builder.HasKey(x => x.Key);
+         builder.Property(x => x.Name).IsRequired().HasMaxLength(255);
+     }
+ }
+  public class QuestionTypeConfig : IEntityTypeConfiguration<QuestionType>
+ {
+     public void Configure(EntityTypeBuilder<QuestionType> builder)
+     {
+         builder.ToTable("QuestionTypes");
+         builder.HasKey(x => x.Id);
+         builder.Property(x => x.Name).IsRequired().HasMaxLength(255);
+     }
+ }
+  public class QuestionFormConfig : IEntityTypeConfiguration<QuestionForm>
+ {
+     public void Configure(EntityTypeBuilder<QuestionForm> builder)
+     {
+         builder.ToTable("QuestionForms");
+         builder.HasKey(x => x.Id);
+         builder.Property(x => x.Title).IsRequired().HasMaxLength(255);
+         // foreign key to User
+         builder.HasOne(x => x.User)
+             .WithMany(x => x.QuestionForms)
+             .HasForeignKey(x => x.UserId)
+             .OnDelete(DeleteBehavior.NoAction) //koga ke se izbrise user, da ne se izbriseat i questionForms
+             .HasConstraintName("FK_QuestionForm_User");
+     }
+ }
+  public class AnswerConfig : IEntityTypeConfiguration<Answer>
+ {
+     public void Configure(EntityTypeBuilder<Answer> builder)
+     {
+         builder.ToTable("Answers");
+         builder.HasKey(x => x.Id);
+         builder.Property(x => x.Response).HasMaxLength(500);
         
-            builder.HasData(
-                new QuestionItem { Id = 1, QuestionText = "How satisfied are you with our service?", Type = QuestionTypeEnum.Radio, QuestionnaireId = 1 },
-                new QuestionItem { Id = 2, QuestionText = "Would you recommend us to others?", Type = QuestionTypeEnum.Scale, QuestionnaireId = 1 },
-                new QuestionItem { Id = 3, QuestionText = "What can we improve?", Type = QuestionTypeEnum.Text, QuestionnaireId = 2 },
-                new QuestionItem { Id = 4, QuestionText = "How do you rate the work environment?", Type = QuestionTypeEnum.Scale, QuestionnaireId = 2 } );
-        }
-    }
-}
-namespace Prasalnik.DataAccess.ModelsConfig
+         // foreign key to Question
+         builder.HasOne(x => x.Question)
+             .WithMany(x => x.Answers)
+             .HasForeignKey(x => x.QuestionId)
+             .OnDelete(DeleteBehavior.NoAction) 
+             .HasConstraintName("FK_Answer_Question");
+         // foreign key to QuestionForm
+         builder.HasOne(x => x.QuestionForm)
+             .WithMany(x => x.Answers)
+             .HasForeignKey(x => x.QuestionFormId)
+             .OnDelete(DeleteBehavior.NoAction) 
+             .HasConstraintName("FK_Answer_QuestionForm");
+     }
+
+ }
+  public static class DataSeedExtensions
+ {
+     public static ModelBuilder SeedUsers(this ModelBuilder modelBuilder)
+     {
+         modelBuilder.Entity<User>().HasData(
+            new User { Id = 1, CompanyId = 16130, FullName = "Vasko Gjorgiev", OU = "Production", RoleKey = "user" },
+             new User { Id = 2, CompanyId = 16684, FullName = "Zoran Stojanovski", OU = "Production", RoleKey = "user" },
+             new User { Id = 3, CompanyId = 16695, FullName = "Pane Naskovski", OU = "Production", RoleKey = "user" },
+             new User { Id = 4, CompanyId = 16720, FullName = "Tome Trajanov", OU = "Projects and IT", RoleKey = "user" },
+             new User { Id = 5, CompanyId = 16827, FullName = "Zoran Boshkovski", OU = "Production", RoleKey = "user" },
+             new User { Id = 6, CompanyId = 16984, FullName = "Dide Petrovski", OU = "Projects and IT", RoleKey = "user" },
+             new User { Id = 7, CompanyId = 17011, FullName = "Jovica Gjorgjievski", OU = "Projects and IT", RoleKey = "user" },
+             new User { Id = 8, CompanyId = 17055, FullName = "Blagica Besarovska", OU = "Projects and IT", RoleKey = "user" },
+             new User { Id = 9, CompanyId = 17064, FullName = "Dragi Naskovski", OU = "Production", RoleKey = "user" },
+             new User { Id = 10, CompanyId = 17148, FullName = "Borche Anchevski", OU = "Production", RoleKey = "user" },
+             new User { Id = 411, CompanyId = 21315, FullName = "Hristina Jovanovska", OU = "Projects and IT", RoleKey = "user" },
+             new User { Id = 412, CompanyId = 21316, FullName = "Marjan Georgiev", OU = "Production", RoleKey = "user" });
+
+         return modelBuilder;
+     }
+     public static ModelBuilder SeedRoles(this ModelBuilder modelBuilder)
+     {
+         modelBuilder.Entity<Role>().HasData(
+             new Role { Key = "admin", Name = "Administrator" },
+             new Role { Key = "user", Name = "User" }
+         );
+
+         return modelBuilder;
+     }
+     public static ModelBuilder SeedQuestionType(this ModelBuilder modelBuilder)
+     {
+         modelBuilder.Entity<QuestionType>().HasData(
+             new QuestionType { Id = 1, Name = "Scale" },
+             new QuestionType { Id = 2, Name = "Text" }
+         );
+         return modelBuilder;
+     }
+     public static ModelBuilder SeedQuestion(this ModelBuilder modelBuilder)
+     {
+         modelBuilder.Entity<Question>().HasData(
+             new Question { Id = 1, QuestionText = "Задоволен сум од мојата моментална работа", QuestionTypeId = 1 },
+             new Question { Id = 2, QuestionText = "Чувствувам дека мојата работа е ценета во рамките на компанијата", QuestionTypeId = 1 },
+             new Question { Id = 3, QuestionText = "Се чувствувам мотивиран да одам на работа секој ден", QuestionTypeId = 1 },
+             new Question { Id = 4, QuestionText = "Се чувствувам горд што работам за оваа компанија", QuestionTypeId = 1 },
+             new Question { Id = 5, QuestionText = "Со задоволство ја препорачувам оваа компанија како работно место на пријателите и семејството", QuestionTypeId = 1 },
+             new Question { Id = 6, QuestionText = "Се гледам себеси како долгорочно работам во оваа компанија", QuestionTypeId = 1 },
+             new Question { Id = 7, QuestionText = "Имам можности за професионален развој во рамките на компанијата", QuestionTypeId = 1 },
+             new Question { Id = 8, QuestionText = "Добивам конструктивен фидбек кој ми помага да се подобрам", QuestionTypeId = 1 },
+             new Question { Id = 9, QuestionText = "Компанијата обезбедува соодветна обука и ресурси за мојот развој", QuestionTypeId = 1 },
+             new Question { Id = 10, QuestionText = "Компанијата поддржува здрава рамнотежа помеѓу работата и личниот живот", QuestionTypeId = 1 },
+             new Question { Id = 11, QuestionText = "Можам ефикасно да управувам со стресот поврзан со работата", QuestionTypeId = 1 },
+             new Question { Id = 12, QuestionText = "Мојот работен распоред ми овозможува да ги исполнувам моите лични обврски", QuestionTypeId = 1 },
+             new Question { Id = 13, QuestionText = "Комуникацијата во мојот тим е ефикасна", QuestionTypeId = 1 },
+             new Question { Id = 14, QuestionText = "Се чувствувам удобно да ги искажувам моите идеи и мислења на работа. ", QuestionTypeId = 1 },
+             new Question { Id = 15, QuestionText = "Соработката помеѓу одделенијата е ефикасна", QuestionTypeId = 1 },
+             new Question { Id = 16, QuestionText = "Му верувам на раководството на компанијата", QuestionTypeId = 1 },
+             new Question { Id = 17, QuestionText = "Мојот директен менаџер ме поддржува во остварувањето на моите цели", QuestionTypeId = 1 },
+             new Question { Id = 18, QuestionText = "Важните одлуки на компанијата се пренесуваат транспарентно", QuestionTypeId = 1 },
+             new Question { Id = 19, QuestionText = "Вредностите на компанијата се усогласуваат со моите лични вредности", QuestionTypeId = 1 },
+             new Question { Id = 20, QuestionText = "Се чувствувам вклучено и почитувано на работа", QuestionTypeId = 1 },
+             new Question { Id = 21, QuestionText = "Компанијата промовира различност и инклузија", QuestionTypeId = 1 },
+             new Question { Id = 22, QuestionText = "Ги имам сите ресурси потребни за ефикасно извршување на моите задачи", QuestionTypeId = 1 },
+             new Question { Id = 23, QuestionText = "Физичката работна средина е удобна и поволна за продуктивност", QuestionTypeId = 1 },
+             new Question { Id = 24, QuestionText = "Се чувствувам безбедно на работа", QuestionTypeId = 1 },
+             new Question { Id = 25, QuestionText = "Задоволен сум од мојот пакет компензации и бенефиции", QuestionTypeId = 1 },
+             new Question { Id = 26, QuestionText = "Моите напори и достигнувања се препознаени и ценети", QuestionTypeId = 1 },
+             new Question { Id = 27, QuestionText = "Постојат јасни можности за напредување во кариерата во рамките на компанијата", QuestionTypeId = 1 },
+             new Question { Id = 28, QuestionText = "Компанијата ги поттикнува иновациите и креативното размислување", QuestionTypeId = 1 },
+             new Question { Id = 29, QuestionText = "Подготвен сум да ги усвојам промените имплементирани во компанијата", QuestionTypeId = 1 },
+             new Question { Id = 30, QuestionText = "Идеите и предлозите на вработените се разгледуваат и се спроведуваат кога е соодветно", QuestionTypeId = 1 },
+             new Question { Id = 31, QuestionText = "Kолку е веројатно да ја препорачате оваа компанија како работно место на пријател или колега", QuestionTypeId = 1 },
+             new Question { Id = 32, QuestionText = "Што најмногу ви се допаѓа на вашето сегашно работно место?", QuestionTypeId = 2 },
+             new Question { Id = 33, QuestionText = "Кои се најголемите предизвици со кои се соочувате на работа?", QuestionTypeId = 2 },
+             new Question { Id = 34, QuestionText = "Какви предлози имате за подобрување на работната средина или процесите на компанијата?", QuestionTypeId = 2 },
+             new Question { Id = 35, QuestionText = "разно", QuestionTypeId = 2 }
+
+         );
+         return modelBuilder;
+     }
+     public static ModelBuilder SeedQuestionForm(this ModelBuilder modelBuilder)
+     {
+         modelBuilder.Entity<QuestionForm>().HasData(
+             new QuestionForm { Id = 1, Title = "Општо задоволство" },
+             new QuestionForm { Id = 2, Title = "Обврска кон компанијата" },
+             new QuestionForm { Id = 3, Title = "Професионален развој" },
+             new QuestionForm { Id = 4, Title = "Рамнотежа помеѓу работата и животот" },
+             new QuestionForm { Id = 5, Title = "Комуникација и соработка" },
+             new QuestionForm { Id = 6, Title = "Лидерство" },
+             new QuestionForm { Id = 7, Title = "Организациска култура" },
+             new QuestionForm { Id = 8, Title = "Работна средина" },
+             new QuestionForm { Id = 9, Title = "Награди и признанија" },
+             new QuestionForm { Id = 10, Title = "Иновации и промени" },
+             new QuestionForm { Id = 11, Title = "Конечна евалуација" },
+             new QuestionForm { Id = 12, Title = "Отворени прашања" }
+         );
+         return modelBuilder;
+     }
+ 
+ }
+public class AppDbContext : DbContext
 {
-    public class StatusConfigure : IEntityTypeConfiguration<Status>
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        public void Configure(EntityTypeBuilder<Status> builder)
-        {
-            builder.ToTable("Statuses");
-            builder.HasKey(x => x.Id);
-            builder.Property(x => x.Name).IsRequired().HasMaxLength(50);
-            // Seed initial data
-            builder.HasData(
-                new Status { Id = 1, Name = "Answered" },
-                new Status { Id = 2, Name = "Skipped" }
-            );
-        }
+        optionsBuilder.UseSqlServer("Server=.;Database=AnketaDb;Trusted_Connection=True;TrustServerCertificate=True");
     }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        modelBuilder.SeedUsers()
+                    .SeedRoles()
+                    .SeedQuestionType()
+                    .SeedQuestion()
+                    .SeedQuestionForm();
+    }
+    public DbSet<User> Users { get; set; }
+    public DbSet<Role> Roles { get; set; }
+    public DbSet<QuestionType> QuestionTypes { get; set; }
+    public DbSet<Question> Questions { get; set; }
+    public DbSet<QuestionForm> QuestionForms { get; set; }
+    public DbSet<Answer> Answers { get; set; }
 }
-namespace Prasalnik.DataAccess.ModelsConfig
+public static class InjectionExtensions
 {
-    public class AnswerConfig : IEntityTypeConfiguration<Answer>
+    public static void InjectDbContext(this IServiceCollection services, string connectionString)
     {
-        public void Configure(EntityTypeBuilder<Answer> builder)
-        {
-            builder.ToTable("Answers");
-            builder.HasKey(x => x.Id);
-            builder.Property(x => x.Response).HasMaxLength(255);
-
-            builder.HasOne<User>()
-                .WithMany()
-                .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_Answer_User");
-
-            builder.HasOne<Questionnaire>()
-                .WithMany()
-                .HasForeignKey(x => x.QuestionnaireId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_Answer_Questionnaire");
-
-            builder.HasOne<QuestionItem>()
-                .WithMany()
-                .HasForeignKey(x => x.QuestionId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_Answer_QuestionItem");
-        }
-    }
-}
-namespace Prasalnik.DataAccess.DataContext
-{
-    public class AppDbContext : DbContext
-    {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-
-        public DbSet<User> Users { get; set; }
-        public DbSet<Questionnaire> Questionnaires { get; set; }
-        public DbSet<QuestionItem> QuestionItems { get; set; }
-        public DbSet<Answer> Answers { get; set; }
-        public DbSet<Status> Statuses { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.ApplyConfiguration(new UserConfig());
-            modelBuilder.ApplyConfiguration(new QuestionnaireConfig());
-            modelBuilder.ApplyConfiguration(new QuestionItemConfig());
-            modelBuilder.ApplyConfiguration(new AnswerConfig());
-            modelBuilder.ApplyConfiguration(new StatusConfigure());
-
-            base.OnModelCreating(modelBuilder);
-        }
+        services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
     }
 }
 
-namespace Prasalnik.DataAccess.Interaces
-{
-    public interface IRepository<T> where T : BaseEntity
-    {
-        IEnumerable<T> GetAll();
-        T GetById(int id);
-        void Create(T entity);
-        void Update(T entity);
-        void Delete(int id);
-
-    }
-}
-namespace Prasalnik.DataAccess.Interaces
-{
-    public interface IUserRepository : IRepository<User>
-    {
-        User GetUserByCompanyId(int companyId);
-        User LoginUser(int companyId, string fullName);
-
-    }
-}
-namespace Prasalnik.DataAccess.Interaces
-{
-    public interface IQuestionnaireRepository : IRepository<Questionnaire>
-    {
-        Questionnaire GetbyUserId(int userId);
-    }
-}
-namespace Prasalnik.DataAccess.Interaces
-{
-    public interface IQuestionItemRepository : IRepository<QuestionItem>
-    {
-        QuestionItem GetByType(Type type);
-    }
-}
-namespace Prasalnik.DataAccess.Interaces
-{
-    public interface IAnswerRepository : IRepository<Answer>
-    {
-        Answer GetByUserId(int userId);
-    }
-}
-namespace Prasalnik.DataAccess.Interaces
-{
-    public interface IStatusRepository : IRepository<Status>
-    {
-        Status GetByName(string name);
-    }
-}
-namespace Prasalnik.DataAccess.Implementations
-{
-    public class UserRepository : IUserRepository
-    {
-        public AppDbContext _context;
-        public UserRepository(AppDbContext context)
-        {
-            _context = context;
-        }
-        public void Create(User entity)
-        {
-            _context.Users.Add(entity);
-            _context.SaveChanges();
-        }
-
-        public void Delete(int id)
-        {
-            var user = _context.Users.FirstOrDefault(u => u.Id == id) ?? throw new Exception("User not found");
-            _context.Users.Remove(user);
-            _context.SaveChanges();
-        }
-
-        public IEnumerable<User> GetAll()
-        {
-            var users = _context.Users.ToList();
-            return users;
-        }
-
-        public User GetById(int id)
-        {
-            return _context.Users.FirstOrDefault(u => u.Id == id) ?? throw new Exception("User not found");
-        }
-
-        public User GetUserByCompanyId(int companyId)
-        {
-            return _context.Users.FirstOrDefault(u => u.CompanyId == companyId) ?? throw new Exception("User not found");
-        }
-
-        public User LoginUser(int companyId, string fullName)
-        {
-            return _context.Users.FirstOrDefault(u => u.CompanyId == companyId && u.FullName == fullName) ?? throw new Exception("User not found");
-        }
-
-        public void Update(User entity)
-        {
-            _context.Users.Update(entity);
-            _context.SaveChanges();
-        }
-    }
-}
-namespace Prasalnik.DataAccess.Implementations
-{
-    public class QuestionnaireRepository : IQuestionnaireRepository
-{
-    private readonly AppDbContext _context;
-
-    public QuestionnaireRepository(AppDbContext context)
-    {
-        _context = context;
-    }
-
-    public void Create(Questionnaire entity)
-    {
-        _context.Questionnaires.Add(entity);
-        _context.SaveChanges();
-    }
-
-    public void Delete(int id)
-    {
-        var q = _context.Questionnaires.FirstOrDefault(x => x.Id == id) ?? throw new Exception("Questionnaire not found");
-        _context.Questionnaires.Remove(q);
-        _context.SaveChanges();
-    }
-
-    public IEnumerable<Questionnaire> GetAll()
-    {
-        return _context.Questionnaires.Include(q => q.QuestionItems).ToList();
-    }
-
-    public Questionnaire GetById(int id)
-    {
-        return _context.Questionnaires.Include(q => q.QuestionItems).FirstOrDefault(x => x.Id == id)
-               ?? throw new Exception("Questionnaire not found");
-    }
-
-    public Questionnaire GetbyUserId(int userId)
-    {
-        return _context.Answers
-            .Where(a => a.UserId == userId)
-            .Select(a => a.QuestionnaireId)
-            .Distinct()
-            .Select(id => _context.Questionnaires.Include(q => q.QuestionItems).FirstOrDefault(q => q.Id == id))
-            .FirstOrDefault() ?? throw new Exception("No questionnaire found for this user");
-    }
-
-    public void Update(Questionnaire entity)
-    {
-        _context.Questionnaires.Update(entity);
-        _context.SaveChanges();
-    }
-}
-
-}
-namespace Prasalnik.DataAccess.Implementations
-{
-    public class QuestionItemRepository : IQuestionItemRepository
-{
-    private readonly AppDbContext _context;
-
-    public QuestionItemRepository(AppDbContext context)
-    {
-        _context = context;
-    }
-
-    public void Create(QuestionItem entity)
-    {
-        _context.QuestionItems.Add(entity);
-        _context.SaveChanges();
-    }
-
-    public void Delete(int id)
-    {
-        var item = _context.QuestionItems.FirstOrDefault(x => x.Id == id) ?? throw new Exception("Question item not found");
-        _context.QuestionItems.Remove(item);
-        _context.SaveChanges();
-    }
-
-    public IEnumerable<QuestionItem> GetAll()
-    {
-        return _context.QuestionItems.ToList();
-    }
-
-    public QuestionItem GetById(int id)
-    {
-        return _context.QuestionItems.FirstOrDefault(x => x.Id == id) ?? throw new Exception("Question item not found");
-    }
-
-    public QuestionItem GetByType(Type type)
-    {
-        throw new NotSupportedException("Use QuestionTypeEnum instead of System.Type");
-    }
-
-    public void Update(QuestionItem entity)
-    {
-        _context.QuestionItems.Update(entity);
-        _context.SaveChanges();
-    }
-}
-
-}
-// this Answers will be fill up by logged user
-namespace Prasalnik.DataAccess.Implementations
-{
-    public class AnswerRepository : IAnswerRepository
-{
-    private readonly AppDbContext _context;
-
-    public AnswerRepository(AppDbContext context)
-    {
-        _context = context;
-    }
-
-    public void Create(Answer entity)
-    {
-        _context.Answers.Add(entity);
-        _context.SaveChanges();
-    }
-
-    public void Delete(int id)
-    {
-        var ans = _context.Answers.FirstOrDefault(x => x.Id == id) ?? throw new Exception("Answer not found");
-        _context.Answers.Remove(ans);
-        _context.SaveChanges();
-    }
-
-    public IEnumerable<Answer> GetAll()
-    {
-        return _context.Answers.ToList();
-    }
-
-    public Answer GetById(int id)
-    {
-        return _context.Answers.FirstOrDefault(x => x.Id == id) ?? throw new Exception("Answer not found");
-    }
-
-    public Answer GetByUserId(int userId)
-    {
-        return _context.Answers.FirstOrDefault(x => x.UserId == userId) ?? throw new Exception("No answers found for user");
-    }
-
-    public void Update(Answer entity)
-    {
-        _context.Answers.Update(entity);
-        _context.SaveChanges();
-    }
-}
-
-}
-// this Status will depends from logged user input
-namespace Prasalnik.DataAccess.Implementations
-{
-public class StatusRepository : IStatusRepository
-{
-    private readonly AppDbContext _context;
-
-    public StatusRepository(AppDbContext context)
-    {
-        _context = context;
-    }
-
-    public void Create(Status entity)
-    {
-        _context.Statuses.Add(entity);
-        _context.SaveChanges();
-    }
-
-    public void Delete(int id)
-    {
-        var s = _context.Statuses.FirstOrDefault(x => x.Id == id) ?? throw new Exception("Status not found");
-        _context.Statuses.Remove(s);
-        _context.SaveChanges();
-    }
-
-    public IEnumerable<Status> GetAll()
-    {
-        return _context.Statuses.ToList();
-    }
-
-    public Status GetById(int id)
-    {
-        return _context.Statuses.FirstOrDefault(x => x.Id == id) ?? throw new Exception("Status not found");
-    }
-
-    public Status GetByName(string name)
-    {
-        return _context.Statuses.FirstOrDefault(x => x.Name == name) ?? throw new Exception("Status not found");
-    }
-
-    public void Update(Status entity)
-    {
-        _context.Statuses.Update(entity);
-        _context.SaveChanges();
-    }
-}
-
-}
-// appsettings.json 
-"DefaultConnection": "Server=.;Database=LibertyHrDb;Trusted_Connection=True;TrustServerCertificate=True"
-// Program.cs 
-var builder = WebApplication.CreateBuilder(args);
-string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-var app = builder.Build();
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
-app.UseAuthorization();
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-
-app.Run();
-namespace Prasalnik.ViewModels.Models
-{
-    public class UserViewModel
-    {
-        public int CompanyId { get; set; }
-        public string FullName { get; set; }
-        public string OU { get; set; }
-        public string Role { get; set; } = string.Empty;
-    }
-}
-namespace Prasalnik.ViewModels.Models
-{
-    public class UserCredentialsViewModel
-    {
-        public int CompanyId { get; set; }
-        public string FullName { get; set; }
-    }
-}
-namespace Prasalnik.ViewModels.Models
-{
-    public class RegisterUserViewModel
-    {
-        public int Id { get; set; }
-        public int CompanyId { get; set; }
-        public string FullName { get; set; }
-        public string OU { get; set; }
-        public string Role { get; set; } = string.Empty;
-    }
-}
-namespace Prasalnik.ViewModels.Models
-{
-    public class QuestionnaireViewModel
-    {
-        public int Id { get; set; }
-        public string Title { get; set; }
-        public string Status { get; set; }
-        public QuestionItemViewModel QuestionItems { get; set; }
-    }
-}
-namespace Prasalnik.ViewModels.Models
-{
-    public class QuestionItemViewModel
-    {
-        public int Id { get; set; }
-        public string QuestionText { get; set; }
-        public int QuestionType { get; set; }
-        public int QuestionnaireId { get; set; }
-        public bool IsRequired { get; set; }
-    }
-}
-namespace Prasalnik.ViewModels.Models
-{
-    public class AnswerViewModel
-    {
-        public int QuestionId { get; set; }
-        public string Response { get; set; }
-    }
-}
-namespace Prasalnik.Mappers.AutoMapperProfiles
-{
-    public class UserMappingProfile : Profile
-    {
-        public UserMappingProfile()
-        {
-            // Domain -> ViewModel
-            CreateMap<User, UserViewModel>()
-                .ForMember(d => d.Role, opt => opt.MapFrom(s => s.Role.ToString()));
-
-            // ViewModel -> Domain
-              CreateMap<UserViewModel, User>()
-                .ForMember(d => d.Role, opt => opt.MapFrom<RoleResolver>());
-
-            // RegisterUserViewModel -> User
-            CreateMap<RegisterUserViewModel, User>()
-                .ForMember(d => d.Role, opt => opt.MapFrom((src, dest, destMember, context) =>
-                    Enum.TryParse<RoleEnum>(src.Role, out var role) ? role : RoleEnum.Employee));
-
-            // User -> RegisterUserViewModel
-            CreateMap<User, RegisterUserViewModel>()
-                .ForMember(d => d.Role, opt => opt.MapFrom(s => s.Role.ToString()));
-
-            // Credentials mapping
-            CreateMap<UserCredentialsViewModel, User>()
-                .ForMember(d => d.Role, opt => opt.Ignore()); // credentials don't provide role
-        }
-    }
-}
-namespace Prasalnik.Mappers.AutoMapperProfiles
-{
-    public class QuestionnaireMappingProfile : Profile
-    {
-        public QuestionnaireMappingProfile()
-        {
-            // Domain -> ViewModel (including child items)
-            CreateMap<Questionnaire, QuestionnaireViewModel>()
-                .ForMember(d => d.QuestionItems, opt => opt.MapFrom(s => s.QuestionItems));
-
-            // ViewModel -> Domain
-            CreateMap<QuestionnaireViewModel, Questionnaire>()
-                .ForMember(d => d.QuestionItems, opt => opt.MapFrom(s => s.QuestionItems));
-        }
-    }
-}
-namespace Prasalnik.Mappers.AutoMapperProfiles
-{
-    public class QuestionItemMappingProfile : Profile
-    {
-        public QuestionItemMappingProfile()
-        {
-            // Domain -> ViewModel: convert enum to int
-            CreateMap<QuestionItem, QuestionItemViewModel>()
-                .ForMember(d => d.QuestionType, opt => opt.MapFrom(s => (int)s.Type))
-                .ForMember(d => d.QuestionnaireId, opt => opt.MapFrom(s => s.QuestionnaireId));
-
-            // ViewModel -> Domain: convert int back to enum safely
-            CreateMap<QuestionItemViewModel, QuestionItem>()
-                .ForMember(d => d.Type, opt => opt.MapFrom(s =>
-                    Enum.IsDefined(typeof(QuestionTypeEnum), s.QuestionType)
-                        ? (QuestionTypeEnum)s.QuestionType
-                        : QuestionTypeEnum.Text))
-                .ForMember(d => d.QuestionnaireId, opt => opt.MapFrom(s => s.QuestionnaireId));
-        }
-    }
-}
-namespace Prasalnik.Mappers.AutoMapperProfiles
-{
-    public class AnswerMappingProfile : Profile
-    {
-        public AnswerMappingProfile()
-        {
-            CreateMap<Answer, AnswerViewModel>().ReverseMap();
-        }
-    }
-}
-namespace Prasalnik.Mappers.AutoMapperProfiles
-{
-    public class StatusMappingProfile : Profile
-    {
-        public StatusMappingProfile()
-        {
-            CreateMap<Status, StatusViewModel>().ReverseMap();
-        }
-    }
-}
-namespace Prasalnik.Services.Interfaces
-{
-    public interface IUserService
-    {
-        IEnumerable<User> GetAllUsers();
-        User GetUserById(int id);
-        User Login(int companyId, string fullName);
-        void CreateUser(User user);
-        void UpdateUser(User user);
-        void DeleteUser(int id);
-    }
-}
-namespace Prasalnik.Services.Interfaces
-{
-    public interface IStatusService
-    {
-        IEnumerable<Status> GetAllStatuses();
-        Status GetStatusById(int id);
-        Status GetByName(string name);
-        void CreateStatus(Status status);
-        void UpdateStatus(Status status);
-        void DeleteStatus(int id);
-    }
-}
-namespace Prasalnik.Services.Interfaces
-{
-    public interface IQuestionnaireService
-    {
-        IEnumerable<Questionnaire> GetAllQuestionnaires();
-        Questionnaire GetQuestionnaireById(int id);
-        Questionnaire GetByUserId(int userId);
-        void CreateQuestionnaire(Questionnaire questionnaire);
-        void UpdateQuestionnaire(Questionnaire questionnaire);
-        void DeleteQuestionnaire(int id);
-    }
-}
-namespace Prasalnik.Services.Interfaces
-{
-    public interface IQuestionItemService
-    {
-        IEnumerable<QuestionItem> GetAllItems();
-        QuestionItem GetItemById(int id);
-        QuestionItem GetByType(QuestionTypeEnum type);
-        void CreateItem(QuestionItem item);
-        void UpdateItem(QuestionItem item);
-        void DeleteItem(int id);
-    }
-}
-namespace Prasalnik.Services.Interfaces
-{
-    public interface IAnswerService
-    {
-        IEnumerable<Answer> GetAllAnswers();
-        Answer GetAnswerById(int id);
-        Answer GetByUserId(int userId);
-        void CreateAnswer(Answer answer);
-        void UpdateAnswer(Answer answer);
-        void DeleteAnswer(int id);
-    }
-}
-namespace Prasalnik.Services.Implementations
-{
-    public class UserService : IUserService
-    {
-        private readonly IUserRepository _userRepository;
-        public UserService(IUserRepository userRepository)
-        {
-            _userRepository = userRepository;
-        }
-
-        public IEnumerable<User> GetAllUsers() => _userRepository.GetAll();
-        public User GetUserById(int id) => _userRepository.GetById(id);
-        public User Login(int companyId, string fullName) => _userRepository.LoginUser(companyId, fullName);
-        public void CreateUser(User user) => _userRepository.Create(user);
-        public void UpdateUser(User user) => _userRepository.Update(user);
-        public void DeleteUser(int id) => _userRepository.Delete(id);
-    }
-}
-namespace Prasalnik.Services.Implementations
-{
-    public class QuestionnaireService : IQuestionnaireService
-    {
-        private readonly IQuestionnaireRepository _questionnaireRepository;
-        public QuestionnaireService(IQuestionnaireRepository questionnaireRepository)
-        {
-            _questionnaireRepository = questionnaireRepository;
-        }
-
-        public IEnumerable<Questionnaire> GetAllQuestionnaires() => _questionnaireRepository.GetAll();
-        public Questionnaire GetQuestionnaireById(int id) => _questionnaireRepository.GetById(id);
-        public Questionnaire GetByUserId(int userId) => _questionnaireRepository.GetbyUserId(userId);
-        public void CreateQuestionnaire(Questionnaire questionnaire) => _questionnaireRepository.Create(questionnaire);
-        public void UpdateQuestionnaire(Questionnaire questionnaire) => _questionnaireRepository.Update(questionnaire);
-        public void DeleteQuestionnaire(int id) => _questionnaireRepository.Delete(id);
-    }
-}
-namespace Prasalnik.Services.Implementations
-{
-    public class QuestionItemService : IQuestionItemService
-    {
-        private readonly IQuestionItemRepository _questionItemRepository;
-        public QuestionItemService(IQuestionItemRepository questionItemRepository)
-        {
-            _questionItemRepository = questionItemRepository;
-        }
-
-        public IEnumerable<QuestionItem> GetAllItems() => _questionItemRepository.GetAll();
-        public QuestionItem GetItemById(int id) => _questionItemRepository.GetById(id);
-        public QuestionItem GetByType(QuestionTypeEnum type) => _questionItemRepository.GetByType(type.GetType());
-        public void CreateItem(QuestionItem item) => _questionItemRepository.Create(item);
-        public void UpdateItem(QuestionItem item) => _questionItemRepository.Update(item);
-        public void DeleteItem(int id) => _questionItemRepository.Delete(id);
-    }
-}
-namespace Prasalnik.Services.Implementations
-{
-    public class AnswerService : IAnswerService
-    {
-        private readonly IAnswerRepository _answerRepository;
-        public AnswerService(IAnswerRepository answerRepository)
-        {
-            _answerRepository = answerRepository;
-        }
-        public IEnumerable<Answer> GetAllAnswers() => _answerRepository.GetAll();
-        public Answer GetAnswerById(int id) => _answerRepository.GetById(id);
-        public Answer GetByUserId(int userId) => _answerRepository.GetByUserId(userId);
-        public void CreateAnswer(Answer answer) => _answerRepository.Create(answer);
-        public void UpdateAnswer(Answer answer) => _answerRepository.Update(answer);
-        public void DeleteAnswer(int id) => _answerRepository.Delete(id);
-    }
-}
-namespace Prasalnik.Services.Implementations
-{
-    public class StatusService : IStatusService
-    {
-        private readonly IStatusRepository _statusRepository;
-        public StatusService(IStatusRepository statusRepository)
-        {
-            _statusRepository = statusRepository;
-        }
-        public IEnumerable<Status> GetAllStatuses() => _statusRepository.GetAll();
-        public Status GetStatusById(int id) => _statusRepository.GetById(id);
-        public Status GetByName(string name) => _statusRepository.GetByName(name);
-        public void CreateStatus(Status status) => _statusRepository.Create(status);
-        public void UpdateStatus(Status status) => _statusRepository.Update(status);
-        public void DeleteStatus(int id) => _statusRepository.Delete(id);
-    }
-}
-namespace Prasalnik.Mapers
-{
-    public class RoleResolver : IValueResolver<UserViewModel, User, RoleEnum>
-    {
-        public RoleEnum Resolve(UserViewModel source, User destination, RoleEnum destMember, ResolutionContext context)
-        {
-            var roleRaw = source.Role?.Trim();
-            if (string.IsNullOrEmpty(roleRaw))
-                return RoleEnum.Employee;
-
-            // Try parse name or number
-            if (Enum.TryParse<RoleEnum>(roleRaw, ignoreCase: true, out var parsed)
-                && Enum.IsDefined(typeof(RoleEnum), parsed))
-            {
-                return parsed;
-            }
-
-            // Optional: log unexpected value (context.Items or ILogger via DI)
-            // throw new ArgumentException($"Invalid role value: {source.Role}");
-
-            return RoleEnum.Employee;
-        }
-    }
-}
-namespace Prasalnik.Controllers
-{
-    public class UserController : Controller
-    {
-        private readonly IUserService _userService;
-
-        public UserController(IUserService userService)
-        {
-            _userService = userService;
-        }
-
-        [HttpGet]
-        public IActionResult Login()
-        {
-            return View(new UserCredentialsViewModel());
-        }
-
-        [HttpPost]
-        public IActionResult Login(UserCredentialsViewModel credentials)
-        {
-            if (!ModelState.IsValid)
-                return View(credentials);
-
-            var user = _userService.Login(credentials);
-            if (user == null)
-            {
-                ViewBag.Error = "Invalid credentials";
-                return View(credentials);
-            }
-
-            // Store in session
-            HttpContext.Session.SetString("UserId", user.CompanyId.ToString());
-            HttpContext.Session.SetString("UserName", user.FullName);
-
-            return RedirectToAction("Index", "Questionnaire");
-        }
-
-        public IActionResult Logout()
-        {
-            HttpContext.Session.Clear();
-            return RedirectToAction("Login");
-        }
-    }
-}
-** Views\User\Login.cshtml
-@model Prasalnik.ViewModels.Models.UserCredentialsViewModel
-
-@{
-    ViewData["Title"] = "Login";
-}
-
-<h2>Login</h2>
-
-<form asp-action="Login" method="post">
-    <div class="form-group">
-        <label asp-for="CompanyId"></label>
-        <input asp-for="CompanyId" class="form-control" />
-        <span asp-validation-for="CompanyId" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="FullName"></label>
-        <input asp-for="FullName" class="form-control" />
-        <span asp-validation-for="FullName" class="text-danger"></span>
-    </div>
-    <button type="submit" class="btn btn-primary">Login</button>
-</form>
-
-@if (ViewBag.Error != null)
-{
-    <div class="alert alert-danger">@ViewBag.Error</div>
-}
-** Views\Questionnaire\Index.cshtml
-@model IEnumerable<Prasalnik.ViewModels.Models.QuestionnaireViewModel>
-
-@{
-    ViewData["Title"] = "Questionnaires";
-}
-
-<h2>Available Questionnaires</h2>
-
-@if (!Model.Any())
-{
-    <p>No questionnaires available.</p>
-}
-else
-{
-    < ul >
-        @foreach(var q in Model)
-        {
-            < li >
-                < a asp - controller = "Questionnaire" asp - action = "Details" asp - route - id = "@q.Id" >
-                    @q.Title - Status: @q.Status
-                </ a >
-            </ li >
-        }
-    </ ul >
-}
-** Views\Questionnaire\Details.cshtml
-@model Prasalnik.ViewModels.Models.QuestionnaireViewModel
-
-@{
-    ViewData["Title"] = "Questionnaire Details";
-}
-
-<h2>@Model.Title</h2>
-
-<form asp-action="SubmitAnswers" method="post">
-    <input type="hidden" name="QuestionnaireId" value="@Model.Id" />
-
-    @foreach (var question in Model.QuestionItems)
-    {
-        <div class="form-group">
-            <label>@question.QuestionText</label>
-
-            <!-- Use question.Id as key in Answers[] -->
-            <input type="text" name="Answers[@question.Id]" class="form-control" />
-        </div>
-    }
-
-    <button type="submit" class="btn btn-success" > Submit </ button >
-</ form >
-# Programs.cs
-var builder = WebApplication.CreateBuilder(args);
-
-
-string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-
-// ... add others
-IServiceCollection serviceCollection = builder.Services.AddAutoMapper(typeof(UserMappingProfile).Assembly);
-builder.Services.AddSession();
-
-// Repositories
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IQuestionnaireRepository, QuestionnaireRepository>();
-builder.Services.AddScoped<IQuestionItemRepository, QuestionItemRepository>();
-builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
-builder.Services.AddScoped<IStatusRepository, StatusRepository>();
-
-// Services
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IQuestionnaireService, QuestionnaireService>();
-builder.Services.AddScoped<IQuestionItemService, QuestionItemService>();
-builder.Services.AddScoped<IAnswerService, AnswerService>();
-builder.Services.AddScoped<IStatusService, StatusService>();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseSession();
-app.UseRouting();
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-
-app.Run();
