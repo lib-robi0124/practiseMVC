@@ -8,9 +8,7 @@ namespace Lamazon.DataAccess.Implementacija
 {
     public class ProductRepository : BaseRepository, IProductRepository
     {
-        public ProductRepository(ApplicationDbContext applicationDbContext) : base(applicationDbContext)
-        {
-        }
+        public ProductRepository(ApplicationDbContext applicationDbContext) : base(applicationDbContext) { }
 
         public List<Product> GetAllFeaturedProducts()
         {

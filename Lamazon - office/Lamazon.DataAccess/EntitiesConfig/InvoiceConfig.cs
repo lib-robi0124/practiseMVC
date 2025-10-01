@@ -22,13 +22,13 @@ namespace Lamazon.DataAccess.EntitiesConfig
             builder.HasOne(x => x.Order)
                 .WithMany(x => x.Invoices)
                 .HasForeignKey(x => x.OrderId)
-                .OnDelete(DeleteBehavior.NoAction) //koga ke se izbrise invoice, da ne se izbrise i orderot
+                .OnDelete(DeleteBehavior.NoAction) 
                 .HasConstraintName("FK_Invoice_Order");
 
             builder.HasOne(x => x.InvoiceStatus)
                 .WithMany(x => x.Invoices)
                 .HasForeignKey(x => x.InvoiceStatusId)
-                .OnDelete(DeleteBehavior.NoAction) //koga ke se izbrise invoice, da ne se izbrise i statusot
+                .OnDelete(DeleteBehavior.NoAction) 
                 .HasConstraintName("FK_Invoice_InvoiceStatus");
         }
     }

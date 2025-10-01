@@ -36,7 +36,7 @@ namespace Lamazon.Web.Controllers
             await AuthHelper.SignInUser(userValidationResult, HttpContext);
             if(string.IsNullOrEmpty(returnUrl))
             {
-                return RedirectToAction("/");
+                return Redirect("/");
             }
             return Redirect(returnUrl);
 

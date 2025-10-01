@@ -3,7 +3,7 @@
     public enum OrderStatusEnum
     {
         Pending = 1,
-            Accepting = 2,
-            rejected
+        Accepting = 2,
+        Rejected
     }
 }

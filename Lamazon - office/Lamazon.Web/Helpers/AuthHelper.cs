@@ -14,7 +14,7 @@ namespace Lamazon.Web.Helpers
                 new Claim(ClaimTypes.NameIdentifier, userViewModel.Id.ToString()),
                 new Claim(ClaimTypes.Email, userViewModel.Email),
                 new Claim(ClaimTypes.Name, userViewModel.FullName),
-                new Claim(ClaimTypes.Role, userViewModel.RoleKey),
+                new Claim(ClaimTypes.Role, userViewModel.Role.Key),
                 new Claim(ClaimTypes.PrimaryGroupSid, userViewModel.Id.ToString())
             };
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -23,8 +23,7 @@ namespace Lamazon.Web.Helpers
                 principal: new ClaimsPrincipal(claimsIdentity),
                 properties: new AuthenticationProperties
                 {
-                    IsPersistent = true,
-                    ExpiresUtc = DateTime.UtcNow.AddHours(1)
+                    IsPersistent = true
                 }
                 );
         }
