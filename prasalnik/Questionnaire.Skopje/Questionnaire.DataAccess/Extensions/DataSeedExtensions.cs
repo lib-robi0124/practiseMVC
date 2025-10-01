@@ -432,5 +432,74 @@ namespace Questionnaire.DataAccess.Extensions
 
             return modelBuilder;
         }
+        public static ModelBuilder SeedQuestionType(this ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<QuestionType>().HasData(
+                new QuestionType { Id = 1, Name = "Scale" },
+                new QuestionType { Id = 2, Name = "Text" }
+            );
+            return modelBuilder;
+        }
+        public static ModelBuilder SeedQuestion(this ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Question>().HasData(
+                new Question { Id = 1, QuestionText = "Задоволен сум од мојата моментална работа", QuestionTypeId = 1 },
+                new Question { Id = 2, QuestionText = "Чувствувам дека мојата работа е ценета во рамките на компанијата", QuestionTypeId = 1 },
+                new Question { Id = 3, QuestionText = "Се чувствувам мотивиран да одам на работа секој ден", QuestionTypeId = 1 },
+                new Question { Id = 4, QuestionText = "Се чувствувам горд што работам за оваа компанија", QuestionTypeId = 1 },
+                new Question { Id = 5, QuestionText = "Со задоволство ја препорачувам оваа компанија како работно место на пријателите и семејството", QuestionTypeId = 1 },
+                new Question { Id = 6, QuestionText = "Се гледам себеси како долгорочно работам во оваа компанија", QuestionTypeId = 1 },
+                new Question { Id = 7, QuestionText = "Имам можности за професионален развој во рамките на компанијата", QuestionTypeId = 1 },
+                new Question { Id = 8, QuestionText = "Добивам конструктивен фидбек кој ми помага да се подобрам", QuestionTypeId = 1 },
+                new Question { Id = 9, QuestionText = "Компанијата обезбедува соодветна обука и ресурси за мојот развој", QuestionTypeId = 1 },
+                new Question { Id = 10, QuestionText = "Компанијата поддржува здрава рамнотежа помеѓу работата и личниот живот", QuestionTypeId = 1 },
+                new Question { Id = 11, QuestionText = "Можам ефикасно да управувам со стресот поврзан со работата", QuestionTypeId = 1 },
+                new Question { Id = 12, QuestionText = "Мојот работен распоред ми овозможува да ги исполнувам моите лични обврски", QuestionTypeId = 1 },
+                new Question { Id = 13, QuestionText = "Комуникацијата во мојот тим е ефикасна", QuestionTypeId = 1 },
+                new Question { Id = 14, QuestionText = "Се чувствувам удобно да ги искажувам моите идеи и мислења на работа. ", QuestionTypeId = 1 },
+                new Question { Id = 15, QuestionText = "Соработката помеѓу одделенијата е ефикасна", QuestionTypeId = 1 },
+                new Question { Id = 16, QuestionText = "Му верувам на раководството на компанијата", QuestionTypeId = 1 },
+                new Question { Id = 17, QuestionText = "Мојот директен менаџер ме поддржува во остварувањето на моите цели", QuestionTypeId = 1 },
+                new Question { Id = 18, QuestionText = "Важните одлуки на компанијата се пренесуваат транспарентно", QuestionTypeId = 1 },
+                new Question { Id = 19, QuestionText = "Вредностите на компанијата се усогласуваат со моите лични вредности", QuestionTypeId = 1 },
+                new Question { Id = 20, QuestionText = "Се чувствувам вклучено и почитувано на работа", QuestionTypeId = 1 },
+                new Question { Id = 21, QuestionText = "Компанијата промовира различност и инклузија", QuestionTypeId = 1 },
+                new Question { Id = 22, QuestionText = "Ги имам сите ресурси потребни за ефикасно извршување на моите задачи", QuestionTypeId = 1 },
+                new Question { Id = 23, QuestionText = "Физичката работна средина е удобна и поволна за продуктивност", QuestionTypeId = 1 },
+                new Question { Id = 24, QuestionText = "Се чувствувам безбедно на работа", QuestionTypeId = 1 },
+                new Question { Id = 25, QuestionText = "Задоволен сум од мојот пакет компензации и бенефиции", QuestionTypeId = 1 },
+                new Question { Id = 26, QuestionText = "Моите напори и достигнувања се препознаени и ценети", QuestionTypeId = 1 },
+                new Question { Id = 27, QuestionText = "Постојат јасни можности за напредување во кариерата во рамките на компанијата", QuestionTypeId = 1 },
+                new Question { Id = 28, QuestionText = "Компанијата ги поттикнува иновациите и креативното размислување", QuestionTypeId = 1 },
+                new Question { Id = 29, QuestionText = "Подготвен сум да ги усвојам промените имплементирани во компанијата", QuestionTypeId = 1 },
+                new Question { Id = 30, QuestionText = "Идеите и предлозите на вработените се разгледуваат и се спроведуваат кога е соодветно", QuestionTypeId = 1 },
+                new Question { Id = 31, QuestionText = "Kолку е веројатно да ја препорачате оваа компанија како работно место на пријател или колега", QuestionTypeId = 1 },
+                new Question { Id = 32, QuestionText = "Што најмногу ви се допаѓа на вашето сегашно работно место?", QuestionTypeId = 2 },
+                new Question { Id = 33, QuestionText = "Кои се најголемите предизвици со кои се соочувате на работа?", QuestionTypeId = 2 },
+                new Question { Id = 34, QuestionText = "Какви предлози имате за подобрување на работната средина или процесите на компанијата?", QuestionTypeId = 2 },
+                new Question { Id = 35, QuestionText = "разно", QuestionTypeId = 2 }
+
+            );
+            return modelBuilder;
+        }
+        public static ModelBuilder SeedQuestionForm(this ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<QuestionForm>().HasData(
+                new QuestionForm { Id = 1, Title = "Општо задоволство" },
+                new QuestionForm { Id = 2, Title = "Обврска кон компанијата" },
+                new QuestionForm { Id = 3, Title = "Професионален развој" },
+                new QuestionForm { Id = 4, Title = "Рамнотежа помеѓу работата и животот" },
+                new QuestionForm { Id = 5, Title = "Комуникација и соработка" },
+                new QuestionForm { Id = 6, Title = "Лидерство" },
+                new QuestionForm { Id = 7, Title = "Организациска култура" },
+                new QuestionForm { Id = 8, Title = "Работна средина" },
+                new QuestionForm { Id = 9, Title = "Награди и признанија" },
+                new QuestionForm { Id = 10, Title = "Иновации и промени" },
+                new QuestionForm { Id = 11, Title = "Конечна евалуација" },
+                new QuestionForm { Id = 12, Title = "Отворени прашања" }
+            );
+            return modelBuilder;
+        }
+    
     }
 }

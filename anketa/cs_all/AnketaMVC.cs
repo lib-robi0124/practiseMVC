@@ -1,7 +1,7 @@
 ﻿** These are Domain Models, the “core truth” of your app.
-**They represent database tables (User, Questionnaire, etc.).
-**Enums (RoleEnum, QuestionTypeEnum) are strongly typed alternatives to raw strings.
-**Relationships (User → Questionnaires, etc.) allow EF Core navigation properties
+**They represent database tables (User, Question,Answer etc.).
+**Enums (AI to suggest) are strongly typed alternatives to raw strings.
+**Relationships (User → QuestionForm, etc.) allow EF Core navigation properties
 namespace Prasalnik.Domain.Models
 {
     public class BaseEntity
