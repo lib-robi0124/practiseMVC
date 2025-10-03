@@ -75,24 +75,24 @@ namespace Anketa.DataAccess
                 new Question { Id = 24, Text = "Се чувствувам безбедно на работа", QuestionTypeId = 1, QuestionFormId = 8, UserId = 1 },
 
                 // Form 9: "Награди и признанија" (Scale questions)
-                new Question { Id = 24, Text = "Задоволен сум од мојот пакет компензации и бенефиции", QuestionTypeId = 1, QuestionFormId = 9, UserId = 1 },
-                new Question { Id = 25, Text = "Моите напори и достигнувања се препознаени и ценети", QuestionTypeId = 1, QuestionFormId = 9, UserId = 1 },
-                new Question { Id = 26, Text = "Постојат јасни можности за напредување во кариерата во рамките на компанијата", QuestionTypeId = 1, QuestionFormId = 9, UserId = 1 },
+                new Question { Id = 26, Text = "Задоволен сум од мојот пакет компензации и бенефиции", QuestionTypeId = 1, QuestionFormId = 9, UserId = 1 },
+                new Question { Id = 27, Text = "Моите напори и достигнувања се препознаени и ценети", QuestionTypeId = 1, QuestionFormId = 9, UserId = 1 },
+                new Question { Id = 28, Text = "Постојат јасни можности за напредување во кариерата во рамките на компанијата", QuestionTypeId = 1, QuestionFormId = 9, UserId = 1 },
 
                 // Form 10: "Иновации и промени" (Scale questions)
-                new Question { Id = 27, Text = "Компанијата ги поттикнува иновациите и креативното размислување", QuestionTypeId = 1, QuestionFormId = 10, UserId = 1 },
-                new Question { Id = 28, Text = "Подготвен сум да ги усвојам промените имплементирани во компанијата", QuestionTypeId = 1, QuestionFormId = 10, UserId = 1 },
-                new Question { Id = 29, Text = "Идеите и предлозите на вработените се разгледуваат и се спроведуваат кога е соодветно", QuestionTypeId = 1, QuestionFormId = 10, UserId = 1 },
+                new Question { Id = 29, Text = "Компанијата ги поттикнува иновациите и креативното размислување", QuestionTypeId = 1, QuestionFormId = 10, UserId = 1 },
+                new Question { Id = 30, Text = "Подготвен сум да ги усвојам промените имплементирани во компанијата", QuestionTypeId = 1, QuestionFormId = 10, UserId = 1 },
+                new Question { Id = 31, Text = "Идеите и предлозите на вработените се разгледуваат и се спроведуваат кога е соодветно", QuestionTypeId = 1, QuestionFormId = 10, UserId = 1 },
 
                 // Form 11: "Конечна евалуација" (Scale and text questions)
-                new Question { Id = 30, Text = "Kолку е веројатно да ја препорачате оваа компанија како работно место на пријател или колега", QuestionTypeId = 1, QuestionFormId = 11, UserId = 1 },
-                new Question { Id = 31, Text = "Како ја гледате вашата иднина во оваа компанија во следните 2-3 години?", QuestionTypeId = 2, QuestionFormId = 11, UserId = 1 },
-                new Question { Id = 32, Text = "разно", QuestionTypeId = 2, QuestionFormId = 11, UserId = 1 },
+                new Question { Id = 32, Text = "Kолку е веројатно да ја препорачате оваа компанија како работно место на пријател или колега", QuestionTypeId = 1, QuestionFormId = 11, UserId = 1 },
+                new Question { Id = 33, Text = "Како ја гледате вашата иднина во оваа компанија во следните 2-3 години?", QuestionTypeId = 2, QuestionFormId = 11, UserId = 1 },
+                new Question { Id = 34, Text = "разно", QuestionTypeId = 2, QuestionFormId = 11, UserId = 1 },
 
                 // Form 12: Отворени прашања (Text questions)
-                new Question { Id = 33, Text = "Што најмногу ви се допаѓа на вашето сегашно работно место?", QuestionTypeId = 2, QuestionFormId = 12, UserId = 1 },
-                new Question { Id = 34, Text = "Кои се најголемите предизвици со кои се соочувате на работа?", QuestionTypeId = 2, QuestionFormId = 12, UserId = 1 },
-                new Question { Id = 35, Text = "Какви предлози имате за подобрување на работната средина или процесите на компанијата?", QuestionTypeId = 2, QuestionFormId = 12, UserId = 1 }
+                new Question { Id = 35, Text = "Што најмногу ви се допаѓа на вашето сегашно работно место?", QuestionTypeId = 2, QuestionFormId = 12, UserId = 1 },
+                new Question { Id = 36, Text = "Кои се најголемите предизвици со кои се соочувате на работа?", QuestionTypeId = 2, QuestionFormId = 12, UserId = 1 },
+                new Question { Id = 37, Text = "Какви предлози имате за подобрување на работната средина или процесите на компанијата?", QuestionTypeId = 2, QuestionFormId = 12, UserId = 1 }
             );
             // Seed Users with OU
             modelBuilder.Entity<User>().HasData(
