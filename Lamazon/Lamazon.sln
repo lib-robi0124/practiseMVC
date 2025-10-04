@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lamazon.Web", "Lamazon.Web\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lamazon.DataAccess", "Lamazon.DataAccess\Lamazon.DataAccess.csproj", "{6B17A011-2496-49F3-AC4D-02F77631C0C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lamazon.Domain", "Lamazon.Entities\Lamazon.Domain.csproj", "{B507627B-417F-4A5D-9D52-03FD46A0CC6B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lamazon.Entities", "Lamazon.Entities\Lamazon.Entities.csproj", "{B507627B-417F-4A5D-9D52-03FD46A0CC6B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lamazon.Services", "Lamazon.Services\Lamazon.Services.csproj", "{34D7814E-41B3-429F-8C20-1E86908B3C4A}"
 EndProject

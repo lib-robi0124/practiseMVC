@@ -20,3 +20,92 @@ html {
 body {
   margin-bottom: 60px;
 }
+.question-group {
+    background-color: #f8f9fa;
+    border-left: 4px solid #007bff;
+    transition: all 0.3s ease;
+}
+
+    .question-group:hover {
+        background-color: #e9ecef;
+    }
+
+.question-text {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.scale-option {
+    min-width: 45px;
+    text-align: center;
+}
+
+    .scale-option:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.border-danger {
+    border-left-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+.char-count {
+    font-weight: bold;
+}
+
+.text-warning {
+    color: #ffc107 !important;
+    font-weight: bold;
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 10px;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+    .btn-success:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+        transform: translateY(-1px);
+    }
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.footer {
+    background-color: #343a40;
+}
+
+.question-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+    .question-card:hover {
+        transform: translateY(-2px);
+    }

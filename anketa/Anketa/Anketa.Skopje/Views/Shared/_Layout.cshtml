@@ -3,47 +3,108 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Anketa.Skopje</title>
+    <title>@ViewData["Title"] - Анкета за Задоволство</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Anketa.Skopje.styles.css" asp-append-version="true" />
+
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        .footer {
+            background-color: #343a40;
+        }
+
+        .question-card {
+            transition: transform 0.2s ease-in-out;
+        }
+
+            .question-card:hover {
+                transform: translateY(-2px);
+            }
+    </style>
+
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Anketa.Skopje</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+        <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" asp-controller="Form" asp-action="Index">
+                    <i class="fas fa-chart-bar me-2"></i>Анкета за Задоволство
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Form" asp-action="Index">
+                                    <i class="fas fa-home me-1"></i>Анкети
+                                </a>
+                            </li>
+                        }
+                    </ul>
+
+                    <ul class="navbar-nav">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <span class="nav-link">
+                                    <i class="fas fa-user me-1"></i>@User.Identity.Name
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <form asp-controller="User" asp-action="Logout" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-light btn-sm">
+                                        <i class="fas fa-sign-out-alt me-1"></i>Одјава
+                                    </button>
+                                </form>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - Anketa.Skopje - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <main role="main" class="pb-3">
+        @RenderBody()
+    </main>
+
+    <footer class="footer mt-auto py-3 bg-dark text-light">
+        <div class="container text-center">
+            <span>&copy; 2024 - Анкета за Задоволство на Вработените</span>
         </div>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- Bootstrap & jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom Scripts -->
+    <script>
+        $(document).ready(function () {
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(function () {
+                $('.alert').alert('close');
+            }, 5000);
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

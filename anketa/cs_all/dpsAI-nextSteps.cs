@@ -21,7 +21,7 @@
         public string Description { get; set; }
         public List<QuestionViewModel> Questions { get; set; } = new();
     }
-
+// ViewModels/QuestionViewModel.cs
     public class QuestionViewModel
     {
         public int Id { get; set; }
@@ -70,7 +70,8 @@
                 Id = form.Id,
                 Title = form.Title,
                 Description = form.Description,
-                Questions = form.Questions?.Select(q => q.ToViewModel()).ToList() ?? new List<QuestionViewModel>()
+                Questions = form.Questions?.Select(q => q.ToViewModel())
+                .ToList() ?? new List<QuestionViewModel>()
             };
         }
     }

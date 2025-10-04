@@ -106,7 +106,8 @@ public static class Mappers
             Id = f.Id,
             Title = f.Title,
             Description = f.Description,
-            Questions = f.Questions?.Select(q => q.ToViewModel()).ToList() ?? new List<QuestionViewModel>()
+            Questions = f.Questions?.Select(q => q.ToViewModel())
+            .ToList() ?? new List<QuestionViewModel>()
         };
     }
 }
@@ -116,49 +117,15 @@ public static class Mappers
 
 ## 4) Helpers — Authentication & Password Hashing
 
-> Use a strong hashing function. Below is PBKDF2 (built-in) example to avoid external packages.
 
-```csharp
-public static class AuthHelper
-{
-    private const int SaltSize = 16; // 128 bit
-    private const int KeySize = 32; // 256 bit
-    private const int Iterations = 10000;
+FormController → Displays and prepares forms.
 
-    public static string HashPassword(string password)
-    {
-        using var rng = RandomNumberGenerator.Create();
-        var salt = new byte[SaltSize];
-        rng.GetBytes(salt);
+AnswerController → Handles submission only.
 
-        using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256);
-        var key = pbkdf2.GetBytes(KeySize);
+UserController → Handles authentication.
 
-        var hashBytes = new byte[1 + SaltSize + KeySize];
-        hashBytes[0] = 0; // version
-        Buffer.BlockCopy(salt, 0, hashBytes, 1, SaltSize);
-        Buffer.BlockCopy(key, 0, hashBytes, 1 + SaltSize, KeySize);
+AdminController → Handles CRUD operations for forms and questions.
 
-        return Convert.ToBase64String(hashBytes);
-    }
-
-    public static bool VerifyPassword(string password, string hashed)
-    {
-        var hashBytes = Convert.FromBase64String(hashed);
-        if (hashBytes[0] != 0) return false;
-
-        var salt = new byte[SaltSize];
-        Buffer.BlockCopy(hashBytes, 1, salt, 0, SaltSize);
-        var key = new byte[KeySize];
-        Buffer.BlockCopy(hashBytes, 1 + SaltSize, key, 0, KeySize);
-
-        using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256);
-        var computed = pbkdf2.GetBytes(KeySize);
-
-        return CryptographicOperations.FixedTimeEquals(computed, key);
-    }
-}
-```
 
 **Important:** Update your seed data to store `Password = AuthHelper.HashPassword("16130")` etc. Storing plain companyId as password is insecure.
 

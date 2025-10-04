@@ -1,4 +1,78 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿$(document).ready(function () {
+    // Scale answer selection styling
+    $('.scale-input').change(function () {
+        $(this).closest('.scale-option').removeClass('btn-outline-primary').addClass('btn-primary');
+        $(this).closest('.btn-group').find('.scale-option').not(this).removeClass('btn-primary').addClass('btn-outline-primary');
+    });
 
-// Write your JavaScript code.
+    // Character counter for text areas
+    $('textarea').on('input', function () {
+        var length = $(this).val().length;
+        $(this).siblings('.char-count').text(length);
+
+        if (length > 450) {
+            $(this).siblings('.text-muted').addClass('text-warning');
+        } else {
+            $(this).siblings('.text-muted').removeClass('text-warning');
+        }
+    });
+
+    // Initialize character counts
+    $('textarea').each(function () {
+        var length = $(this).val().length;
+        $(this).siblings('.char-count').text(length);
+    });
+
+    // Form validation
+    $('form').on('submit', function () {
+        var isValid = true;
+        $('.question-group').each(function () {
+            var hasAnswer = false;
+            var questionType = $(this).find('.scale-input').length > 0 ? 'scale' : 'text';
+
+            if (questionType === 'scale') {
+                hasAnswer = $(this).find('.scale-input:checked').length > 0;
+            } else {
+                hasAnswer = $(this).find('textarea').val().trim().length > 0;
+            }
+
+            if (!hasAnswer) {
+                isValid = false;
+                $(this).addClass('border-danger');
+            } else {
+                $(this).removeClass('border-danger');
+            }
+        });
+
+        if (!isValid) {
+            alert('Ве молам одговорете на сите прашања пред да поднесете.');
+            return false;
+        }
+
+        return true;
+    });
+});
+$(document).ready(function () {
+    // Auto-dismiss alerts after 5 seconds
+    setTimeout(function () {
+        $('.alert').alert('close');
+    }, 5000);
+
+    // Add hover effects to cards
+    $('.card').hover(
+        function () {
+            $(this).css('transform', 'translateY(-5px)');
+            $(this).css('box-shadow', '0 8px 15px rgba(0,0,0,0.1)');
+        },
+        function () {
+            $(this).css('transform', 'translateY(0)');
+            $(this).css('box-shadow', '0 4px 6px rgba(0,0,0,0.1)');
+        }
+    );
+});
+$(document).ready(function () {
+    // Auto-dismiss alerts after 5 seconds
+    setTimeout(function () {
+        $('.alert').alert('close');
+    }, 5000);
+});
