@@ -8,31 +8,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Anketa.Skopje.styles.css" asp-append-version="true" />
 
-    <!-- Custom CSS -->
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .navbar-brand {
-            font-weight: bold;
-            font-size: 1.5rem;
-        }
-
-        .footer {
-            background-color: #343a40;
-        }
-
-        .question-card {
-            transition: transform 0.2s ease-in-out;
-        }
-
-            .question-card:hover {
-                transform: translateY(-2px);
-            }
-    </style>
-
+   
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
@@ -95,16 +71,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Custom Scripts -->
-    <script>
-        $(document).ready(function () {
-            // Auto-dismiss alerts after 5 seconds
-            setTimeout(function () {
-                $('.alert').alert('close');
-            }, 5000);
-        });
-    </script>
-
+    
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
