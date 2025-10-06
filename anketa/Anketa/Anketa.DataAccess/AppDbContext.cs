@@ -9,7 +9,7 @@ namespace Anketa.DataAccess
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Server=.;Database=EmployeeAnketaDb;Trusted_Connection=True;TrustServerCertificate=True");
+            optionsBuilder.UseSqlServer("Server=.;Database=EmployeeAnketaDb;Trusted_Connection=true;MultipleActiveResultSets=true;TrustServerCertificate=true");
         }
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }

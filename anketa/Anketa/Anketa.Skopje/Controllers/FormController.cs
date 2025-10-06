@@ -18,7 +18,7 @@ namespace Anketa.Skopje.Controllers
             _questionService = questionService;
             _answerService = answerService;
         }
-
+      
         public async Task<IActionResult> Index()
         {
             var forms = await _questionService.GetActiveFormsAsync();
