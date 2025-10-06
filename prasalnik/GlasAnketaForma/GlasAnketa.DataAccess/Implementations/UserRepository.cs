@@ -1,22 +1,32 @@
-﻿namespace GlasAnketa.DataAccess.Implementations
+﻿using GlasAnketa.DataAccess.DataContext;
+using GlasAnketa.DataAccess.Interfaces;
+using GlasAnketa.Domain.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace GlasAnketa.DataAccess.Implementations
 {
-    public class UserRepository : BaseRepository, Interfaces.IUserRepository
+    public class UserRepository : BaseRepository, IUserRepository
     {
-        public UserRepository(DataContext.AppDbContext appDbContext) : base(appDbContext)
+        public UserRepository(AppDbContext appDbContext) : base(appDbContext)
         {
         }
-        public Domain.Models.User GetByCompanyId(int companyId)
+        public User GetByCompanyId(int companyId)
         {
-            throw new NotImplementedException();
+            return _appDbContext.Users.Include(x => x.OU).Include(x => x.OU2).FirstOrDefault(x => x.CompanyId == companyId);
+
         }
-        public Domain.Models.User GetByOU(string ou)
+
+        public User GetByOU(string ou)
         {
-            throw new NotImplementedException();
+            return _appDbContext.Users.Include(x => x.CompanyId).Include(x => x.OU2).FirstOrDefault(x => x.OU == ou);
         }
-        public int Insert(Domain.Models.User user)
+
+        public int Insert(User user)
         {
-            throw new NotImplementedException();
+            _appDbContext.Users.Add(user); //Add method marks entity as Added in the context
+            _appDbContext.SaveChanges(); //SaveChanges commits changes to the database
+            return user.Id; //after SaveChanges, EF Core populates the Id property with the generated value
         }
     }
-    
+
 }

@@ -4,10 +4,10 @@ namespace GlasAnketa.DataAccess.Implementations
 {
     public abstract class BaseRepository
     {
-        protected readonly AppDbContext _appDbcontext;
+        protected readonly AppDbContext _appDbContext;
         public BaseRepository(AppDbContext appDbContext)
         {
-            _appDbcontext = appDbContext;
+            _appDbContext = appDbContext;
         }
     }
 }

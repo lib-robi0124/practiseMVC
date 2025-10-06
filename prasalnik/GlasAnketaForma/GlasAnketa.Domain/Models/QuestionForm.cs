@@ -9,5 +9,10 @@
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
         public ICollection<Question> Questions { get; set; }
         public ICollection<Answer> Answers { get; set; }
+        public QuestionForm()
+        {
+            Questions = new HashSet<Question>();
+            Answers = new HashSet<Answer>();
+        }
     }
 }

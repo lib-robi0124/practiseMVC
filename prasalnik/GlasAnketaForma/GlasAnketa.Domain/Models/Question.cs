@@ -12,5 +12,9 @@
         public QuestionForm QuestionForm { get; set; }
         public bool IsRequired { get; set; } = true;
         public ICollection<Answer> Answers { get; set; }
+        public Question()
+        {
+            Answers = new HashSet<Answer>();
+        }
     }
 }

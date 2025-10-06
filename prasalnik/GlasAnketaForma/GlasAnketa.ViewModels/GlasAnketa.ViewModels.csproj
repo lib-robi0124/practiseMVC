@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\GlasAnketa.Domain\GlasAnketa.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

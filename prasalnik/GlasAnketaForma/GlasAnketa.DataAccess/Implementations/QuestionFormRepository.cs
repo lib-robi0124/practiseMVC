@@ -12,22 +12,37 @@ namespace GlasAnketa.DataAccess.Implementations
 
         public void DeleteQuestionForm(int id)
         {
-            throw new NotImplementedException();
+            var questionForm = _appDbContext.QuestionForms.FirstOrDefault(c => c.Id == id);
+            if (questionForm is null)
+            {
+                throw new Exception($"QuestionForm with id {id} not found.");
+            }
+            _appDbContext.QuestionForms.Remove(questionForm);
+            _appDbContext.SaveChanges();
         }
 
         public QuestionForm GetQuestionFormById(int id)
         {
-            throw new NotImplementedException();
+            return _appDbContext.QuestionForms.FirstOrDefault(q => q.Id == id);
         }
 
         public int InsertQuestionForm(QuestionForm questionForm)
         {
-            throw new NotImplementedException();
+            _appDbContext.QuestionForms.Add(questionForm);
+            _appDbContext.SaveChanges();
+            return questionForm.Id;
         }
 
         public void UpdateQuestionForm(QuestionForm questionForm)
         {
-            throw new NotImplementedException();
+            if (!_appDbContext.QuestionForms
+                 .Any(x => x.Id == questionForm.Id))
+            {
+                throw new Exception($"QuestionForm with id {questionForm.Id} was not found");
+            }
+            _appDbContext.QuestionForms.Update(questionForm);
+            _appDbContext.SaveChanges();
+
         }
     }
 }

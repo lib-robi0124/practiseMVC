@@ -1,6 +1,8 @@
 ﻿using GlasAnketa.DataAccess.DataContext;
 using GlasAnketa.DataAccess.Implementations;
 using GlasAnketa.DataAccess.Interfaces;
+using GlasAnketa.Services.Implementations;
+using GlasAnketa.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -20,6 +22,17 @@ namespace GlasAnketa.Services.Extensions
             services.AddScoped<IQuestionFormRepository, QuestionFormRepository>();
             services.AddScoped<IAnswerRepository, AnswerRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+        }
+        public static void InjectServices(this IServiceCollection services)
+        {
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IQuestionService, QuestionService>();
+        }
+
+        public static void InjectAutoMapper(this IServiceCollection services)
+        {
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
         }
     }
 }

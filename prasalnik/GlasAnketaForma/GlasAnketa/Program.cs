@@ -6,6 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.InjectDbContext(builder.Configuration.GetConnectionString("DefaultConnection"));
 builder.Services.InjectRepositories();
+builder.Services.InjectServices();
+builder.Services.InjectAutoMapper();
+
 
 
 var app = builder.Build();
@@ -23,6 +26,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
