@@ -22,6 +22,7 @@ namespace Lamazon.Services.Extensions
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IOrderRepository, OrderRepository>();
             services.AddScoped<IDashboardRepository, DashboardRepository>();
+            services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
         }
 
         public static void InjectServices(this IServiceCollection services) 
@@ -30,6 +31,7 @@ namespace Lamazon.Services.Extensions
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<IDashboardService , DashboardService>();
+            services.AddScoped<IProductCategoriesService, ProductCategoriesService>();
         }
 
         public static void InjectAutoMapper(this IServiceCollection services)
