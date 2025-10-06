@@ -1,4 +1,9 @@
 ﻿using Lamazon.ViewModels.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Lamazon.Services.Interfaces
 {
@@ -8,6 +13,9 @@ namespace Lamazon.Services.Interfaces
         void UpdateProductCategory(ProductCategoryViewModel productCategoryViewModel);
         void DeleteProductCategory(int id);
         ProductCategoryViewModel GetProductCategoryById(int id);
-        PageResultViewModel<ProductCategoryViewModel> GetPageResultViewModel(DatatableRequesViewModel datatableRequesViewModel);
+
+        PagedResultViewModel<ProductCategoryViewModel> 
+            GetPagedResultViewModel(DatatableRequestViewModel datatableRequestViewModel);
+
     }
 }

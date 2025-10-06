@@ -10,7 +10,8 @@ using System.Threading.Tasks;
 
 namespace Lamazon.DataAccess.DataContext
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : DbContext //to be automatically created by EF Core Migration and create tables - IdentityDbContext for Identity,
+                                                  //nuget package Microsoft.AspNetCore.Identity.EntityFrameworkCore
     {
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {

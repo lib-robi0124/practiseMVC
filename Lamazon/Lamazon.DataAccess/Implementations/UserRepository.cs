@@ -2,11 +2,6 @@
 using Lamazon.DataAccess.Interfaces;
 using Lamazon.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Lamazon.DataAccess.Implementations
 {
@@ -20,21 +15,22 @@ namespace Lamazon.DataAccess.Implementations
         {
             return _applicationDbContext.Users
                 .Include(x => x.Role)
-                .FirstOrDefault(x => x.Email.ToLower() == email.ToLower());
+                .FirstOrDefault(x => x.Email.ToLower() == email.ToLower()); //if condition is string comparison,
+                                                                            //use ToLower to avoid case sensitivity issues
         }
 
         public User GetById(int id)
         {
             return _applicationDbContext.Users
-                   .Include(x => x.Role)
-                   .FirstOrDefault(x => x.Id == id);
+                   .Include(x => x.Role) //if we want to include related Role entity
+                   .FirstOrDefault(x => x.Id == id); //FirstOrDefault returns first element or null if not found
         }
 
         public int Insert(User user)
         {
-            _applicationDbContext.Users.Add(user);
-            _applicationDbContext.SaveChanges();
-            return user.Id;
+            _applicationDbContext.Users.Add(user); //Add method marks entity as Added in the context
+            _applicationDbContext.SaveChanges(); //SaveChanges commits changes to the database
+            return user.Id; //after SaveChanges, EF Core populates the Id property with the generated value
         }
     }
 }

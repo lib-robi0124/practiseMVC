@@ -27,7 +27,7 @@ namespace Lamazon.Web.Controllers
             return View(allProducts);
         }
 
-        public IActionResult ProductDetails(int? id)
+        public IActionResult ProductDetails(int? id) // ? means it can be null, without value
         {
             if(id.HasValue)
             {
