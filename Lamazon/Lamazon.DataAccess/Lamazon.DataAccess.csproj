@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Lamazon.Entities\Lamazon.Domain.csproj" />
+    <ProjectReference Include="..\Lamazon.Entities\Lamazon.Entities.csproj" />
   </ItemGroup>
 
 </Project>

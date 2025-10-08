@@ -1,0 +1,69 @@
+﻿@model UserCredentialsVM
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Satisfaction Survey - Login</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/login.css" />
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h2>👥 Employee Satisfaction Survey</h2>
+            <p>Please enter your credentials to continue</p>
+        </div>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="validation-summary">
+                <ul>
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <form asp-action="Login" method="post" id="loginForm" class="login-form">
+            <div class="form-group">
+                <label asp-for="CompanyId" class="form-label">🏢 Company ID</label>
+                <input asp-for="CompanyId" class="form-control" placeholder="Enter your company ID" />
+                <span asp-validation-for="CompanyId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Password" class="form-label">🔒 Password</label>
+                <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn-login" id="loginBtn">
+                <span id="btnText">Login</span>
+                <div id="loadingSpinner" style="display: none;">Loading...</div>
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <small style="color: #7f8c8d;">
+                Having trouble logging in? Contact your administrator.
+            </small>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const btn = document.getElementById('loginBtn');
+            const btnText = document.getElementById('btnText');
+            const spinner = document.getElementById('loadingSpinner');
+
+            btnText.style.display = 'none';
+            spinner.style.display = 'block';
+            btn.disabled = true;
+        });
+    </script>
+</body>
+</html>

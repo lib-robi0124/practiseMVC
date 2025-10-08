@@ -1,0 +1,183 @@
+﻿@model FormSubmissionVM
+@{
+    ViewData["Title"] = Model.QuestionForm.Title;
+    var nextFormId = ViewBag.NextFormId as int?;
+    var isLastForm = ViewBag.IsLastForm as bool? ?? false;
+    var currentFormNumber = ViewBag.CurrentFormNumber as int? ?? 1;
+    var totalForms = ViewBag.TotalForms as int? ?? 1;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Employee Satisfaction Survey</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/questionnaire.css" />
+</head>
+<body>
+    <div class="questionnaire-container">
+        <div class="questionnaire-header fade-in">
+            <div class="form-progress">
+                <div class="progress-info">
+                    <h1>@Model.QuestionForm.Title</h1>
+                    <p>@Model.QuestionForm.Description</p>
+                    <div class="form-counter">
+                        Questionnaire @currentFormNumber of @totalForms
+                    </div>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <small class="text-muted">Progress: <span id="progress-text">0%</span></small>
+                </div>
+            </div>
+        </div>
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            </div>
+        }
+
+        <div class="questionnaire-form slide-in">
+            <form asp-action="SubmitForm" method="post" id="questionnaireForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="QuestionFormId" />
+
+                @for (int i = 0; i < Model.QuestionForm.Questions.Count; i++)
+                {
+                    var question = Model.QuestionForm.Questions[i];
+                    <div class="question-item" data-required="@question.IsRequired.ToString().ToLower()" data-question-type="@question.QuestionType">
+                        <h4>@question.Text @(question.IsRequired ? "*" : "")</h4>
+
+                        <input type="hidden" name="Answers[@i].QuestionId" value="@question.Id" />
+                        <input type="hidden" name="Answers[@i].QuestionFormId" value="@Model.QuestionForm.Id" />
+                        <input type="hidden" name="Answers[@i].UserId" value="@Model.Answers[i].UserId" />
+
+                        @if (question.QuestionType == "Scale")
+                        {
+                            <div class="scale-answers">
+                                @for (int j = 1; j <= 10; j++)
+                                {
+                                    <label class="scale-option">
+                                        <input type="radio"
+                                               name="Answers[@i].ScaleValue"
+                                               value="@j"
+                                               class="scale-radio" />
+                                        <span class="scale-number">@j</span>
+                                    </label>
+                                }
+                            </div>
+                            <div class="scale-labels">
+                                <span>Strongly Disagree (1)</span>
+                                <span>Strongly Agree (10)</span>
+                            </div>
+                        }
+                        else if (question.QuestionType == "Text")
+                        {
+                            <textarea name="Answers[@i].TextValue"
+                              class="text-answer form-control"
+                              placeholder="Please enter your response here..."></textarea>
+                        }
+                    </div>
+                }
+
+                <div class="navigation-buttons">
+                    <button type="submit" class="btn btn-success" id="submitBtn">
+                        <span class="btn-text">
+                            @(isLastForm ? "Submit All Answers" : "Save & Continue →")
+                        </span>
+                        <div class="loading-spinner" style="display: none;">Submitting...</div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('questionnaireForm');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progress-text');
+            const submitBtn = document.getElementById('submitBtn');
+
+            // Calculate progress based on answered questions
+            function updateProgress() {
+                const totalQuestions = @Model.QuestionForm.Questions.Count;
+                let answeredQuestions = 0;
+
+                // Count answered questions
+                document.querySelectorAll('.question-item').forEach(questionItem => {
+                    const questionType = questionItem.dataset.questionType;
+
+                    if (questionType === 'Scale') {
+                        const hasAnswer = questionItem.querySelector('input[type="radio"]:checked');
+                        if (hasAnswer) answeredQuestions++;
+                    } else if (questionType === 'Text') {
+                        const textarea = questionItem.querySelector('textarea');
+                        if (textarea && textarea.value.trim().length > 0) answeredQuestions++;
+                    }
+                });
+
+                const progress = Math.min(100, (answeredQuestions / totalQuestions) * 100);
+
+                if (progressFill) {
+                    progressFill.style.width = progress + '%';
+                }
+                if (progressText) {
+                    progressText.textContent = Math.round(progress) + '%';
+                }
+            }
+
+            // Add event listeners to all inputs
+            form.querySelectorAll('input[type="radio"], textarea').forEach(input => {
+                input.addEventListener('change', updateProgress);
+                if (input.type === 'textarea') {
+                    input.addEventListener('input', updateProgress);
+                }
+            });
+
+            // Form submission handler
+            form.addEventListener('submit', function(e) {
+                console.log('Form submitted');
+
+                const btnText = submitBtn.querySelector('.btn-text');
+                const spinner = submitBtn.querySelector('.loading-spinner');
+
+                if (btnText && spinner) {
+                    btnText.style.display = 'none';
+                    spinner.style.display = 'inline-block';
+                }
+                submitBtn.disabled = true;
+
+                // Show loading state
+                submitBtn.innerHTML = '<div class="loading-spinner"></div> Submitting...';
+            });
+
+            // Initial progress update
+            updateProgress();
+
+            // Debug: Log form data on submit
+            form.addEventListener('submit', function(e) {
+                const formData = new FormData(form);
+                console.log('Form data:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(key + ': ' + value);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Lamazon.Services.Implementations
 {
     public class ProductService : IProductService
-    {   // Dependency Injection of the repository and mapper
+    {
         private readonly IProductRepository _productRepository;
         private readonly IMapper _mapper;
 
@@ -22,9 +22,9 @@ namespace Lamazon.Services.Implementations
         }
         public List<ProductViewModel> GetAllFeaturedProducts()
         {
-           var featureProducts = _productRepository.GetAllFeaturedProducts(); // Get featured products from repository by listing
+           var featureProducts = _productRepository.GetAllFeaturedProducts();
 
-            var mappedProducts = _mapper.Map<List<ProductViewModel>>(featureProducts); // Map to ViewModel
+           var mappedProducts = _mapper.Map<List<ProductViewModel>>(featureProducts);
 
             return mappedProducts;
         }

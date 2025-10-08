@@ -1,0 +1,198 @@
+﻿/* Questionnaire Specific Styles */
+.questionnaire-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.questionnaire-header {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+    .questionnaire-header h1 {
+        color: var(--primary-color);
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .questionnaire-header p {
+        color: #7f8c8d;
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+
+.questionnaire-form {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.question-item {
+    margin-bottom: 40px;
+    padding: 25px;
+    border: 2px solid #e1e8ed;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    background: #fafbfc;
+}
+
+    .question-item:hover {
+        border-color: var(--secondary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .question-item h4 {
+        color: var(--primary-color);
+        margin-bottom: 20px;
+        font-weight: 500;
+        font-size: 1.2em;
+    }
+
+/* Scale Answer Styles */
+.scale-answers {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 20px 0;
+}
+
+.scale-option {
+    flex: 1;
+    min-width: 50px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+    .scale-option input[type="radio"] {
+        display: none;
+    }
+
+.scale-number {
+    display: block;
+    padding: 12px 8px;
+    background: var(--light-gray);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.scale-option:hover .scale-number {
+    background: #d5dbdb;
+    transform: translateY(-2px);
+}
+
+.scale-option input[type="radio"]:checked + .scale-number {
+    background: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-color);
+    transform: scale(1.05);
+}
+
+.scale-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #7f8c8d;
+    font-weight: 500;
+}
+
+/* Text Answer Styles */
+.text-answer {
+    width: 100%;
+    min-height: 120px;
+    padding: 15px;
+    border: 2px solid #e1e8ed;
+    border-radius: 8px;
+    font-size: 16px;
+    resize: vertical;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+    .text-answer:focus {
+        border-color: var(--secondary-color);
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        outline: none;
+    }
+
+/* Progress Bar */
+.progress-container {
+    margin: 30px 0;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--light-gray);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--success-color), #2ecc71);
+    transition: width 0.5s ease;
+    border-radius: 4px;
+}
+
+/* Navigation Buttons */
+.navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #e1e8ed;
+}
+
+.btn-prev, .btn-next {
+    min-width: 120px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn-prev {
+    background: var(--light-gray);
+    color: var(--dark-gray);
+}
+
+    .btn-prev:hover {
+        background: #bdc3c7;
+        transform: translateX(-2px);
+    }
+
+.btn-success {
+    background: var(--success-color);
+    color: white;
+    min-width: 150px;
+}
+
+    .btn-success:hover {
+        background: #219a52;
+        transform: translateX(2px);
+    }
+
+    .btn-success:disabled {
+        background: #bdc3c7;
+        cursor: not-allowed;
+        transform: none;
+    }

@@ -1,0 +1,39 @@
+﻿@{
+    ViewData["Title"] = "Thank You";
+}
+<head>
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/thankyou.css" />
+</head>
+<div class="thank-you-container fade-in">
+    <div class="alert-success">
+        <div class="success-icon" style="font-size: 4em; margin-bottom: 20px;">✅</div>
+        <h2>Thank You for Your Feedback!</h2>
+        <p>Your responses have been successfully recorded and will help us improve the workplace environment.</p>
+        <p>We truly value your input and commitment to making our company better.</p>
+
+        <div class="mt-4">
+            <a href="@Url.Action("Logout", "Account")" class="btn btn-primary">Return to Login</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Celebrate completion with confetti
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof confetti === 'function') {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+
+        // Clear all saved progress
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('questionnaire_progress_')) {
+                localStorage.removeItem(key);
+            }
+        });
+    });
+</script>
