@@ -1,3 +1,4 @@
+using GlasAnketa.DataAccess.DataContext;
 using GlasAnketa.Services.Extensions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
@@ -13,12 +14,12 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+
 // Add Authentication (required for [Authorize] attribute)
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/Account/Login";
-        options.AccessDeniedPath = "/Account/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
     });
 
@@ -27,7 +28,10 @@ builder.Services.AddAuthorization();
 //builder.Services.AddDbContext<AppDbContext>(options =>
 //    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Add services to the container.
+builder.Services.AddControllersWithViews();
 builder.Services.InjectDbContext(builder.Configuration.GetConnectionString("DefaultConnection"));
+
 builder.Services.InjectRepositories();
 builder.Services.InjectServices();
 builder.Services.InjectAutoMapper();

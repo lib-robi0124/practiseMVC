@@ -22,6 +22,11 @@ namespace GlasAnketa.DataAccess.Implementations
             _appDbContext.SaveChanges();
         }
 
+        public List<Question> GetAllQuestions()
+        {
+            return _appDbContext.Questions.ToList();
+        }
+
         public Question GetQuestionById(int id)
         {
             return _appDbContext.Questions.Include(q => q.User)
@@ -45,6 +50,11 @@ namespace GlasAnketa.DataAccess.Implementations
             }
             _appDbContext.Questions.Update(question);
             _appDbContext.SaveChanges();
+        }
+
+        Question IQuestionRepository.GetAllQuestions()
+        {
+            throw new NotImplementedException();
         }
     }
 }

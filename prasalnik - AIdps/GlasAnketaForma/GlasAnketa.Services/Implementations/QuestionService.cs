@@ -34,7 +34,11 @@ namespace GlasAnketa.Services.Implementations
             var question = _questionRepository.GetQuestionById(questionId);
             return _mapper.Map<QuestionVM>(question);
         }
-
+        public List<QuestionVM> GetAllQuestions()
+        {
+            Question questions = _questionRepository.GetAllQuestions(); // You'll need to implement this
+            return _mapper.Map<List<QuestionVM>>(questions);
+        }
         public void UpdateQuestion(RegisterQuestionVM registerQuestionVM)
         {
             var question = _mapper.Map<Question>(registerQuestionVM);

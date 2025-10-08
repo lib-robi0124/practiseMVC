@@ -7,7 +7,7 @@ namespace GlasAnketa.DataAccess.DataContext
 {
     public class AppDbContext : DbContext //no need Identity
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)   {  }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer("Server=.;Database=DbAnketaDeepSeek;Trusted_Connection=True;TrustServerCertificate=True");

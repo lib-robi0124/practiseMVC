@@ -15,9 +15,6 @@ namespace GlasAnketa.Controllers
             _answerService = answerService;
         }
 
-        // REMOVE Index action - we don't need it anymore
-        // Users go directly to first form
-
         [HttpGet]
         public async Task<IActionResult> Form(int id)
         {
@@ -39,7 +36,6 @@ namespace GlasAnketa.Controllers
                 var hasSubmitted = await _answerService.HasUserSubmittedFormAsync(userId.Value, id);
                 if (hasSubmitted)
                 {
-                    // If this form is submitted, redirect to next form or thank you
                     return await RedirectToNextForm(id);
                 }
 
@@ -84,71 +80,58 @@ namespace GlasAnketa.Controllers
 
             try
             {
-                Console.WriteLine($"SubmitForm called for form {model.QuestionFormId}, User: {userId}");
+                Console.WriteLine($"=== FORM SUBMISSION STARTED ===");
+                Console.WriteLine($"User: {userId}, Form: {model.QuestionFormId}");
 
                 if (!ModelState.IsValid)
                 {
-                    Console.WriteLine("ModelState is invalid");
                     await RepopulateFormData(model);
                     return View("Form", model);
                 }
 
-                // Validate that we have answers
                 if (model.Answers == null || !model.Answers.Any())
                 {
-                    ModelState.AddModelError("", "No answers provided.");
+                    ModelState.AddModelError("", "Please answer at least one question.");
                     await RepopulateFormData(model);
                     return View("Form", model);
                 }
 
-                Console.WriteLine($"Processing {model.Answers.Count} answers");
+                var answersWithValues = model.Answers.Where(a =>
+                    (a.ScaleValue.HasValue && a.ScaleValue > 0) ||
+                    !string.IsNullOrWhiteSpace(a.TextValue)).ToList();
 
-                // Prepare answers for submission - include ALL answers
-                var answersToSubmit = new List<AnswerVM>();
-
-                foreach (var answer in model.Answers)
+                if (!answersWithValues.Any())
                 {
-                    // For Scale questions, include even if ScaleValue is 0 (not selected)
-                    // For Text questions, include even if empty
-                    answersToSubmit.Add(new AnswerVM
-                    {
-                        UserId = userId.Value,
-                        QuestionId = answer.QuestionId,
-                        QuestionFormId = model.QuestionFormId,
-                        ScaleValue = answer.ScaleValue,
-                        TextValue = answer.TextValue
-                    });
+                    ModelState.AddModelError("", "Please answer at least one question.");
+                    await RepopulateFormData(model);
+                    return View("Form", model);
                 }
 
-                Console.WriteLine($"Submitting {answersToSubmit.Count} answers to database");
+                foreach (var answer in answersWithValues)
+                {
+                    answer.UserId = userId.Value;
+                }
 
-                // Submit answers to service
-                var result = await _answerService.SubmitAnswersAsync(answersToSubmit, userId.Value);
-
-                Console.WriteLine($"Submit result: Success={result.Success}, Count={result.SubmittedAnswersCount}, Errors: {string.Join(", ", result.Errors)}");
+                var result = await _answerService.SubmitAnswersAsync(answersWithValues, userId.Value);
 
                 if (result.Success)
                 {
                     TempData["SubmissionSuccess"] = true;
                     TempData["SubmittedCount"] = result.SubmittedAnswersCount;
 
-                    // Get next form ID
                     var nextFormId = await GetNextFormId(model.QuestionFormId);
 
                     if (nextFormId.HasValue)
                     {
-                        Console.WriteLine($"Redirecting to next form: {nextFormId}");
                         return RedirectToAction("Form", new { id = nextFormId.Value });
                     }
                     else
                     {
-                        Console.WriteLine("All forms completed, redirecting to ThankYou");
                         return RedirectToAction("ThankYou");
                     }
                 }
                 else
                 {
-                    Console.WriteLine($"Submission failed: {string.Join(", ", result.Errors)}");
                     foreach (var error in result.Errors)
                     {
                         ModelState.AddModelError("", error);
@@ -159,9 +142,7 @@ namespace GlasAnketa.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception in SubmitForm: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
-                ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
+                ModelState.AddModelError("", "An error occurred while submitting your answers. Please try again.");
                 await RepopulateFormData(model);
                 return View("Form", model);
             }
@@ -193,7 +174,7 @@ namespace GlasAnketa.Controllers
                 return activeForms[currentIndex + 1].Id;
             }
 
-            return null; // No more forms
+            return null;
         }
 
         private async Task<IActionResult> RedirectToNextForm(int currentFormId)
@@ -230,24 +211,6 @@ namespace GlasAnketa.Controllers
             {
                 Console.WriteLine($"Error in RepopulateFormData: {ex.Message}");
             }
-        }
-
-        // Debug method to check what's happening
-        [HttpGet]
-        public async Task<IActionResult> DebugInfo()
-        {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            var activeForms = await _formService.GetActiveFormsAsync();
-
-            return Json(new
-            {
-                UserId = userId,
-                SessionUserId = HttpContext.Session.GetInt32("UserId"),
-                SessionUserRole = HttpContext.Session.GetString("UserRole"),
-                ActiveFormsCount = activeForms.Count,
-                Forms = activeForms.Select(f => new { f.Id, f.Title, f.QuestionCount }),
-                NextFormId = await GetNextFormId(1) // Test with first form
-            });
         }
     }
 }

@@ -14,27 +14,47 @@ namespace GlasAnketa.DataAccess.Implementations
         public async Task<int> InsertAnswersAsync(List<Answer> answers)
         {
             if (answers == null || !answers.Any())
+            {
+                Console.WriteLine("InsertAnswersAsync: No answers to insert");
                 return 0;
+            }
 
             try
             {
-                Console.WriteLine($"Inserting {answers.Count} answers to database");
+                Console.WriteLine($"InsertAnswersAsync: Starting to insert {answers.Count} answers");
 
+                // Log each answer before saving
                 foreach (var answer in answers)
                 {
-                    Console.WriteLine($"Answer: Q{answer.QuestionId}, Form{answer.QuestionFormId}, User{answer.UserId}, Scale: {answer.ScaleValue}, Text: {answer.TextValue}");
+                    Console.WriteLine($"  Answer to insert - User{answer.UserId}, Q{answer.QuestionId}, Form{answer.QuestionFormId}, Scale: {answer.ScaleValue}, Text: '{answer.TextValue}'");
                 }
 
                 await _appDbContext.Answers.AddRangeAsync(answers);
+                Console.WriteLine("Entities added to context, calling SaveChangesAsync...");
+
                 var result = await _appDbContext.SaveChangesAsync();
 
-                Console.WriteLine($"SaveChanges result: {result} rows affected");
+                Console.WriteLine($"SaveChangesAsync completed. Rows affected: {result}");
+
+                // Verify the answers were saved
+                if (result > 0)
+                {
+                    var savedAnswers = _appDbContext.Answers
+                        .Where(a => a.UserId == answers.First().UserId && a.QuestionFormId == answers.First().QuestionFormId)
+                        .ToList();
+                    Console.WriteLine($"Verified: {savedAnswers.Count} answers in database for this user/form");
+                }
+
                 return result;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in InsertAnswersAsync: {ex.Message}");
-                Console.WriteLine($"Inner exception: {ex.InnerException?.Message}");
+                Console.WriteLine($"❌ ERROR in InsertAnswersAsync: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
                 throw;
             }
         }

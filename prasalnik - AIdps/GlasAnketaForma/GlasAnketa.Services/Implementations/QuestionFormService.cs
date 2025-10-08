@@ -27,11 +27,43 @@ namespace GlasAnketa.Services.Implementations
 
         public async Task<QuestionFormVM> GetFormWithQuestionsAsync(int formId)
         {
-            var form = _questionFormRepository.GetFormWithQuestions(formId);
-            if (form == null)
-                throw new Exception($"Form with id {formId} not found.");
+            try
+            {
+                Console.WriteLine($"GetFormWithQuestionsAsync called for form {formId}");
 
-            return await Task.FromResult(_mapper.Map<QuestionFormVM>(form));
+                var form = _questionFormRepository.GetFormWithQuestions(formId);
+                Console.WriteLine($"Repository returned form: {form != null}");
+
+                if (form == null)
+                {
+                    Console.WriteLine($"Form {formId} not found in repository");
+                    throw new Exception($"Form with id {formId} not found.");
+                }
+
+                Console.WriteLine($"Form found: {form.Title}, Questions: {form.Questions?.Count}");
+
+                if (form.Questions != null)
+                {
+                    foreach (var question in form.Questions)
+                    {
+                        Console.WriteLine($"  Question {question.Id}: {question.Text}, Type: {question.QuestionType?.Name}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("  No questions found for this form");
+                }
+
+                var result = _mapper.Map<QuestionFormVM>(form);
+                Console.WriteLine($"Mapped to VM: {result != null}, Questions in VM: {result.Questions?.Count}");
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR in GetFormWithQuestionsAsync: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<List<QuestionFormVM>> GetAllFormsAsync()

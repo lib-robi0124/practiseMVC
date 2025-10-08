@@ -25,7 +25,17 @@ namespace Anketa.DataAccess.Implementations
                 foreach (var answer in answers)
                 {
                     Console.WriteLine($"Processing answer - Question {answer.Key}: {answer.Value} (Type: {answer.Value.GetType()})");
+                    try
+                    {
+                        var question1 = await _context.Questions
+                        .Include(q => q.QuestionType)
+                        .FirstOrDefaultAsync(q => q.Id == answer.Key);
+                    }
+                    catch (Exception ex)
+                    {
 
+                        Console.WriteLine(ex.Message);
+                    }
                     var question = await _context.Questions
                         .Include(q => q.QuestionType)
                         .FirstOrDefaultAsync(q => q.Id == answer.Key);

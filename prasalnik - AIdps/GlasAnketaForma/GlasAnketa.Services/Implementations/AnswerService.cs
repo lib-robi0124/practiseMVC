@@ -23,10 +23,14 @@ namespace GlasAnketa.Services.Implementations
         {
             var result = new AnswerSubmissionResult();
 
+            Console.WriteLine($"=== ANSWER SERVICE STARTED ===");
+            Console.WriteLine($"Processing {answers?.Count} answers for user {userId}");
+
             if (answers == null || !answers.Any())
             {
                 result.Success = false;
                 result.Errors.Add("No answers provided.");
+                Console.WriteLine("No answers provided - returning error");
                 return result;
             }
 
@@ -34,82 +38,80 @@ namespace GlasAnketa.Services.Implementations
             {
                 // Get form ID from first answer
                 var formId = answers.First().QuestionFormId;
+                Console.WriteLine($"Form ID: {formId}");
 
                 // Check if user already submitted this form
+                Console.WriteLine("Checking if user already submitted this form...");
                 var hasSubmitted = await _answerRepository.HasUserSubmittedFormAsync(userId, formId);
+                Console.WriteLine($"Has submitted: {hasSubmitted}");
+
                 if (hasSubmitted)
                 {
                     result.Success = false;
                     result.Errors.Add("You have already submitted answers for this form.");
+                    Console.WriteLine("User already submitted this form - returning error");
                     return result;
                 }
 
                 // Map to entities
                 var answerEntities = new List<Answer>();
+                Console.WriteLine("Mapping answers to entities...");
+
                 foreach (var answerVm in answers)
                 {
-                    // Only create answer entity if there's actual data
-                    if (answerVm.ScaleValue.HasValue || !string.IsNullOrWhiteSpace(answerVm.TextValue))
+                    Console.WriteLine($"  Mapping - Q{answerVm.QuestionId}: Scale={answerVm.ScaleValue}, Text='{answerVm.TextValue}'");
+
+                    var answerEntity = new Answer
                     {
-                        var answerEntity = new Answer
-                        {
-                            UserId = userId,
-                            QuestionId = answerVm.QuestionId,
-                            QuestionFormId = formId,
-                            ScaleValue = answerVm.ScaleValue,
-                            TextValue = answerVm.TextValue,
-                            AnsweredDate = DateTime.UtcNow
-                        };
-                        answerEntities.Add(answerEntity);
-                    }
+                        UserId = userId,
+                        QuestionId = answerVm.QuestionId,
+                        QuestionFormId = formId,
+                        ScaleValue = answerVm.ScaleValue,
+                        TextValue = answerVm.TextValue,
+                        AnsweredDate = DateTime.UtcNow
+                    };
+
+                    answerEntities.Add(answerEntity);
+                    Console.WriteLine($"  Created entity: User{answerEntity.UserId}, Q{answerEntity.QuestionId}, Scale: {answerEntity.ScaleValue}");
                 }
 
-                if (!answerEntities.Any())
-                {
-                    result.Success = false;
-                    result.Errors.Add("No valid answers to save.");
-                    return result;
-                }
+                Console.WriteLine($"Attempting to save {answerEntities.Count} entities to database...");
 
                 // Save to database
                 var savedCount = await _answerRepository.InsertAnswersAsync(answerEntities);
+
+                Console.WriteLine($"Database save completed. Rows affected: {savedCount}");
+
                 result.Success = savedCount > 0;
                 result.SubmittedAnswersCount = savedCount;
                 result.SubmissionDate = DateTime.UtcNow;
 
-                if (!result.Success)
+                if (result.Success)
                 {
-                    result.Errors.Add("Failed to save answers to database.");
+                    Console.WriteLine($"✅ SUCCESS: Saved {savedCount} answers to database");
+                }
+                else
+                {
+                    result.Errors.Add("Failed to save answers to database. No rows were affected.");
+                    Console.WriteLine("❌ FAILED: No rows affected in database");
                 }
 
                 return result;
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"❌ ERROR in AnswerService: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+
                 result.Success = false;
                 result.Errors.Add($"Database error: {ex.Message}");
-                // Log the full exception
-                Console.WriteLine($"Error in SubmitAnswersAsync: {ex}");
                 return result;
             }
         }
-        //public async Task<bool> SubmitSingleAnswerAsync(List<AnswerVM> answer, int userId)
-        //{
-        //    try
-        //    {
-        //        var answerEntity = _mapper.Map<Answer>(answer);
-        //        answerEntity.UserId = userId;
-        //        answerEntity.AnsweredDate = DateTime.UtcNow;
-
-        //        var answerId = await _answerRepository.InsertAnswerAsync(answerEntity);
-        //        return answerId > 0;
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return false;
-        //    }
-        //}
-
         public async Task<List<AnswerVM>> GetUserAnswersAsync(int userId)
         {
             var answers = await _answerRepository.GetAnswersByUserIdAsync(userId);

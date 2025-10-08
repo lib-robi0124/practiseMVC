@@ -65,12 +65,31 @@ namespace GlasAnketa.DataAccess.Implementations
 
         public QuestionForm GetFormWithQuestions(int formId)
         {
-            return _appDbContext.QuestionForms
-                .Include(qf => qf.Questions)
-                    .ThenInclude(q => q.QuestionType)
-                .Include(qf => qf.Questions)
-                    .ThenInclude(q => q.User)
-                .FirstOrDefault(qf => qf.Id == formId);
+            try
+            {
+                Console.WriteLine($"GetFormWithQuestions called for form {formId}");
+
+                var form = _appDbContext.QuestionForms
+                    .Include(qf => qf.Questions)
+                        .ThenInclude(q => q.QuestionType)
+                    .Include(qf => qf.Questions)
+                        .ThenInclude(q => q.User)
+                    .FirstOrDefault(qf => qf.Id == formId);
+
+                Console.WriteLine($"Database query completed - Form found: {form != null}");
+
+                if (form != null)
+                {
+                    Console.WriteLine($"Form: {form.Title}, Questions count: {form.Questions?.Count}");
+                }
+
+                return form;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR in GetFormWithQuestions: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<int> InsertFormAsync(QuestionForm questionForm)

@@ -8,5 +8,6 @@ namespace GlasAnketa.DataAccess.Interfaces
         void UpdateQuestion(Question question);
         void DeleteQuestion(int id);
         Question GetQuestionById(int id);
+        Question GetAllQuestions();
     }
 }
