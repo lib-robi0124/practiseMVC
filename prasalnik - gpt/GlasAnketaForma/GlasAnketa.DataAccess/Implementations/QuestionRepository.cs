@@ -5,46 +5,25 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GlasAnketa.DataAccess.Implementations
 {
-    public class QuestionRepository : BaseRepository, IQuestionRepository
+    public class QuestionRepository : Repository<Question>, IQuestionRepository
     {
-        public QuestionRepository(AppDbContext appDbContext) : base(appDbContext)
+        private readonly AppDbContext _context;
+        public QuestionRepository(AppDbContext context) : base(context)
         {
+            _context = context;
         }
-
-        public void DeleteQuestion(int id)
+        public async Task<Question> GetByUserIdAsync(int userId)
         {
-            var question = _appDbContext.Questions.FirstOrDefault(c => c.Id == id);
-            if (question is null)
-            {
-                throw new Exception($"Question with id {id} not found.");
-            }
-            _appDbContext.Questions.Remove(question);
-            _appDbContext.SaveChanges();
+            return await _context.Questions
+                        .Include(x => x.User)
+                        .FirstOrDefaultAsync(x => x.UserId == userId);
         }
-
-        public Question GetQuestionById(int id)
+        public async Task<QuestionForm> GetFormWithQuestionsAsync(int formId)
         {
-            return _appDbContext.Questions.Include(q => q.User)
-                                          .Include(q => q.QuestionForm)
-                                          .FirstOrDefault(q => q.Id == id);
-        }
-
-        public int InsertQuestion(Question question)
-        {
-            _appDbContext.Questions.Add(question);
-            _appDbContext.SaveChanges();
-            return question.Id;
-        }
-
-        public void UpdateQuestion(Question question)
-        {
-            if (!_appDbContext.Questions
-                 .Any(x => x.Id == question.Id))
-            {
-                throw new Exception($"Question with id {question.Id} was not found");
-            }
-            _appDbContext.Questions.Update(question);
-            _appDbContext.SaveChanges();
+            return await _context.QuestionForms
+                .Include(f => f.Questions)
+                .ThenInclude(q => q.QuestionType)
+                .FirstOrDefaultAsync(f => f.Id == formId);
         }
     }
 }

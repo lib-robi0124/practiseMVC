@@ -8,7 +8,9 @@ namespace GlasAnketa.Services.AutoMappers
     {
         public UserMappingProfile()
         {
-            CreateMap<User, UserVM>().ReverseMap();
+            CreateMap<User, UserVM>()
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role))
+                .ReverseMap();
             CreateMap<User, RegisterUserVM>().ReverseMap();
         }
     }

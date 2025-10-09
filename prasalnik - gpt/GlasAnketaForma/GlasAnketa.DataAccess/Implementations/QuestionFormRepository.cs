@@ -5,49 +5,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GlasAnketa.DataAccess.Implementations
 {
-    public class QuestionFormRepository : BaseRepository, IQuestionFormRepository
+    public class QuestionFormRepository : Repository<QuestionForm>, IQuestionFormRepository
     {
-        public QuestionFormRepository(AppDbContext appDbContext) : base(appDbContext)
+        private readonly AppDbContext _context;
+        public QuestionFormRepository(AppDbContext context) : base(context)
         {
+            _context = context;
         }
-
-        public void DeleteQuestionForm(int id)
+        public async Task<List<QuestionForm>> GetAllFormQuestionsAsync()
         {
-            var questionForm = _appDbContext.QuestionForms.FirstOrDefault(c => c.Id == id);
-            if (questionForm is null)
-            {
-                throw new Exception($"QuestionForm with id {id} not found.");
-            }
-            _appDbContext.QuestionForms.Remove(questionForm);
-            _appDbContext.SaveChanges();
-        }
-
-        public List<QuestionForm> GetAllQuestions()
-        {
-            return _appDbContext.QuestionForms.Include(qf => qf.Questions).ToList();
-        }
-        public QuestionForm GetQuestionFormById(int id)
-        {
-            return _appDbContext.QuestionForms.FirstOrDefault(q => q.Id == id);
-        }
-
-        public int InsertQuestionForm(QuestionForm questionForm)
-        {
-            _appDbContext.QuestionForms.Add(questionForm);
-            _appDbContext.SaveChanges();
-            return questionForm.Id;
-        }
-
-        public void UpdateQuestionForm(QuestionForm questionForm)
-        {
-            if (!_appDbContext.QuestionForms
-                 .Any(x => x.Id == questionForm.Id))
-            {
-                throw new Exception($"QuestionForm with id {questionForm.Id} was not found");
-            }
-            _appDbContext.QuestionForms.Update(questionForm);
-            _appDbContext.SaveChanges();
-
+            return await _context.QuestionForms
+                        .Include(f => f.Questions)
+                        .ThenInclude(q => q.QuestionType)
+                        .ToListAsync();
         }
     }
 }

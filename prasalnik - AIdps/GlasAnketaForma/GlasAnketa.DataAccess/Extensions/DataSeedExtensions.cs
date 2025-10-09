@@ -505,7 +505,6 @@ namespace GlasAnketa.DataAccess.Extensions
                 new User { Id = 411, CompanyId = 21315, FullName = "Hristina Jovanovska", OU = "Projects and IT", OU2 = "Automation", Password = "21315", RoleId = 2 },
                 new User { Id = 412, CompanyId = 21316, FullName = "Marjan Georgiev", OU = "Production", OU2 = "Coating Unit", Password = "21316", RoleId = 2 }
                 );
-
             // Seed Roles
             modelBuilder.Entity<Role>().HasData(
                 new Role { Id = 1, Name = "Administrator" },

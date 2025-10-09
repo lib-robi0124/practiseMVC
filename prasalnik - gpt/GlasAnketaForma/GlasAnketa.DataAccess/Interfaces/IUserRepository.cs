@@ -2,10 +2,10 @@
 
 namespace GlasAnketa.DataAccess.Interfaces
 {
-    public interface IUserRepository
+    public interface IUserRepository : IRepository<User>
     {
-        User GetByCompanyId(int companyId);
-        User GetByOU(string ou);
-        int Insert(User user);
+        Task<User> GetByCompanyIdAsync(int companyId);
+        Task<User> AuthenticateAsync(int companyId, string password);
+        Task<string> GetUserOUAsync(int userId);
     }
 }

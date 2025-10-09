@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using GlasAnketa.DataAccess.Interfaces;
-using GlasAnketa.Domain.Models;
 using GlasAnketa.Services.Interfaces;
 using GlasAnketa.ViewModels.Models;
 
@@ -17,29 +16,17 @@ namespace GlasAnketa.Services.Implementations
             _mapper = mapper;
         }
 
-        public void CreateQuestion(RegisterQuestionVM registerQuestionVM)
+        public async Task<List<QuestionVM>> GetAllQuestions()
         {
-            throw new NotImplementedException();
+            var questionVMs = new List<QuestionVM>();
+            await _questionRepository.GetAllAsync();
+            return questionVMs;
         }
 
-        public int DeleteQuestionAsync(int questionId)
+        public async Task<QuestionVM> GetQuestionById(int questionId)
         {
-            throw new NotImplementedException();
-        }
-
-        public List<QuestionVM> GetAllQuestions()
-        {
-            throw new NotImplementedException();
-        }
-
-        public QuestionVM GetQuestionById(int questionId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void UpdateQuestion(RegisterQuestionVM registerQuestionVM)
-        {
-            throw new NotImplementedException();
+            var question = await _questionRepository.GetByIdAsync(questionId);
+            return _mapper.Map<QuestionVM>(question);
         }
     }
 }

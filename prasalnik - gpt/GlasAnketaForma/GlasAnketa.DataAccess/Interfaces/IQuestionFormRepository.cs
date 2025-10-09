@@ -2,12 +2,8 @@
 
 namespace GlasAnketa.DataAccess.Interfaces
 {
-    public interface IQuestionFormRepository
+    public interface IQuestionFormRepository : IRepository<QuestionForm>
     {
-        int InsertQuestionForm(QuestionForm questionForm);
-        void UpdateQuestionForm(QuestionForm questionForm);
-        void DeleteQuestionForm(int id);
-        QuestionForm GetQuestionFormById(int id);
-        List<QuestionForm> GetAllQuestions();
+        Task<List<QuestionForm>> GetAllFormQuestionsAsync();
     }
 }

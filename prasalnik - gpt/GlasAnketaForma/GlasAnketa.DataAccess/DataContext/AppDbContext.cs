@@ -1,27 +1,24 @@
 ﻿using GlasAnketa.DataAccess.Extensions;
 using GlasAnketa.Domain.Models;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace GlasAnketa.DataAccess.DataContext
 {
-    public class AppDbContext : IdentityDbContext
+    public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-        {
-        }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlServer("Server=.;Database=VoiceEmployeeDb;Trusted_Connection=True;TrustServerCertificate=True");
-
-        }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {  }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<Question> Questions { get; set; }
+        public DbSet<QuestionType> QuestionTypes { get; set; }
+        public DbSet<QuestionForm> QuestionForms { get; set; }
+        public DbSet<Answer> Answers { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.SeedData();
 
-            // Configure relationships and constraints if needed
-            modelBuilder.Entity<Answer>()
+           modelBuilder.Entity<Answer>()
                 .HasOne(a => a.User)
                 .WithMany(u => u.Answers)
                 .HasForeignKey(a => a.UserId)
@@ -38,9 +35,16 @@ namespace GlasAnketa.DataAccess.DataContext
                 .WithMany(qf => qf.Answers)
                 .HasForeignKey(a => a.QuestionFormId)
                 .OnDelete(DeleteBehavior.NoAction);
+            
+            modelBuilder.Entity<Answer>()
+                        .Property(a => a.CompanyId)
+                        .IsRequired();
 
-            // Additional configurations can be added here Questions, QuestionTypes, QuestionForms, Users
-            modelBuilder.Entity<Question>()
+            modelBuilder.Entity<Answer>()
+                .HasIndex(a => new { a.UserId, a.QuestionId, a.QuestionFormId })
+                .IsUnique();
+
+           modelBuilder.Entity<Question>()
                 .HasOne(q => q.QuestionForm)
                 .WithMany(f => f.Questions)
                 .HasForeignKey(q => q.QuestionFormId)
@@ -64,10 +68,6 @@ namespace GlasAnketa.DataAccess.DataContext
                 .HasForeignKey(u => u.RoleId)
                 .OnDelete(DeleteBehavior.NoAction);
         }
-        public DbSet<User> Users { get; set; }
-        public DbSet<Question> Questions { get; set; }
-        public DbSet<QuestionType> QuestionTypes { get; set; }
-        public DbSet<QuestionForm> QuestionForms { get; set; }
-        public DbSet<Answer> Answers { get; set; }
+      
     }
 }

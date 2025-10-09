@@ -5,7 +5,6 @@ using GlasAnketa.Services.Implementations;
 using GlasAnketa.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace GlasAnketa.Services.Extensions
 {
@@ -15,7 +14,6 @@ namespace GlasAnketa.Services.Extensions
         {
             services.AddDbContext<AppDbContext>(option => option.UseSqlServer(connectionString));
         }
-
         public static void InjectRepositories(this IServiceCollection services)
         {
             services.AddScoped<IQuestionRepository, QuestionRepository>();
@@ -27,8 +25,9 @@ namespace GlasAnketa.Services.Extensions
         {
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IQuestionService, QuestionService>();
+            services.AddScoped<IQuestionFormService, QuestionFormService>();
+            services.AddScoped<IAnswerService, AnswerService>();
         }
-
         public static void InjectAutoMapper(this IServiceCollection services)
         {
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

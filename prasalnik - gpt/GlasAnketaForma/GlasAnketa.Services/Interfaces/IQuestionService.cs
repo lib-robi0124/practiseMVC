@@ -5,11 +5,7 @@ namespace GlasAnketa.Services.Interfaces
 {
     public interface IQuestionService
     {
-        QuestionVM GetQuestionById(int questionId);
-        List<QuestionVM> GetAllQuestions();
-        // Admin methods
-        void CreateQuestion(RegisterQuestionVM registerQuestionVM);
-        int DeleteQuestionAsync(int questionId);
-        void UpdateQuestion(RegisterQuestionVM registerQuestionVM);
+        Task<QuestionVM> GetQuestionById(int questionId);
+        Task<List<QuestionVM>> GetAllQuestions();
     }
 }

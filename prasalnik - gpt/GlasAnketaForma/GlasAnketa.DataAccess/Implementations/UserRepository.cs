@@ -5,28 +5,31 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GlasAnketa.DataAccess.Implementations
 {
-    public class UserRepository : BaseRepository, IUserRepository
+    public class UserRepository : Repository<User>, IUserRepository
     {
-        public UserRepository(AppDbContext appDbContext) : base(appDbContext)
+        private readonly AppDbContext _context;
+        public UserRepository(AppDbContext context) : base(context)
         {
+            _context = context;
         }
-        public User GetByCompanyId(int companyId)
+        public async Task<User> AuthenticateAsync(int companyId, string password)
         {
-            return _appDbContext.Users.Include(x => x.OU).Include(x => x.OU2).FirstOrDefault(x => x.CompanyId == companyId);
-
+            return await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.CompanyId == companyId && u.Password == password);
         }
-
-        public User GetByOU(string ou)
+        public async Task<User> GetByCompanyIdAsync(int companyId)
         {
-            return _appDbContext.Users.Include(x => x.CompanyId).Include(x => x.OU2).FirstOrDefault(x => x.OU == ou);
+            return await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.CompanyId == companyId);
         }
-
-        public int Insert(User user)
+        public async Task<string> GetUserOUAsync(int userId)
         {
-            _appDbContext.Users.Add(user); //Add method marks entity as Added in the context
-            _appDbContext.SaveChanges(); //SaveChanges commits changes to the database
-            return user.Id; //after SaveChanges, EF Core populates the Id property with the generated value
+            return await _context.Users
+                .Where(u => u.Id == userId)
+                .Select(u => u.OU)
+                .FirstOrDefaultAsync();
         }
     }
-
 }
