@@ -12,10 +12,9 @@ namespace GlasAnketa.Controllers
         {
             _logger = logger;
         }
-
         public IActionResult Index()
         {
-            return View();
+            return RedirectToAction("Login", "Account");
         }
 
         public IActionResult Privacy()

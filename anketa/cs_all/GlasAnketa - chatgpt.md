@@ -650,581 +650,633 @@ public class UserService : IUserService
     }
 }
  public class QuestionFormService : IQuestionFormService
- {
-     private readonly IQuestionFormRepository _questionFormRepository;
-     private readonly IMapper _mapper;
-
-     public QuestionFormService(IQuestionFormRepository questionFormRepository, IMapper mapper)
-     {
-         _questionFormRepository = questionFormRepository;
-         _mapper = mapper;
-     }
-
-     public async Task<QuestionFormVM> GetFormWithQuestionsAsync(int formId)
-     {
-         var qForm = await _questionFormRepository.GetByIdAsync(formId);
-         return _mapper.Map<QuestionFormVM>(qForm);
-     }
- }
-public class QuestionService : IQuestionService
 {
-    private readonly IQuestionRepository _questionRepository;
+    private readonly IQuestionFormRepository _questionFormRepository;
     private readonly IMapper _mapper;
 
-    public QuestionService(IQuestionRepository questionRepository, IMapper mapper)
+    public QuestionFormService(IQuestionFormRepository questionFormRepository, IMapper mapper)
     {
-        _questionRepository = questionRepository;
+        _questionFormRepository = questionFormRepository;
         _mapper = mapper;
     }
 
-    public async Task<List<QuestionVM>> GetAllQuestions()
+    public async Task<QuestionFormVM> GetFormWithQuestionsAsync(int formId)
     {
-        var questionVMs = new List<QuestionVM>();
-        await _questionRepository.GetAllAsync();
-        return questionVMs;
-    }
-
-    public async Task<QuestionVM> GetQuestionById(int questionId)
-    {
-        var question = await _questionRepository.GetByIdAsync(questionId);
-        return _mapper.Map<QuestionVM>(question);
+        var qForm = await _questionFormRepository.GetByIdAsync(formId);
+        return _mapper.Map<QuestionFormVM>(qForm);
     }
 }
+ public class QuestionService : IQuestionService
+ {
+     private readonly IQuestionRepository _questionRepository;
+     private readonly IMapper _mapper;
+
+     public QuestionService(IQuestionRepository questionRepository, IMapper mapper)
+     {
+         _questionRepository = questionRepository;
+         _mapper = mapper;
+     }
+
+     public async Task<List<QuestionVM>> GetAllQuestions()
+     {
+         var questionVMs = new List<QuestionVM>();
+         await _questionRepository.GetAllAsync();
+         return questionVMs;
+     }
+
+     public async Task<QuestionVM> GetQuestionById(int questionId)
+     {
+         var question = await _questionRepository.GetByIdAsync(questionId);
+         return _mapper.Map<QuestionVM>(question);
+     }
+ }
 
 ```
 ## 6) Razor view snippets
-**Views/User/Login.cshtml** // login as admin -CRUD for users and questions, as user (companyId and password)- QuestionForm
-**Views/User/Admin.cshtml**
-_Layout.cshtml (put in Views/Shared/_Layout.cshtml)
+@model UserCredentialsVM
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewData["Title"] - VoiceEmployee</title>
-
-    <!-- Bootstrap 5 CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-
-    <!-- Optional icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
-    <!-- Site CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Satisfaction Survey - Login</title>
     <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/login.css" />
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">VoiceEmployee</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    @if (Context.Session.GetInt32("UserId") != null)
+    <div class="login-container">
+        <div class="login-header">
+            <h2>👥 Employee Satisfaction Survey</h2>
+            <p>Please enter your credentials to continue</p>
+        </div>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="validation-summary">
+                <ul>
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
                     {
-                        <li class="nav-item">
-                            <a class="nav-link">Hello, @Context.Session.GetString("FullName")</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Account" asp-action="Logout">Logout</a>
-                        </li>
-                    }
-                    else
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Account" asp-action="Login">Login</a>
-                        </li>
+                        <li>@error.ErrorMessage</li>
                     }
                 </ul>
             </div>
-        </div>
-    </nav>
+        }
 
-    <div class="container my-4">
-        @RenderBody()
+        <form asp-action="Login" method="post" id="loginForm" class="login-form">
+            <div class="form-group">
+                <label asp-for="CompanyId" class="form-label">🏢 Company ID</label>
+                <input asp-for="CompanyId" class="form-control" placeholder="Enter your company ID" />
+                <span asp-validation-for="CompanyId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Password" class="form-label">🔒 Password</label>
+                <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn-login" id="loginBtn">
+                <span id="btnText">Login</span>
+                <div id="loadingSpinner" style="display: none;">Loading...</div>
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <small style="color: #7f8c8d;">
+                Having trouble logging in? Contact your administrator.
+            </small>
+        </div>
     </div>
 
-    <footer class="bg-light text-center py-3 mt-auto">
-        <div class="container small">© @DateTime.UtcNow.Year - VoiceEmployee</div>
-    </footer>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const btn = document.getElementById('loginBtn');
+            const btnText = document.getElementById('btnText');
+            const spinner = document.getElementById('loadingSpinner');
 
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script src="~/js/site.js"></script>
-    @RenderSection("Scripts", required: false)
+            btnText.style.display = 'none';
+            spinner.style.display = 'block';
+            btn.disabled = true;
+        });
+    </script>
 </body>
 </html>
-
-**Views/Account/Login.cshtml**  // add from-gpt
-```html
-@model UserCredentialsVM
+``````````
+@model FormSubmissionVM
 @{
-    ViewData["Title"] = "Login";
+    // Add null check for Model.QuestionForm
+    if (Model?.QuestionForm == null)
+    {
+        <div class="alert alert-danger">
+            <h2>Error Loading Form</h2>
+            <p>The questionnaire form could not be loaded. Please try again or contact support.</p>
+            <a href="@Url.Action("Login", "Account")" class="btn btn-primary">Return to Login</a>
+        </div>
+        return;
+    }
+
+    ViewData["Title"] = Model.QuestionForm.Title;
+    var nextFormId = ViewBag.NextFormId as int?;
+    var isLastForm = ViewBag.IsLastForm as bool? ?? false;
+    var currentFormNumber = ViewBag.CurrentFormNumber as int? ?? 1;
+    var totalForms = ViewBag.TotalForms as int? ?? 1;
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-5">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h4 class="card-title mb-3">Sign in</h4>
-
-                <form asp-action="Login" method="post" novalidate>
-                    <div class="mb-3">
-                        <label asp-for="CompanyId" class="form-label">Company ID</label>
-                        <input asp-for="CompanyId" class="form-control" />
-                        <span asp-validation-for="CompanyId" class="text-danger"></span>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Employee Satisfaction Survey</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/questionnaire.css" />
+</head>
+<body>
+    <div class="questionnaire-container">
+        <div class="questionnaire-header fade-in">
+            <div class="form-progress">
+                <div class="progress-info">
+                    <h1>@Model.QuestionForm.Title</h1>
+                    <p>@Model.QuestionForm.Description</p>
+                    <div class="form-counter">
+                        Questionnaire @currentFormNumber of @totalForms
                     </div>
+                </div>
 
-                    <div class="mb-3">
-                        <label asp-for="Password" class="form-label">Password</label>
-                        <input asp-for="Password" type="password" class="form-control" />
-                        <span asp-validation-for="Password" class="text-danger"></span>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
                     </div>
-
-                    <button type="submit" class="btn btn-primary w-100">Login</button>
-                </form>
+                    <small class="text-muted">Progress: <span id="progress-text">0%</span></small>
+                </div>
             </div>
         </div>
+
+        <!-- Rest of your form code remains the same -->
+        <div class="questionnaire-form slide-in">
+            <form asp-action="SubmitForm" method="post" id="questionnaireForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="QuestionFormId" />
+
+                @for (int i = 0; i < Model.QuestionForm.Questions.Count; i++)
+                {
+                    var question = Model.QuestionForm.Questions[i];
+                    <div class="question-item" data-required="@question.IsRequired.ToString().ToLower()" data-question-type="@question.QuestionType">
+                        <h4>@question.Text @(question.IsRequired ? "*" : "")</h4>
+
+                        <input type="hidden" name="Answers[@i].QuestionId" value="@question.Id" />
+                        <input type="hidden" name="Answers[@i].QuestionFormId" value="@Model.QuestionForm.Id" />
+                        <input type="hidden" name="Answers[@i].UserId" value="@Model.Answers[i].UserId" />
+
+                        @if (question.QuestionType == "Scale")
+                        {
+                            <div class="scale-answers">
+                                @for (int j = 1; j <= 10; j++)
+                                {
+                                    <label class="scale-option">
+                                        <input type="radio"
+                                               name="Answers[@i].ScaleValue"
+                                               value="@j"
+                                               class="scale-radio" />
+                                        <span class="scale-number">@j</span>
+                                    </label>
+                                }
+                            </div>
+                            <div class="scale-labels">
+                                <span>Strongly Disagree (1)</span>
+                                <span>Strongly Agree (10)</span>
+                            </div>
+                        }
+                        else if (question.QuestionType == "Text")
+                        {
+                            <textarea name="Answers[@i].TextValue"
+                              class="text-answer form-control"
+                              placeholder="Please enter your response here..."></textarea>
+                        }
+                    </div>
+                }
+
+                <div class="navigation-buttons">
+                    <button type="submit" class="btn btn-success" id="submitBtn">
+                        <span class="btn-text">
+                            @(isLastForm ? "Submit All Answers" : "Save & Continue →")
+                        </span>
+                        <div class="loading-spinner" style="display: none;"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
-```
-**Views/QForm/Index.cshtml** //view only one QuestionForm in page
+
+    <script>
+        // Your existing JavaScript code
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Form loaded successfully");
+            // ... rest of your JavaScript
+        });
+    </script>
+</body>
+</html>
+````````````````
 ```html
-@model QuestionFormVM
+@model List<QuestionFormVM>
 @{
-    ViewData["Title"] = Model.Title;
+    ViewData["Title"] = "Available Questionnaires";
 }
 
-<div class="card">
-    <div class="card-header">
-        <h4>@Model.Title</h4>
-        <p class="mb-0">@Model.Description</p>
-    </div>
-    <div class="card-body">
-        <form asp-action="SubmitAnswers" method="post" id="questionForm">
-            <input type="hidden" name="questionFormId" value="@Model.Id" />
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="welcome-header text-center mb-4">
+                <h1>Welcome, @Context.Session.GetString("UserName")! 👋</h1>
+                <p class="lead">Please select a questionnaire to complete</p>
+            </div>
 
-            @if (Model.Questions == null || !Model.Questions.Any())
+            @if (!Model.Any())
             {
-                <div class="alert alert-info">No questions defined for this form.</div>
+                <div class="alert alert-info">
+                    <h4>No active questionnaires available</h4>
+                    <p>There are currently no active questionnaires. Please check back later or contact your administrator.</p>
+                </div>
             }
             else
             {
-                <div class="row g-3">
-                    @for (int i = 0; i < Model.Questions.Count; i++)
+                <div class="row">
+                    @foreach (var form in Model)
                     {
-                        var q = Model.Questions[i];
-                        <div class="col-12">
-                            <div class="card mb-2">
+                        <div class="col-md-6 mb-4">
+                            <div class="card questionnaire-card h-100">
                                 <div class="card-body">
-                                    <label class="form-label fw-bold">@q.Text
-                                        @if (q.IsRequired) { <span class="text-danger">*</span> }
-                                    </label>
+                                    <h5 class="card-title">@form.Title</h5>
+                                    <p class="card-text">@form.Description</p>
 
-                                    <input type="hidden" name="answers[@i].QuestionId" value="@q.Id" />
-                                    <input type="hidden" name="answers[@i].QuestionFormId" value="@Model.Id" />
-
-                                    @if (q.QuestionTypeId == 1)  {
-                                        <div class="d-flex align-items-center gap-3">
-                                            <input class="form-range" type="range" min="1" max="10" step="1" 
-                                                   name="answers[@i].ScaleValue" id="range_@q.Id" oninput="updateRangeLabel(@q.Id,this.value)" />
-                                            <div><span id="rangeVal_@q.Id">5</span>/10</div>
-                                        </div>
-                                    } else {
-                                        <textarea class="form-control" name="answers[@i].TextValue" rows="3" 
-                                                  placeholder="Write your answer here..."></textarea>
-                                    }
+                                    <div class="questionnaire-meta">
+                                        <small class="text-muted">
+                                            <i class="fas fa-question-circle"></i>
+                                            @form.QuestionCount question@(form.QuestionCount != 1 ? "s" : "")
+                                        </small>
+                                        <br>
+                                        <small class="text-muted">
+                                            <i class="fas fa-users"></i>
+                                            @form.ResponseCount response@(form.ResponseCount != 1 ? "s" : "")
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <a href="@Url.Action("Form", new { id = form.Id })"
+                                       class="btn btn-primary btn-block">
+                                        Start Questionnaire →
+                                    </a>
                                 </div>
                             </div>
                         </div>
                     }
                 </div>
+            }
 
-                <div class="mt-3">
-                    <button type="submit" class="btn btn-success">Submit Answers</button>
+            <div class="text-center mt-4">
+                <div class="user-info-card p-3">
+                    <small class="text-muted">
+                        Logged in as: <strong>@Context.Session.GetString("UserName")</strong> |
+                        Role: <strong>@Context.Session.GetString("UserRole")</strong> |
+                        <a href="@Url.Action("Logout", "Account")" class="text-danger">Logout</a>
+                    </small>
                 </div>
-            }
-        </form>
-    </div>
-</div>
-
-@section Scripts {
-    <script>
-        // initialize range labels
-        document.querySelectorAll('input[type="range"]').forEach(function(r){
-            var id = r.id;
-            var parts = id.split('_');
-            var qid = parts.length>1 ? parts[1] : null;
-            if(qid){
-                var valSpan = document.getElementById('rangeVal_' + qid);
-                if(valSpan) valSpan.textContent = Math.round(r.value || 5);
-            }
-        });
-
-        function updateRangeLabel(qid, val) {
-            var el = document.getElementById('rangeVal_' + qid);
-            if (el) el.textContent = val;
-        }
-    </script>
-}
-```
-**Views/Admin/Questions.cshtml** 
-```html
-@model QuestionFormVM
-@{
-    ViewData["Title"] = "Questions - " + Model.Title;
-}
-
-<div class="d-flex justify-content-between mb-3">
-    <h3>Questions for: @Model.Title</h3>
-    <a asp-action="CreateQuestion" asp-route-formId="@Model.Id" class="btn btn-primary">New Question</a>
-</div>
-
-<table class="table table-striped table-hover">
-    <thead class="table-light">
-        <tr>
-            <th>#</th>
-            <th>Question</th>
-            <th>Type</th>
-            <th>Required</th>
-            <th class="text-end">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var q in Model.Questions)
-        {
-            <tr>
-                <td>@q.Id</td>
-                <td>@q.Text</td>
-                <td>@(q.QuestionTypeId == 1 ? "Scale (1-10)" : "Text")</td>
-                <td>@(q.IsRequired ? "Yes" : "No")</td>
-                <td class="text-end">
-                    <a asp-action="EditQuestion" asp-route-id="@q.Id" class="btn btn-sm btn-outline-secondary me-1">
-                        <i class="fa fa-edit"></i>
-                    </a>
-                    <form asp-action="DeleteQuestion" asp-route-id="@q.Id" method="post" style="display:inline" onsubmit="return confirm('Delete question?');">
-                        <button class="btn btn-sm btn-outline-danger"><i class="fa fa-trash"></i></button>
-                    </form>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-```
-**Views/Question/Edit.cshtml**
-
-@model Anketa.Application.ViewModels.RegisterQuestionVM
-@{
-    ViewData["Title"] = "Edit Question";
-}
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
-
-<div class="container mt-5">
-    <div class="card shadow-lg p-4 rounded-4">
-        <h2 class="mb-4 text-center text-primary">Edit Question</h2>
-
-        <form asp-action="Edit" method="post">
-            <div class="mb-3">
-                <label asp-for="Text" class="form-label fw-bold"></label>
-                <input asp-for="Text" class="form-control" placeholder="Enter question text..." />
-                <span asp-validation-for="Text" class="text-danger"></span>
             </div>
-
-            <div class="mb-3">
-                <label asp-for="Category" class="form-label fw-bold"></label>
-                <input asp-for="Category" class="form-control" placeholder="Category name..." />
-                <span asp-validation-for="Category" class="text-danger"></span>
-            </div>
-
-            <div class="d-flex justify-content-between">
-                <a asp-action="Index" class="btn btn-outline-secondary">Back</a>
-                <button type="submit" class="btn btn-success">Save Changes</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-    <script>
-        document.querySelector('form').addEventListener('submit', function () {
-            const btn = document.querySelector('button[type="submit"]');
-            btn.disabled = true;
-            btn.innerText = "Saving...";
-        });
-    </script>
-}
-**Views/Question/Delete.cshtml**
-
-@model Anketa.Application.ViewModels.QuestionVM
-@{
-    ViewData["Title"] = "Delete Question";
-}
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
-
-<div class="container mt-5">
-    <div class="card shadow p-4 rounded-4 border-danger">
-        <h2 class="text-danger text-center mb-4">Confirm Deletion</h2>
-
-        <div class="alert alert-warning text-center">
-            <strong>Are you sure you want to delete this question?</strong>
         </div>
-
-        <dl class="row">
-            <dt class="col-sm-3">Question:</dt>
-            <dd class="col-sm-9">@Model.Text</dd>
-
-            <dt class="col-sm-3">Category:</dt>
-            <dd class="col-sm-9">@Model.Category</dd>
-        </dl>
-
-        <form asp-action="Delete" method="post">
-            <input type="hidden" asp-for="Id" />
-            <div class="d-flex justify-content-between mt-4">
-                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
-                <button type="submit" class="btn btn-danger">Delete</button>
-            </div>
-        </form>
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        document.querySelector('button.btn-danger').addEventListener('click', function () {
-            return confirm("Are you absolutely sure you want to delete this question?");
-        });
-    </script>
-}
-**site.css (wwwroot/css/site.css)**
-/* minimal theme tweaks */
-body {
-    background: #f7f9fb;
-    color: #222;
-    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-
-.card {
-    border-radius: 0.6rem;
-}
-
-.navbar .navbar-brand {
-    font-weight: 700;
-    letter-spacing: .3px;
-}
-
-/* range input appearance */
-input[type="range"] {
-    width: 220px;
-}
-
-/* small helpers */
-.small-muted { color: #6c757d; font-size: .9rem; }
-**site.js (wwwroot/js/site.js)**
-// small helpers for UI
-window.confirmAction = function(message) {
-    return confirm(message || 'Are you sure?');
-};
-
-// optional: simple client-side validation helper
-window.simpleValidateRequired = function(selector) {
-    var el = document.querySelector(selector);
-    if (!el) return true;
-    if (!el.value || el.value.trim() === '') {
-        el.classList.add('is-invalid');
-        return false;
-    }
-    el.classList.remove('is-invalid');
-    return true;
-};
-## 7) Controllers 
-**AdminController**(CRUD for users and questions)
-```csharp
-public class AdminController : Controller
-{
-    private readonly IQuestionService _questionService;
-    private readonly IQuestionFormService _formService;
-    public AdminController(IQuestionService questionService, IQuestionFormService formService)
-    {
-        _questionService = questionService;
-        _formService = formService;
+<style>
+    .welcome-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
     }
 
-    public IActionResult Questions(int formId = 1)
-    {
-        var qf = _formService.GetFormById(formId);
-        return View(qf);
+    .questionnaire-card {
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease-in-out;
     }
 
-    [HttpGet]
-    public IActionResult CreateQuestion(int formId)
-    {
-        var vm = new RegisterQuestionVM { QuestionFormId = formId };
-        return View(vm);
-    }
-
-    [HttpPost]
-    public IActionResult CreateQuestion(RegisterQuestionVM model)
-    {
-        if (!ModelState.IsValid) return View(model);
-        _questionService.CreateQuestion(model);
-        return RedirectToAction("Questions", new { formId = model.QuestionFormId });
-    }
-
-    // Edit/Delete similar...
-}
-```
-**UserController** view Form, Get answers, send to Db
-```csharp
-public class AccountController : Controller
-{
-    private readonly IUserService _userService;
-    public AccountController(IUserService userService) { _userService = userService; }
-
-    [HttpGet]
-    public IActionResult Login() => View(new UserCredentialsVM());
-
-    [HttpPost]
-    public IActionResult Login(UserCredentialsVM model)
-    {
-        if(!ModelState.IsValid) return View(model);
-        var user = _userService.ValidateUser(model);
-        if (user == null)
-        {
-            ModelState.AddModelError("", "Invalid CompanyId or Password");
-            return View(model);
+        .questionnaire-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
         }
 
-        // simple session (or use cookie auth)
-        HttpContext.Session.SetInt32("UserId", user.Id);
-        HttpContext.Session.SetString("FullName", user.FullName);
-        // RoleKey available if mapped
-        return RedirectToAction("Index", "Form");
+    .questionnaire-meta {
+        margin: 1rem 0;
     }
 
-    public IActionResult Logout()
-    {
-        HttpContext.Session.Clear();
-        return RedirectToAction("Login");
+    .user-info-card {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        border-left: 4px solid #007bff;
     }
-}
-```
-**QFormController** one page one QForm, btn Next for next QForm
+
+    .btn-block {
+        width: 100%;
+    }
+</style>
+````
+## Controllers
 ```csharp
-public class FormController : Controller
-{
-    private readonly IQuestionFormService _formService;
-    private readonly IAnswerService _answerService;
-    private readonly IQuestionRepository _questionRepo;
-
-    public FormController(IQuestionFormService formService, IAnswerService answerService, IQuestionRepository questionRepo)
+    public class AccountController : Controller
     {
-        _formService = formService;
-        _answerService = answerService;
-        _questionRepo = questionRepo;
-    }
+        private readonly IUserService _userService;
+        private readonly IQuestionFormService _formService;
 
-    public IActionResult Index(int id = 1) // form id
-    {
-        var formVM = _formService.GetFormById(id);
-        if (formVM == null) return NotFound();
-        return View(formVM); // view will iterate Questions and create inputs
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> SubmitAnswers(List<AnswerVM> answers)
-    {
-        var userId = HttpContext.Session.GetInt32("UserId");
-        if (userId == null) return RedirectToAction("Login", "Account");
-
-        foreach(var a in answers)
+        public AccountController(IUserService userService, IQuestionFormService formService)
         {
-            a.UserId = userId.Value;
-            // server validation: required questions
-            var q = _questionRepo.GetQuestionById(a.QuestionId);
-            if (q == null) continue;
-            if (q.IsRequired)
-            {
-                if (q.QuestionTypeId == 1 && a.ScaleValue == null) ModelState.AddModelError("", $"Question {q.Id} is required.");
-                if (q.QuestionTypeId == 2 && string.IsNullOrWhiteSpace(a.TextValue)) ModelState.AddModelError("", $"Question {q.Id} is required.");
-            }
-            if (ModelState.IsValid)
-            {
-                await _answerService.SubmitAnswerAsync(a);
-            }
+            _userService = userService;
+            _formService = formService;
         }
-
-        if(!ModelState.IsValid) return BadRequest(ModelState);
-
-        return RedirectToAction("Index", new { id = answers.FirstOrDefault()?.QuestionFormId });
-    }
-}
-```
-**QuestionController**
-```csharp
-public class QuestionController : Controller
-    {
-        private readonly IQuestionService _questionService;
-
-        public QuestionController(IQuestionService questionService)
+        [HttpGet]
+        public IActionResult Login()
         {
-            _questionService = questionService;
+            // Clear any existing session
+            HttpContext.Session.Clear();
+            return View();
         }
-
-        // GET: Question/Edit/5
-        public IActionResult Edit(int id)
-        {
-            var question = _questionService.GetQuestionById(id);
-            if (question == null)
-            {
-                return NotFound();
-            }
-
-            var model = new RegisterQuestionVM
-            {
-                Id = question.Id,
-                Text = question.Text,
-                Category = question.Category
-            };
-
-            return View(model);
-        }
-
-        // POST: Question/Edit
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Edit(RegisterQuestionVM model)
+        public async Task<IActionResult> Login(UserCredentialsVM model)
         {
             if (!ModelState.IsValid)
                 return View(model);
 
-            _questionService.UpdateQuestion(model);
-            TempData["Success"] = "Question updated successfully!";
-            return RedirectToAction("Index", "Question");
+            try
+            {
+                var user = _userService.ValidateUser(model);
+                if (user == null)
+                {
+                    ModelState.AddModelError("", "Invalid Company ID or Password");
+                    return View(model);
+                }
+
+                // Store user in session
+                HttpContext.Session.SetInt32("UserId", user.Id);
+                HttpContext.Session.SetString("UserRole", user.Role.Name);
+                HttpContext.Session.SetString("UserName", user.FullName);
+                HttpContext.Session.SetInt32("CompanyId", user.CompanyId);
+
+                // Set last activity time
+                HttpContext.Session.SetString("LastActivity", DateTime.UtcNow.ToString());
+
+                // Debug: Check role and redirect
+                Console.WriteLine($"User Role: {user.Role.Name}, Redirecting...");
+
+                if (user.Role.Name == "Administrator")
+                {
+                    Console.WriteLine("Redirecting to Admin Index");
+                    return RedirectToAction("Index", "Admin");
+                }
+                else
+                {
+                    Console.WriteLine("Redirecting to FIRST questionnaire form");
+                    // Get active forms and redirect to first one
+                    var forms = await _formService.GetActiveFormsAsync();
+                    if (forms.Any())
+                    {
+                        return RedirectToAction("Form", "Questionnaire", new { id = forms.First().Id });
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "No active questionnaires available.";
+                        return RedirectToAction("Login", "Account");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "An error occurred during login. Please try again.");
+                return View(model);
+            }
         }
-
-        // GET: Question/Delete/5
-        public IActionResult Delete(int id)
-        {
-            var question = _questionService.GetQuestionById(id);
-            if (question == null)
-                return NotFound();
-
-            return View(question);
-        }
-
-        // POST: Question/DeleteConfirmed/5
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public IActionResult Logout()
         {
-            _questionService.DeleteQuestionAsync(id);
-            TempData["Success"] = "Question deleted successfully!";
-            return RedirectToAction("Index", "Question");
+            HttpContext.Session.Clear();
+            return RedirectToAction("Login");
+        }
+
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+    }
+```
+public class QuestionnaireController : Controller
+{
+    private readonly IQuestionFormService _formService;
+    private readonly IAnswerService _answerService;
+
+    public QuestionnaireController(IQuestionFormService formService, IAnswerService answerService)
+    {
+        _formService = formService;
+        _answerService = answerService;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Form(int id)
+    {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (!userId.HasValue)
+            return RedirectToAction("Login", "Account");
+
+        try
+        {
+            // Get the specific form with questions
+            var currentForm = await _formService.GetFormWithQuestionsAsync(id);
+            if (currentForm == null)
+            {
+                TempData["ErrorMessage"] = "Questionnaire not found.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Check if user already submitted this form
+            var hasSubmitted = await _answerService.HasUserSubmittedFormAsync(userId.Value, id);
+            if (hasSubmitted)
+            {
+                return await RedirectToNextForm(id);
+            }
+
+            var viewModel = new FormSubmissionVM
+            {
+                QuestionForm = currentForm,
+                QuestionFormId = currentForm.Id,
+                Answers = currentForm.Questions.Select(q => new AnswerVM
+                {
+                    QuestionId = q.Id,
+                    QuestionFormId = id,
+                    UserId = userId.Value
+                }).ToList()
+            };
+
+            // Get next form info for navigation
+            var activeForms = await _formService.GetActiveFormsAsync();
+            var currentIndex = activeForms.FindIndex(f => f.Id == id);
+            var nextFormId = await GetNextFormId(id);
+
+            ViewBag.NextFormId = nextFormId;
+            ViewBag.IsLastForm = nextFormId == null;
+            ViewBag.CurrentFormNumber = currentIndex + 1;
+            ViewBag.TotalForms = activeForms.Count;
+
+            return View(viewModel);
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = "Error loading questionnaire. Please try again.";
+            return RedirectToAction("Login", "Account");
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SubmitForm(FormSubmissionVM model)
+    {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (!userId.HasValue)
+            return RedirectToAction("Login", "Account");
+
+        try
+        {
+            Console.WriteLine($"=== FORM SUBMISSION STARTED ===");
+            Console.WriteLine($"User: {userId}, Form: {model.QuestionFormId}");
+
+            if (!ModelState.IsValid)
+            {
+                await RepopulateFormData(model);
+                return View("Form", model);
+            }
+
+            if (model.Answers == null || !model.Answers.Any())
+            {
+                ModelState.AddModelError("", "Please answer at least one question.");
+                await RepopulateFormData(model);
+                return View("Form", model);
+            }
+
+            var answersWithValues = model.Answers.Where(a =>
+                (a.ScaleValue.HasValue && a.ScaleValue > 0) ||
+                !string.IsNullOrWhiteSpace(a.TextValue)).ToList();
+
+            if (!answersWithValues.Any())
+            {
+                ModelState.AddModelError("", "Please answer at least one question.");
+                await RepopulateFormData(model);
+                return View("Form", model);
+            }
+
+            foreach (var answer in answersWithValues)
+            {
+                answer.UserId = userId.Value;
+            }
+
+            var result = await _answerService.SubmitAnswersAsync(answersWithValues, userId.Value);
+
+            if (result.Success)
+            {
+                TempData["SubmissionSuccess"] = true;
+                TempData["SubmittedCount"] = result.SubmittedAnswersCount;
+
+                var nextFormId = await GetNextFormId(model.QuestionFormId);
+
+                if (nextFormId.HasValue)
+                {
+                    return RedirectToAction("Form", new { id = nextFormId.Value });
+                }
+                else
+                {
+                    return RedirectToAction("ThankYou");
+                }
+            }
+            else
+            {
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error);
+                }
+                await RepopulateFormData(model);
+                return View("Form", model);
+            }
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError("", "An error occurred while submitting your answers. Please try again.");
+            await RepopulateFormData(model);
+            return View("Form", model);
+        }
+    }
+
+    public IActionResult ThankYou()
+    {
+        if (TempData["SubmissionSuccess"] == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        var viewModel = new ThankYouVM
+        {
+            SubmittedCount = TempData["SubmittedCount"] as int? ?? 0,
+            SubmissionDate = DateTime.Now
+        };
+
+        return View(viewModel);
+    }
+
+    private async Task<int?> GetNextFormId(int currentFormId)
+    {
+        var activeForms = await _formService.GetActiveFormsAsync();
+        var currentIndex = activeForms.FindIndex(f => f.Id == currentFormId);
+
+        if (currentIndex < activeForms.Count - 1)
+        {
+            return activeForms[currentIndex + 1].Id;
+        }
+
+        return null;
+    }
+
+    private async Task<IActionResult> RedirectToNextForm(int currentFormId)
+    {
+        var nextFormId = await GetNextFormId(currentFormId);
+
+        if (nextFormId.HasValue)
+        {
+            return RedirectToAction("Form", new { id = nextFormId.Value });
+        }
+        else
+        {
+            return RedirectToAction("ThankYou");
+        }
+    }
+
+    private async Task RepopulateFormData(FormSubmissionVM model)
+    {
+        try
+        {
+            var currentForm = await _formService.GetFormWithQuestionsAsync(model.QuestionFormId);
+            var nextFormId = await GetNextFormId(model.QuestionFormId);
+
+            model.QuestionForm = currentForm;
+            ViewBag.NextFormId = nextFormId;
+            ViewBag.IsLastForm = nextFormId == null;
+
+            var activeForms = await _formService.GetActiveFormsAsync();
+            var currentIndex = activeForms.FindIndex(f => f.Id == model.QuestionFormId);
+            ViewBag.CurrentFormNumber = currentIndex + 1;
+            ViewBag.TotalForms = activeForms.Count;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in RepopulateFormData: {ex.Message}");
         }
     }
 }
-```

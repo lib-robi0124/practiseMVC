@@ -17,58 +17,7 @@ namespace Anketa.Controllers
             _answerService = answerService;
         }
         
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Submit(int formId, IFormCollection form)
-        //{
-        //    Console.WriteLine($"=== FORM SUBMISSION STARTED ===");
-        //    Console.WriteLine($"Form ID: {formId}");
-        //    Console.WriteLine($"Form keys: {string.Join(", ", form.Keys)}");
-
-        //    if (form == null || !form.Any())
-        //    {
-        //        Console.WriteLine("No form data received");
-        //        TempData["Error"] = "No answers provided.";
-        //        return RedirectToAction("Answer", "Form", new { formId });
-        //    }
-
-        //    try
-        //    {
-        //        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
-        //        Console.WriteLine($"User ID: {userId}");
-
-        //        // ✅ FIXED: Properly parse form data
-        //        var answers = ParseFormAnswers(form);
-        //        Console.WriteLine($"Parsed {answers.Count} answers: {string.Join(", ", answers.Select(a => $"{a.Key}: {a.Value}"))}");
-
-        //        if (!answers.Any())
-        //        {
-        //            Console.WriteLine("No valid answers after parsing");
-        //            TempData["Error"] = "No valid answers provided.";
-        //            return RedirectToAction("Answer", "Form", new { formId });
-        //        }
-
-        //        var success = await _answerService.SubmitAnswersAsync(userId, formId, answers);
-        //        Console.WriteLine($"Submit result: {success}");
-
-        //        if (success)
-        //        {
-        //            TempData["Success"] = "Thank you for submitting your answers!";
-        //            return RedirectToAction("Thanks", "Form");
-        //        }
-
-        //        TempData["Error"] = "Error submitting your answers. Please try again.";
-        //        return RedirectToAction("Answer", "Form", new { formId });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Log the exception for debugging
-        //        Console.WriteLine($"Error submitting answers: {ex.Message}");
-        //        Console.WriteLine($"Stack trace: {ex.StackTrace}");
-        //        TempData["Error"] = "An error occurred while submitting your answers.";
-        //        return RedirectToAction("Answer", "Form", new { formId });
-        //    }
-        //}
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Submit(IFormCollection form)

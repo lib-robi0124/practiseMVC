@@ -1,0 +1,40 @@
+﻿@{
+    ViewData["Title"] = "Manage Users";
+}
+
+<div class="admin-container">
+    <div class="admin-header">
+        <h1>👥 Manage Users</h1>
+        <p>User management dashboard</p>
+        <div class="user-info">
+            <small>Logged in as: <strong>@Context.Session.GetString("UserName")</strong></small> |
+            <a href="@Url.Action("Index", "Admin")" class="btn btn-secondary">← Back to Dashboard</a> |
+            <a href="@Url.Action("Logout", "Account")" class="text-danger">Logout</a>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <h4>👥 User Management</h4>
+        <p>User management features are coming soon. This section will allow you to:</p>
+        <ul>
+            <li>View all registered users</li>
+            <li>Create new user accounts</li>
+            <li>Edit user information and roles</li>
+            <li>Deactivate/activate users</li>
+            <li>Reset user passwords</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>Current Users</h3>
+        </div>
+        <div class="card-body">
+            <div class="text-center py-4">
+                <div style="font-size: 3em;">🛠️</div>
+                <h4>User Management Under Development</h4>
+                <p class="text-muted">User management features will be available in the next update.</p>
+            </div>
+        </div>
+    </div>
+</div>
