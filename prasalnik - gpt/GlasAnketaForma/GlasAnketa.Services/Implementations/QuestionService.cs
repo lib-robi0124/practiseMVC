@@ -18,14 +18,13 @@ namespace GlasAnketa.Services.Implementations
 
         public async Task<List<QuestionVM>> GetAllQuestions()
         {
-            var questionVMs = new List<QuestionVM>();
-            await _questionRepository.GetAllAsync();
-            return questionVMs;
+            var questions = await _questionRepository.GetAllAsync();
+            return _mapper.Map<List<QuestionVM>>(questions);
         }
 
         public async Task<QuestionVM> GetQuestionById(int questionId)
         {
-            var question = await _questionRepository.GetByIdAsync(questionId);
+            var question = await _questionRepository.GetFormWithQuestionsAsync(questionId);
             return _mapper.Map<QuestionVM>(question);
         }
     }

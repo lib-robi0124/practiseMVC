@@ -4,7 +4,7 @@ namespace GlasAnketa.DataAccess.Interfaces
 {
     public interface IRepository<T> where T : class
     {
-        Task<T> GetByIdAsync(int id);
+        Task<T> GetFormWithQuestionsAsync(int id);
         Task<IEnumerable<T>> GetAllAsync();
         Task<T> AddAsync(T entity);
         Task Update(T entity);

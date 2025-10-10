@@ -1,4 +1,5 @@
 ﻿using GlasAnketa.DataAccess.DataContext;
+using GlasAnketa.Services.AutoMappers;
 using GlasAnketa.Services.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +19,7 @@ builder.Services.InjectServices();
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAutoMapper(typeof(UserMappingProfile));
 
 var app = builder.Build();
 

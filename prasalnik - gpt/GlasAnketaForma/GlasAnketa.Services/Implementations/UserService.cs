@@ -42,7 +42,7 @@ namespace GlasAnketa.Services.Implementations
         // ✅ Get user by ID
         public async Task<UserVM> GetUserById(int id)
         {
-            var user = await _userRepository.GetByIdAsync(id);
+            var user = await _userRepository.GetFormWithQuestionsAsync(id);
             return _mapper.Map<UserVM>(user);
         }
 
@@ -64,7 +64,7 @@ namespace GlasAnketa.Services.Implementations
         public async Task<QuestionVM> RegisterQuestion(RegisterQuestionVM registerQuestionVM, RoleVM roleVM)
         {
             var question = _mapper.Map<Question>(registerQuestionVM);
-            question.UserId = roleVM.RoleId; // Use Role.Id, not RoleId from VM
+            question.UserId = registerQuestionVM.CreatedByUserId;
             question.IsRequired = true;
 
             await _questionRepository.AddAsync(question);

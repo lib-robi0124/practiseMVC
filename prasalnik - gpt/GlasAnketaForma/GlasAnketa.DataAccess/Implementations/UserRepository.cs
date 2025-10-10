@@ -7,11 +7,7 @@ namespace GlasAnketa.DataAccess.Implementations
 {
     public class UserRepository : Repository<User>, IUserRepository
     {
-        private readonly AppDbContext _context;
-        public UserRepository(AppDbContext context) : base(context)
-        {
-            _context = context;
-        }
+        public UserRepository(AppDbContext context) : base(context) { }
         public async Task<User> AuthenticateAsync(int companyId, string password)
         {
             return await _context.Users

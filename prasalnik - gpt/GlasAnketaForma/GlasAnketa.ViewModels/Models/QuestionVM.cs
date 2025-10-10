@@ -8,6 +8,6 @@
         public int QuestionFormId { get; set; }
         public bool IsRequired { get; set; }
         public string QuestionType { get; set; }
-
+        public List<AnswerVM> Answers { get; set; } = new();
     }
 }

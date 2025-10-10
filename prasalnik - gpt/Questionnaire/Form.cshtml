@@ -1,0 +1,49 @@
+﻿@model FormSubmissionVM
+@{
+    ViewData["Title"] = Model?.QuestionForm?.Title ?? "Questionnaire";
+}
+
+@if (Model?.QuestionForm == null)
+{
+    <div class="alert alert-danger">
+        <h4>Form not available</h4>
+        <p>Please contact your administrator.</p>
+    </div>
+    return;
+}
+
+<h2>@Model.QuestionForm.Title</h2>
+<p>@Model.QuestionForm.Description</p>
+
+<form asp-action="SubmitForm" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="QuestionFormId" />
+
+    @for (int i = 0; i < Model.QuestionForm.Questions.Count; i++)
+    {
+        var q = Model.QuestionForm.Questions[i];
+        <div class="mb-4">
+            <h5>@q.Text @(q.IsRequired ? "*" : "")</h5>
+
+            <input type="hidden" name="Answers[@i].QuestionId" value="@q.Id" />
+            <input type="hidden" name="Answers[@i].QuestionFormId" value="@Model.QuestionForm.Id" />
+            <input type="hidden" name="Answers[@i].UserId" value="@Context.Session.GetInt32("UserId")" />
+
+            @if (q.QuestionType == "Scale")
+            {
+                for (int j = 1; j <= 10; j++)
+                {
+                    <label class="me-2">
+                        <input type="radio" name="Answers[@i].ScaleValue" value="@j" /> @j
+                    </label>
+                }
+            }
+            else if (q.QuestionType == "Text")
+            {
+                <textarea name="Answers[@i].TextValue" class="form-control" rows="2"></textarea>
+            }
+        </div>
+    }
+
+    <button type="submit" class="btn btn-success">Submit</button>
+</form>

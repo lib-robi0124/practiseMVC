@@ -29,10 +29,22 @@ namespace GlasAnketa.Services.Implementations
             return _mapper.Map<List<QuestionFormVM>>(active);
         }
 
+        public async Task<QuestionFormVM> GetFormByIdAsync(int id)
+        {
+            var qForm = await _questionFormRepository.GetQuestionFormByIdAsync(id);
+            return _mapper.Map<QuestionFormVM>(qForm);
+        }
+
         public async Task<QuestionFormVM> GetFormWithQuestionsAsync(int formId)
         {
-            var qForm = await _questionFormRepository.GetByIdAsync(formId);
+            var qForm = await _questionFormRepository.GetFormWithQuestionsAsync(formId);
             return _mapper.Map<QuestionFormVM>(qForm);
+        }
+
+        public async Task<QuestionFormVM?> GetNextActiveFormAsync(int currentFormId)
+        {
+            var nextForm = await _questionFormRepository.GetNextActiveFormAsync(currentFormId);
+            return _mapper.Map<QuestionFormVM?>(nextForm);
         }
     }
 }

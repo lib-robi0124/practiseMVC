@@ -4,6 +4,7 @@ namespace GlasAnketa.ViewModels.Models
 {
     public class AnswerVM
     {
+        public int Id { get; set; }
         public int UserId { get; set; }
         public int QuestionId { get; set; }
         public int QuestionFormId { get; set; }

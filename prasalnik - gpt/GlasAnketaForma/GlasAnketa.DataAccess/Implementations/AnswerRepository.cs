@@ -1,6 +1,7 @@
 ﻿using GlasAnketa.DataAccess.DataContext;
 using GlasAnketa.DataAccess.Interfaces;
 using GlasAnketa.Domain.Models;
+using GlasAnketa.ViewModels.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -8,11 +9,7 @@ namespace GlasAnketa.DataAccess.Implementations
 {
     public class AnswerRepository : Repository<Answer>, IAnswerRepository
     {
-        private readonly AppDbContext _context;
-        public AnswerRepository(AppDbContext context) : base(context)
-        {
-            _context = context;
-        }
+        public AnswerRepository(AppDbContext context) : base(context)   {    }
         public async Task<List<Answer>> GetAnswersByQuestionFormIdAsync(int questionFormId)
         {
             return await _context.Answers
@@ -25,76 +22,81 @@ namespace GlasAnketa.DataAccess.Implementations
                         .Where(a => a.QuestionId == questionId)
                         .ToListAsync();
         }
-        public async Task<List<Answer>> GetAnswersByUserIdAsync(int userId)
+        public async Task<List<Answer>> GetAnswersByUserIdAsync(int userId, int formId1)
         {
             return await _context.Answers
                         .Where(a => a.UserId == userId)
                         .ToListAsync();
         }
-        public async Task<Answer> GetUserAnswerForQuestionAsync(int userId, int questionId, int questionFormId)
+        public async Task<Answer?> GetUserAnswerForQuestionAsync(int userId, int questionId, int questionFormId)
         {
             return await _context.Answers
                     .FirstOrDefaultAsync(a => a.UserId == userId &&
                                               a.QuestionId == questionId &&
                                               a.QuestionFormId == questionFormId);
         }
+        public async Task SaveAnswersAsync(List<Answer> answers)
+        {
+            foreach (var ans in answers)
+            {
+                var existing = await _context.Answers
+                    .FirstOrDefaultAsync(a => a.UserId == ans.UserId &&
+                                              a.QuestionId == ans.QuestionId &&
+                                              a.QuestionFormId == ans.QuestionFormId);
+
+                if (existing == null)
+                {
+                    _context.Answers.Add(ans);
+                }
+                else
+                {
+                    existing.TextValue = ans.TextValue;
+                    existing.ScaleValue = ans.ScaleValue;
+                    existing.AnsweredDate = DateTime.UtcNow;
+                }
+            }
+            await _context.SaveChangesAsync();
+        }
         public async Task<bool> SubmitAnswersAsync(int userId, int formId, Dictionary<int, object> answers)
         {
-          using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
-            try
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            foreach (var (questionId, value) in answers)
             {
-                foreach (var answer in answers)
+                var question = await _context.Questions
+                    .Include(q => q.QuestionType)
+                    .FirstOrDefaultAsync(q => q.Id == questionId);
+
+                if (question == null) continue;
+
+                var answer = await _context.Answers
+                    .FirstOrDefaultAsync(a => a.UserId == userId &&
+                                              a.QuestionId == questionId &&
+                                              a.QuestionFormId == formId);
+
+                if (answer == null)
                 {
-                         var question = await _context.Questions
-                        .Include(q => q.QuestionType)
-                        .FirstOrDefaultAsync(q => q.Id == answer.Key);
-                    if (question == null)
+                    var companyId = await _context.Users
+                        .Where(u => u.Id == userId)
+                        .Select(u => u.CompanyId)
+                        .FirstOrDefaultAsync();
+
+                    answer = new Answer
                     {
-                        continue;
-                    }
-                    // Check for existing answer
-                    var existingAnswer = await _context.Answers
-                        .FirstOrDefaultAsync(a => a.UserId == userId &&
-                                                a.QuestionId == answer.Key &&
-                                                a.QuestionFormId == formId);
-                    if (existingAnswer != null)
-                    {
-                        UpdateAnswerValue(existingAnswer, question.QuestionType.Name, answer.Value);
-                        Update(existingAnswer);
-                    }
-                    else
-                    {
-                        var userCompanyId = await _context.Users
-                                        .Where(u => u.Id == userId)
-                                        .Select(u => u.CompanyId)
-                                        .FirstOrDefaultAsync();
-                        var newAnswer = new Answer
-                        {
-                            UserId = userId,
-                            CompanyId = userCompanyId,
-                            QuestionId = answer.Key,
-                            QuestionFormId = formId,
-                            AnsweredDate = DateTime.UtcNow
-                        };
-                        UpdateAnswerValue(newAnswer, question.QuestionType.Name, answer.Value);
-                        await AddAsync(newAnswer);
-                    }
+                        UserId = userId,
+                        CompanyId = companyId,
+                        QuestionId = questionId,
+                        QuestionFormId = formId,
+                        AnsweredDate = DateTime.UtcNow
+                    };
+                    _context.Answers.Add(answer);
                 }
 
-                var saveResult = await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                return saveResult > 0;
+                UpdateAnswerValue(answer, question.QuestionType.Name, value);
             }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                // Log inner exception if exists
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
-                }
-                return false;
-            }
+
+            var result = await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return result > 0;
         }
         private void UpdateAnswerValue(Answer answer, string questionType, object value)
         {
@@ -110,19 +112,11 @@ namespace GlasAnketa.DataAccess.Implementations
                     answer.ScaleValue = parsedValue;
                     answer.TextValue = null;
                 }
-                else
-                {
-                    Console.WriteLine($"❌ Invalid scale value: {value} (Type: {value.GetType()})");
-                }
             }
             else if (questionType == "Text")
             {
                 answer.TextValue = value?.ToString();
                 answer.ScaleValue = null;
-            }
-            else
-            {
-                Console.WriteLine($"❌ Unknown question type: {questionType}");
             }
         }
     }

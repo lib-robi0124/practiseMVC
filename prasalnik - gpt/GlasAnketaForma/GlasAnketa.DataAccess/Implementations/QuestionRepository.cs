@@ -7,17 +7,10 @@ namespace GlasAnketa.DataAccess.Implementations
 {
     public class QuestionRepository : Repository<Question>, IQuestionRepository
     {
-        private readonly AppDbContext _context;
-        public QuestionRepository(AppDbContext context) : base(context)
-        {
-            _context = context;
-        }
-        public async Task<Question> GetByUserIdAsync(int userId)
-        {
-            return await _context.Questions
-                        .Include(x => x.User)
-                        .FirstOrDefaultAsync(x => x.UserId == userId);
-        }
+        public QuestionRepository(AppDbContext context) : base(context) { }
+        public async Task<List<Question>> GetByUserIdAsync(int userId)
+               => await _context.Questions.Where(q => q.UserId == userId).ToListAsync();
+       
         public async Task<QuestionForm> GetFormWithQuestionsAsync(int formId)
         {
             return await _context.QuestionForms

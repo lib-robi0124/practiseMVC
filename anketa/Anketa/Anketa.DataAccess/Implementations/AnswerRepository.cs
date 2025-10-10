@@ -15,16 +15,12 @@ namespace Anketa.DataAccess.Implementations
         }
         public async Task<bool> SubmitAnswersAsync(int userId, int formId, Dictionary<int, object> answers)
         {
-            Console.WriteLine($"=== REPOSITORY: Starting answer submission ===");
-            Console.WriteLine($"User: {userId}, Form: {formId}, Answers: {answers.Count}");
-
             using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
                 foreach (var answer in answers)
                 {
-                    Console.WriteLine($"Processing answer - Question {answer.Key}: {answer.Value} (Type: {answer.Value.GetType()})");
                     try
                     {
                         var question1 = await _context.Questions
@@ -42,11 +38,9 @@ namespace Anketa.DataAccess.Implementations
 
                     if (question == null)
                     {
-                        Console.WriteLine($"❌ Question {answer.Key} not found in database!");
                         continue;
                     }
 
-                    Console.WriteLine($"Found question: {question.Text} (Type: {question.QuestionType.Name})");
 
                     // Check for existing answer
                     var existingAnswer = await _context.Answers
@@ -56,13 +50,11 @@ namespace Anketa.DataAccess.Implementations
 
                     if (existingAnswer != null)
                     {
-                        Console.WriteLine($"Updating existing answer for question {answer.Key}");
                         UpdateAnswerValue(existingAnswer, question.QuestionType.Name, answer.Value);
                         Update(existingAnswer);
                     }
                     else
                     {
-                        Console.WriteLine($"Creating new answer for question {answer.Key}");
                         var newAnswer = new Answer
                         {
                             UserId = userId,
@@ -75,20 +67,15 @@ namespace Anketa.DataAccess.Implementations
                     }
                 }
 
-                Console.WriteLine("Saving changes to database...");
                 var saveResult = await _context.SaveChangesAsync();
-                Console.WriteLine($"Save result: {saveResult} changes");
 
                 await transaction.CommitAsync();
-                Console.WriteLine("✅ Transaction committed successfully!");
 
                 return saveResult > 0;
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                Console.WriteLine($"❌ TRANSACTION ROLLED BACK: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
 
                 // Log inner exception if exists
                 if (ex.InnerException != null)
@@ -102,7 +89,6 @@ namespace Anketa.DataAccess.Implementations
 
         private void UpdateAnswerValue(Answer answer, string questionType, object value)
         {
-            Console.WriteLine($"Updating answer value - Type: {questionType}, Value: {value}");
 
             if (questionType == "Scale")
             {
@@ -110,13 +96,11 @@ namespace Anketa.DataAccess.Implementations
                 {
                     answer.ScaleValue = scaleValue;
                     answer.TextValue = null;
-                    Console.WriteLine($"✅ Set scale value: {scaleValue}");
                 }
                 else if (value is string stringValue && int.TryParse(stringValue, out int parsedValue))
                 {
                     answer.ScaleValue = parsedValue;
                     answer.TextValue = null;
-                    Console.WriteLine($"✅ Parsed and set scale value: {parsedValue} from string '{stringValue}'");
                 }
                 else
                 {
@@ -127,7 +111,6 @@ namespace Anketa.DataAccess.Implementations
             {
                 answer.TextValue = value?.ToString();
                 answer.ScaleValue = null;
-                Console.WriteLine($"✅ Set text value: {value}");
             }
             else
             {

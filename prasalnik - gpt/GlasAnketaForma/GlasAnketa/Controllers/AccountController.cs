@@ -2,79 +2,62 @@
 using GlasAnketa.ViewModels.Models;
 using Microsoft.AspNetCore.Mvc;
 
-public class AccountController : Controller
+namespace GlasAnketa.Controllers
 {
-    private readonly IUserService _userService;
-    private readonly IQuestionFormService _formService;
-
-    public AccountController(IUserService userService, IQuestionFormService formService)
+    public class AccountController : Controller
     {
-        _userService = userService;
-        _formService = formService;
-    }
+        private readonly IUserService _userService;
+        private readonly IQuestionFormService _formService;
 
-    [HttpGet]
-    public IActionResult Login()
-    {
-        HttpContext.Session.Clear();
-        return View();
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Login(UserCredentialsVM model)
-    {
-        if (!ModelState.IsValid)
-            return View(model);
-
-        try
+        public AccountController(IUserService userService, IQuestionFormService formService)
         {
+            _userService = userService;
+            _formService = formService;
+        }
+        [HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> Login(UserCredentialsVM model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
             var user = await _userService.ValidateUser(model);
             if (user == null)
             {
                 ModelState.AddModelError("", "Invalid Company ID or Password");
                 return View(model);
             }
-
-            // ✅ Store user info in session
+            // Store user in session
             HttpContext.Session.SetInt32("UserId", user.Id);
-            HttpContext.Session.SetString("UserRole", user.Role?.Name ?? "Employee");
-            HttpContext.Session.SetString("UserName", user.FullName ?? "Unknown");
+            HttpContext.Session.SetString("UserRole", user.Role.Name);
+            HttpContext.Session.SetString("UserName", user.FullName);
             HttpContext.Session.SetInt32("CompanyId", user.CompanyId);
+            HttpContext.Session.SetString("LastActivity", DateTime.UtcNow.ToString());
 
-            Console.WriteLine($"✅ Login success: {user.FullName}, Role: {user.Role?.Name}");
-
-            // ✅ Admin redirect
-            if (user.Role?.Name == "Administrator")
+            if (user.Role.Name == "Administrator")
                 return RedirectToAction("Index", "Admin");
 
-            // ✅ Employee redirect — get active form
-            var activeForm = await _formService.GetActiveFormAsync();
-            if (activeForm == null)
+            var form = await _formService.GetActiveFormAsync();
+            if (form != null)
             {
-                TempData["ErrorMessage"] = "❌ No active questionnaires found.";
-                return RedirectToAction("Login");
+                return RedirectToAction("Form", "Questionnaire", new { id = form.Id });
             }
-
-            // ✅ Redirect employee to questionnaire form
-            return RedirectToAction("Form", "Questionnaire", new { id = activeForm.Id });
+            else
+            {
+                TempData["ErrorMessage"] = "No active questionnaires available.";
+                return RedirectToAction("Login", "Account");
+            }
         }
-        catch (Exception ex)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Logout()
         {
-            Console.WriteLine($"❌ Login error: {ex.Message}");
-            ModelState.AddModelError("", "An error occurred during login. Please try again.");
-            return View(model);
+            HttpContext.Session.Clear();
+            return RedirectToAction("Login");
         }
     }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public IActionResult Logout()
-    {
-        HttpContext.Session.Clear();
-        return RedirectToAction("Login");
-    }
-
-    [HttpGet]
-    public IActionResult AccessDenied() => View();
 }

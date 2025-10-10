@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GlasAnketa.Domain\GlasAnketa.Domain.csproj" />
+    <ProjectReference Include="..\GlasAnketa.ViewModels\GlasAnketa.ViewModels.csproj" />
   </ItemGroup>
 
 </Project>
