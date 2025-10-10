@@ -43,8 +43,13 @@ namespace GlasAnketa.Services.Implementations
 
         public async Task<QuestionFormVM?> GetNextActiveFormAsync(int currentFormId)
         {
+            // Find the next active form ID
             var nextForm = await _questionFormRepository.GetNextActiveFormAsync(currentFormId);
-            return _mapper.Map<QuestionFormVM?>(nextForm);
+            if (nextForm == null)
+                return null;
+
+            // Map fresh form with questions (loaded directly from DB)
+            return _mapper.Map<QuestionFormVM>(nextForm);
         }
     }
 }

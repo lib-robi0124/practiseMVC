@@ -29,33 +29,16 @@ namespace GlasAnketa.Services.Implementations
         {
             try
             {
-                Console.WriteLine($"GetFormWithQuestionsAsync called for form {formId}");
 
                 var form = _questionFormRepository.GetFormWithQuestions(formId);
-                Console.WriteLine($"Repository returned form: {form != null}");
 
                 if (form == null)
                 {
-                    Console.WriteLine($"Form {formId} not found in repository");
                     throw new Exception($"Form with id {formId} not found.");
                 }
 
-                Console.WriteLine($"Form found: {form.Title}, Questions: {form.Questions?.Count}");
-
-                if (form.Questions != null)
-                {
-                    foreach (var question in form.Questions)
-                    {
-                        Console.WriteLine($"  Question {question.Id}: {question.Text}, Type: {question.QuestionType?.Name}");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("  No questions found for this form");
-                }
 
                 var result = _mapper.Map<QuestionFormVM>(form);
-                Console.WriteLine($"Mapped to VM: {result != null}, Questions in VM: {result.Questions?.Count}");
 
                 return result;
             }

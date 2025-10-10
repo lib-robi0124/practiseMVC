@@ -19,9 +19,11 @@ namespace GlasAnketa.DataAccess.Implementations
         public async Task<QuestionForm> GetNextActiveFormAsync(int currentFormId)
         {
             return await _context.QuestionForms
-            .Where(f => f.IsActive && f.Id > currentFormId)
-            .OrderBy(f => f.Id)
-            .FirstOrDefaultAsync();
+                        .Where(f => f.IsActive && f.Id > currentFormId)
+                        .Include(f => f.Questions)
+                        .ThenInclude(q => q.QuestionType)
+                        .OrderBy(f => f.Id)
+                        .FirstOrDefaultAsync();
         }
         public async Task<QuestionForm> GetQuestionFormByIdAsync(int id)
         {

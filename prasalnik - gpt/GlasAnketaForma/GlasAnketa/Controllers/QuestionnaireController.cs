@@ -4,98 +4,94 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GlasAnketa.Controllers
 {
-        public class QuestionnaireController : Controller
+    public class QuestionnaireController : Controller
+    {
+        private readonly IQuestionFormService _questionFormService;
+        private readonly IAnswerService _answerService;
+
+        public QuestionnaireController(IQuestionFormService questionFormService, IAnswerService answerService)
         {
-            private readonly IQuestionFormService _questionFormService;
-            private readonly IAnswerService _answerService;
+            _questionFormService = questionFormService;
+            _answerService = answerService;
+        }
+        // GET: Questionnaire/Form/{id}
+        [HttpGet]
+        public async Task<IActionResult> Form(int id)
+        {
+            try
+            {
+                // Get logged in user
+                int? userId = HttpContext.Session.GetInt32("UserId");
+                if (userId == null)
+                    return RedirectToAction("Login", "Account");
 
-            public QuestionnaireController(IQuestionFormService questionFormService, IAnswerService answerService)
-            {
-                _questionFormService = questionFormService;
-                _answerService = answerService;
-            }
-            // GET: Questionnaire/Form/{id}
-            [HttpGet]
-            public async Task<IActionResult> Form(int id)
-            {
-                try
+                // Load the active form
+                var questionForm = await _questionFormService.GetFormByIdAsync(id);
+                if (questionForm == null)
                 {
-                    // Get logged in user
-                    int? userId = HttpContext.Session.GetInt32("UserId");
-                    if (userId == null)
-                        return RedirectToAction("Login", "Account");
+                    TempData["ErrorMessage"] = "Form not found or inactive.";
+                    return RedirectToAction("Login", "Account");
+                }
+                // Prepare VM for the view
+                var model = new FormSubmissionVM
+                {
+                    QuestionFormId = questionForm.Id,
+                    QuestionForm = questionForm,
+                    Answers = questionForm.Questions
+                        .Select(q => new AnswerVM
+                        {
+                            QuestionId = q.Id,
+                            QuestionFormId = questionForm.Id,
+                            UserId = userId.Value
+                        })
+                        .ToList()
+                };
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                // Graceful error handling
+                ViewBag.Error = $"An unexpected error occurred: {ex.Message}";
+                return View("Error");
+            }
+        }
+        // POST: Questionnaire/SubmitForm
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubmitForm(FormSubmissionVM model)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login", "Account");
 
-                    // Load the active form
-                    var questionForm = await _questionFormService.GetFormByIdAsync(id);
-                    if (questionForm == null)
-                    {
-                        TempData["ErrorMessage"] = "Form not found or inactive.";
-                        return RedirectToAction("Login", "Account");
-                    }
-                    // Prepare VM for the view
-                    var model = new FormSubmissionVM
-                    {
-                        QuestionFormId = questionForm.Id,
-                        QuestionForm = questionForm,
-                        Answers = questionForm.Questions
-                            .Select(q => new AnswerVM
-                            {
-                                QuestionId = q.Id,
-                                QuestionFormId = questionForm.Id,
-                                UserId = userId.Value
-                            })
-                            .ToList()
-                    };
-                    return View(model);
-                }
-                catch (Exception ex)
-                {
-                    // Graceful error handling
-                    ViewBag.Error = $"An unexpected error occurred: {ex.Message}";
-                    return View("Error");
-                }
-            }
-            // POST: Questionnaire/SubmitForm
-            [HttpPost]
-            [ValidateAntiForgeryToken]
-            public async Task<IActionResult> SubmitForm(FormSubmissionVM model)
+            // Save answers
+            var answers = model.Answers.ToDictionary(
+                a => a.QuestionId,
+                a => (object)(a.ScaleValue ?? (object)a.TextValue)
+            );
+            await _answerService.SubmitAnswersAsync(userId.Value, model.QuestionFormId, answers);
+
+            // Get next form
+            var nextForm = await _questionFormService.GetNextActiveFormAsync(model.QuestionFormId);
+            if (nextForm == null)
+                return RedirectToAction("ThankYou");
+
+            // Load next form’s questions
+            var nextVm = new FormSubmissionVM
             {
-                if (!ModelState.IsValid)
+                QuestionForm = nextForm,
+                Answers = nextForm.Questions.Select(q => new AnswerVM
                 {
-                    ViewBag.Error = "Please fill in all required fields before submitting.";
-                    return View("Form", model);
-                }
-                try
-                {
-                    int? userId = HttpContext.Session.GetInt32("UserId");
-                    if (userId == null)
-                        return RedirectToAction("Login", "Account");
-                    // Assign user to all answers (safety)
-                    foreach (var answer in model.Answers)
-                        answer.UserId = userId.Value;
-                    // Save answers
-                    await _answerService.SaveAnswersAsync(model.Answers);
-                    TempData["SuccessMessage"] = "Thank you! Your responses have been submitted successfully.";
-                    // Optionally load next form or finish
-                    var nextForm = await _questionFormService.GetNextActiveFormAsync(model.QuestionFormId);
-                    if (nextForm != null)
-                    {
-                        return RedirectToAction("Form", new { id = nextForm.Id });
-                    }
-                    // If no next form, show thank you page
-                    return RedirectToAction("Completed");
-                }
-                catch (Exception ex)
-                {
-                    ViewBag.Error = $"Error submitting form: {ex.Message}";
-                    return View("Form", model);
-                }
-            }
-            // GET: Questionnaire/Completed
-            [HttpGet]
-            public IActionResult Completed()
-            {
-                return View();
-            }
-        }  
+                    QuestionId = q.Id,
+                    QuestionFormId = nextForm.Id,
+                    UserId = userId.Value
+                }).ToList()
+            };
+
+            return View("Form", nextVm);
+        }
+        public IActionResult ThankYou()
+        {
+            return View();
+        }
+    }
 }
