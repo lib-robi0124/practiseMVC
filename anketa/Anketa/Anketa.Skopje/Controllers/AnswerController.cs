@@ -22,30 +22,23 @@ namespace Anketa.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Submit(IFormCollection form)
         {
-            Console.WriteLine($"=== SERVER: Form submission started ===");
 
             try
             {
                 // Extract formId from form collection
                 if (!int.TryParse(form["formId"], out int formId))
                 {
-                    Console.WriteLine("SERVER: Invalid formId");
-                    TempData["Error"] = "Invalid form data.";
                     return RedirectToAction("Index", "Form");
                 }
 
-                Console.WriteLine($"SERVER: Form ID: {formId}");
 
                 var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
-                Console.WriteLine($"SERVER: User ID: {userId}");
 
                 // ✅ FIXED: Parse form data properly
                 var answers = new Dictionary<int, object>();
 
-                Console.WriteLine("SERVER: Processing form data:");
                 foreach (var key in form.Keys)
                 {
-                    Console.WriteLine($"  Key: {key}, Value: {form[key]}");
 
                     if (key.StartsWith("answers["))
                     {
@@ -61,48 +54,34 @@ namespace Anketa.Controllers
                                 if (int.TryParse(value, out int scaleValue))
                                 {
                                     answers[questionId] = scaleValue;
-                                    Console.WriteLine($"  → SCALE ANSWER: Q{questionId} = {scaleValue}");
                                 }
                                 else
                                 {
                                     answers[questionId] = value;
-                                    Console.WriteLine($"  → TEXT ANSWER: Q{questionId} = {value}");
                                 }
                             }
                         }
                     }
                 }
 
-                Console.WriteLine($"SERVER: Total answers parsed: {answers.Count}");
 
                 if (!answers.Any())
                 {
-                    Console.WriteLine("SERVER: No valid answers found");
-                    TempData["Error"] = "No valid answers provided.";
                     return RedirectToAction("Answer", "Form", new { formId });
                 }
 
                 var success = await _answerService.SubmitAnswersAsync(userId, formId, answers);
 
-                Console.WriteLine($"SERVER: Submit result: {success}");
 
                 if (success)
                 {
-                    Console.WriteLine($"SERVER: Answers submitted successfully!");
-                    TempData["Success"] = "Thank you for submitting your answers!";
                     return RedirectToAction("Thanks", "Form");
                 }
 
-                Console.WriteLine($"SERVER: Database submission failed");
-                TempData["Error"] = "Error submitting your answers. Please try again.";
                 return RedirectToAction("Answer", "Form", new { formId });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"SERVER EXCEPTION: {ex.Message}");
-                Console.WriteLine($"SERVER STACK TRACE: {ex.StackTrace}");
-
-                TempData["Error"] = "An error occurred while submitting your answers.";
                 return RedirectToAction("Index", "Form");
             }
         }

@@ -93,7 +93,6 @@ namespace GlasAnketa.Services.Implementations
             catch (Exception ex)
             {
                 // Log the exception
-                Console.WriteLine($"Error deleting form {formId}: {ex.Message}");
                 return false;
             }
         }
