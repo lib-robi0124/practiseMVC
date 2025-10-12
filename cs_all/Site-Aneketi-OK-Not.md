@@ -7,12 +7,6 @@ NOT OK
 1. After btn Save & Next it is showing SAME First FORM , not able to go on FORM_2
 2. UPdate AdminController methods to Repositories and Services
 ## endregion
-## region BackupAnketa
-1. Login OK
-NOT OK
-1. NO FORM in Page
-2. A lot of method inplemented
-## endregion
 ## region KineskaAnketa
 1. Login OK
 2. One Form on Page
@@ -32,4 +26,10 @@ NOT OK
 NOT OK
 1. One Form One Page
 2. Table users missing OU2
+## endregion
+## region BackupAnketa
+1. Login OK
+NOT OK
+1. NO FORM in Page
+2. A lot of method inplemented
 ## endregion

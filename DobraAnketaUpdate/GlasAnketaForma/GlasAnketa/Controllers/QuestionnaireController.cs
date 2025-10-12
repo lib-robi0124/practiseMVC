@@ -22,7 +22,7 @@ namespace GlasAnketa.Controllers
             {
                 // Get logged in user
                 int? userId = HttpContext.Session.GetInt32("UserId");
-                if (userId == null)
+                if (!userId.HasValue)
                     return RedirectToAction("Login", "Account");
 
                 // Load the active form
