@@ -28,6 +28,47 @@ namespace GlasAnketa.DataAccess.Implementations
                         .Where(a => a.UserId == userId)
                         .ToListAsync();
         }
+        public async Task<Dictionary<int, AnswerSummary>> GetAnswerSummariesAsync(int formId)
+        {
+            var summaries = new Dictionary<int, AnswerSummary>();
+
+            // Get all questions for this form
+            var questions = await _context.Questions
+                .Where(q => q.QuestionFormId == formId)
+                .Include(q => q.QuestionType)
+                .ToListAsync();
+
+            foreach (var question in questions)
+            {
+                var answers = await _context.Answers
+                    .Where(a => a.QuestionId == question.Id && a.QuestionFormId == formId)
+                    .ToListAsync();
+
+                var summary = new AnswerSummary
+                {
+                    QuestionId = question.Id,
+                    QuestionText = question.Text,
+                    QuestionType = question.QuestionType.Name,
+                    TotalResponses = answers.Count,
+                    TextResponses = answers.Where(a => !string.IsNullOrEmpty(a.TextValue))
+                                        .Select(a => a.TextValue)
+                                        .ToList()
+                };
+                // Calculate average for scale questions
+                if (question.QuestionType.Name == "Scale" && answers.Any())
+                {
+                    var scaleAnswers = answers.Where(a => a.ScaleValue.HasValue)
+                                            .Select(a => a.ScaleValue.Value)
+                                            .ToList();
+                    summary.AverageScaleValue = scaleAnswers.Average();
+                    summary.ScaleValueDistribution = scaleAnswers
+                        .GroupBy(v => v)
+                        .ToDictionary(g => g.Key, g => g.Count());
+                }
+                summaries.Add(question.Id, summary);
+            }
+            return summaries;
+        }
         public async Task<Answer?> GetUserAnswerForQuestionAsync(int userId, int questionId, int questionFormId)
         {
             return await _context.Answers

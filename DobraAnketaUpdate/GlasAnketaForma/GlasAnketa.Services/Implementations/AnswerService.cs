@@ -17,6 +17,11 @@ namespace GlasAnketa.Services.Implementations
             _mapper = mapper;
         }
 
+        public async Task<Dictionary<int, AnswerSummaryVM>> GetAnswerSummariesAsync(int formId)
+        {
+            var summaries = await _answerRepository.GetAnswerSummariesAsync(formId);
+            return _mapper.Map<Dictionary<int, AnswerSummaryVM>>(summaries);
+        }
         public async Task<List<AnswerVM>> GetFormAnswersAsync(int formId)
         {
             var answers = await _answerRepository.GetAnswersByQuestionFormIdAsync(formId);

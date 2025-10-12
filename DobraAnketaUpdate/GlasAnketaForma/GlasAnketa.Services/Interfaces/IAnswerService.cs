@@ -8,5 +8,6 @@ namespace GlasAnketa.Services.Interfaces
         Task<List<AnswerVM>> GetUserAnswersAsync(int userId, int formId);
         Task<List<AnswerVM>> GetFormAnswersAsync(int formId);
         Task SaveAnswersAsync(List<AnswerVM> answers);
+        Task<Dictionary<int, AnswerSummaryVM>> GetAnswerSummariesAsync(int formId);
     }
 }

@@ -15,7 +15,7 @@ namespace GlasAnketa.DataAccess.Implementations
             _entities = context.Set<T>();
         }
 
-        public virtual async Task<T> GetFormWithQuestionsAsync(int id)
+        public virtual async Task<T> GetActiveAsync(int id)
             => await _entities.FindAsync(id);
 
         public virtual async Task<IEnumerable<T>> GetAllAsync()

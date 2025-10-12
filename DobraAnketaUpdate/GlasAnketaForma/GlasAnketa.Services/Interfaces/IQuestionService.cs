@@ -7,5 +7,9 @@ namespace GlasAnketa.Services.Interfaces
     {
         Task<QuestionVM> GetQuestionById(int questionId);
         Task<List<QuestionVM>> GetAllQuestions();
+        // Admin methods
+        void CreateQuestion(RegisterQuestionVM registerQuestionVM);
+        Task<bool> RemoveQuestion(int questionId);
+        void UpdateQuestion(RegisterQuestionVM registerQuestionVM);
     }
 }

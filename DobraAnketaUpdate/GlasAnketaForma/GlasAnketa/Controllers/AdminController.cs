@@ -112,7 +112,7 @@ namespace GlasAnketa.Controllers
         {
             try
             {
-                var question = _questionService.GetQuestionById(id);
+                var question = await _questionService.GetQuestionById(id);
                 if (question == null)
                 {
                     TempData["ErrorMessage"] = "Question not found.";

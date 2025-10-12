@@ -32,5 +32,19 @@ namespace GlasAnketa.DataAccess.Implementations
                 .ThenInclude(q => q.QuestionType)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
+
+        public async Task<bool> ToggleFormStatusAsync(int formId, bool isActive)
+        {
+            var form = await _context.QuestionForms
+                .FirstOrDefaultAsync(qf => qf.Id == formId);
+
+            if (form == null)
+                return false;
+
+            form.IsActive = isActive;
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }
+

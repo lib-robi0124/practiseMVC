@@ -7,5 +7,6 @@ namespace GlasAnketa.DataAccess.Interfaces
         Task<List<QuestionForm>> GetAllFormQuestionsAsync();
         Task<QuestionForm> GetQuestionFormByIdAsync(int id);
         Task<QuestionForm> GetNextActiveFormAsync(int currentFormId);
+        Task<bool> ToggleFormStatusAsync(int formId, bool isActive);
     }
 }

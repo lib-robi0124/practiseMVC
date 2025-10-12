@@ -10,5 +10,6 @@ namespace GlasAnketa.DataAccess.Interfaces
         Task<List<Answer>> GetAnswersByQuestionIdAsync(int questionId);
         Task<Answer> GetUserAnswerForQuestionAsync(int userId, int questionId, int questionFormId);
         Task SaveAnswersAsync(List<Answer> answers);
+        Task<Dictionary<int, AnswerSummary>> GetAnswerSummariesAsync(int formId);
     }
 }
