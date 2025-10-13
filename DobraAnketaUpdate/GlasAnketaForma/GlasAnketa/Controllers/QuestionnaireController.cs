@@ -7,88 +7,41 @@ namespace GlasAnketa.Controllers
     public class QuestionnaireController : Controller
     {
         private readonly IQuestionFormService _questionFormService;
-        private readonly IAnswerService _answerService;
 
-        public QuestionnaireController(IQuestionFormService questionFormService, IAnswerService answerService)
+        public QuestionnaireController(IQuestionFormService questionFormService)
         {
             _questionFormService = questionFormService;
-            _answerService = answerService;
         }
         // GET: Questionnaire/Form/{id}
         [HttpGet]
-        public async Task<IActionResult> Form(int id)
-        {
-            try
-            {
-                // Get logged in user
-                int? userId = HttpContext.Session.GetInt32("UserId");
-                if (!userId.HasValue)
-                    return RedirectToAction("Login", "Account");
-
-                // Load the active form
-                var questionForm = await _questionFormService.GetFormByIdAsync(id);
-                if (questionForm == null)
-                {
-                    TempData["ErrorMessage"] = "Form not found or inactive.";
-                    return RedirectToAction("Login", "Account");
-                }
-                // Prepare VM for the view
-                var model = new FormSubmissionVM
-                {
-                    QuestionFormId = questionForm.Id,
-                    QuestionForm = questionForm,
-                    Answers = questionForm.Questions
-                        .Select(q => new AnswerVM
-                        {
-                            QuestionId = q.Id,
-                            QuestionFormId = questionForm.Id,
-                            UserId = userId.Value
-                        })
-                        .ToList()
-                };
-                return View(model);
-            }
-            catch (Exception ex)
-            {
-                // Graceful error handling
-                ViewBag.Error = $"An unexpected error occurred: {ex.Message}";
-                return View("Error");
-            }
-        }
-        // POST: Questionnaire/SubmitForm
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SubmitForm(FormSubmissionVM model)
+        public async Task<IActionResult> ShowForm(int? formId)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return RedirectToAction("Login", "Account");
+            if (userId == null)
+                return RedirectToAction("Login", "Account");
 
-            // Save answers
-            var answers = model.Answers.ToDictionary(
-                a => a.QuestionId,
-                a => (object)(a.ScaleValue ?? (object)a.TextValue)
-            );
-            await _answerService.SubmitAnswersAsync(userId.Value, model.QuestionFormId, answers);
+            var form = formId.HasValue
+                ? await _questionFormService.GetFormByIdAsync(formId.Value)
+                : await _questionFormService.GetActiveFormAsync();
 
-            // Get next form
-            var nextForm = await _questionFormService.GetNextActiveFormAsync(model.QuestionFormId);
-            if (nextForm == null)
+            if (form == null)
                 return RedirectToAction("ThankYou");
 
-            // Load next form’s questions
-            var nextVm = new FormSubmissionVM
+            var vm = new FormSubmissionVM
             {
-                QuestionForm = nextForm,
-                Answers = nextForm.Questions.Select(q => new AnswerVM
+                QuestionForm = form,
+                QuestionFormId = form.Id,
+                Answers = form.Questions.Select(q => new AnswerVM
                 {
                     QuestionId = q.Id,
-                    QuestionFormId = nextForm.Id,
+                    QuestionFormId = form.Id,
                     UserId = userId.Value
                 }).ToList()
             };
 
-            return View("Form", nextVm);
+            return View("Form", vm);
         }
+        
         public IActionResult ThankYou()
         {
             return View();

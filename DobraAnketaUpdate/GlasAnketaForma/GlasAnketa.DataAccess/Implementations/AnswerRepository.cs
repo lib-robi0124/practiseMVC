@@ -1,9 +1,7 @@
 ﻿using GlasAnketa.DataAccess.DataContext;
 using GlasAnketa.DataAccess.Interfaces;
 using GlasAnketa.Domain.Models;
-using GlasAnketa.ViewModels.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 
 namespace GlasAnketa.DataAccess.Implementations
 {

@@ -42,7 +42,7 @@ namespace GlasAnketa.Services.Implementations
         // ✅ Get user by ID
         public async Task<UserVM> GetUserById(int id)
         {
-            var user = await _userRepository.GetFormWithQuestionsAsync(id);
+            var user = await _userRepository.GetActiveAsync(id);
             return _mapper.Map<UserVM>(user);
         }
 

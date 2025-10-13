@@ -31,7 +31,6 @@
 <body>
     <div class="questionnaire-container">
         <div class="questionnaire-header fade-in">
-            @* <div class="form-progress"> *@
                 <div class="progress-info">
                     <h1>@Model.QuestionForm.Title</h1>
                     <p>@Model.QuestionForm.Description</p>
@@ -39,20 +38,15 @@
                         Questionnaire @currentFormNumber of @totalForms
                     </div>
                 </div>
-                @* <div class="progress-container">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-                    </div>
-                    <small class="text-muted">Progress: <span id="progress-text">0%</span></small>
-                </div> *@
-            @* </div> *@
-        </div>
+         </div>
 
-        <!-- Rest of your form code remains the same -->
         <div class="questionnaire-form slide-in">
-            <form asp-action="SubmitForm" method="post" id="questionnaireForm">
+            <form asp-action="SubmitAnswers" asp-controller="Answer" method="post" id="questionnaireForm">
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="QuestionFormId" />
+
+                <!-- Add hidden field for next form if you want to track it -->
+                <input type="hidden" asp-for="NextFormId" />
 
                 @for (int i = 0; i < Model.QuestionForm.Questions.Count; i++)
                 {
@@ -62,7 +56,8 @@
 
                         <input type="hidden" name="Answers[@i].QuestionId" value="@question.Id" />
                         <input type="hidden" name="Answers[@i].QuestionFormId" value="@Model.QuestionForm.Id" />
-                        <input type="hidden" name="Answers[@i].UserId" value="@Model.Answers[i].UserId" />
+                        @* <input type="hidden" name="Answers[@i].UserId" value="@Model.Answers[i].UserId" /> *@
+                        <!-- Remove UserId from here - set it in controller -->
 
                         @if (question.QuestionType == "Scale")
                         {
@@ -95,7 +90,7 @@
                 <div class="navigation-buttons">
                     <button type="submit" class="btn btn-success" id="submitBtn">
                         <span class="btn-text">
-                            @(isLastForm ? "Submit All Answers" : "Save & Continue →")
+                            @(Model.NextFormId == null ? "Submit All Answers" : "Save & Continue →") <!-- edited -->
                         </span>
                         <div class="loading-spinner" style="display: none;"></div>
                     </button>

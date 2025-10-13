@@ -44,7 +44,7 @@ namespace GlasAnketa.Controllers
             var form = await _formService.GetActiveFormAsync();
             if (form != null)
             {
-                return RedirectToAction("Form", "Questionnaire", new { id = form.Id });
+                return RedirectToAction("ShowForm", "Questionnaire", new { formId = 1 });
             }
             else
             {

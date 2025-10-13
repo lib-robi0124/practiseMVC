@@ -60,8 +60,9 @@ namespace GlasAnketa.Services.Implementations
 
         public async Task<List<QuestionFormVM>> GetAllFormsAsync()
         {
-            var forms = _questionFormRepository.GetAllFormQuestionsAsync();
-            return await Task.FromResult(_mapper.Map<List<QuestionFormVM>>(forms));
+            var forms = await _questionFormRepository.GetAllFormQuestionsAsync();
+            //return await Task.FromResult(_mapper.Map<List<QuestionFormVM>>(forms));
+            return _mapper.Map<List<QuestionFormVM>>(forms); // ✅ No Task.FromResult needed
         }
 
         public async Task<QuestionFormVM> GetFormByIdAsync(int id)

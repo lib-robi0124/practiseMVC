@@ -1,5 +1,136 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model ResultsVM
 @{
+    ViewData["Title"] = "View Results";
 }
+<link rel="stylesheet" href="~/css/viewresults.css" asp-append-version="true" />
+<div class="admin-container">
+    <div class="admin-header">
+        <h1>📊 View Results</h1>
+        <p>Survey results and analytics</p>
+        <div class="user-info">
+            <small>Logged in as: <strong>@Context.Session.GetString("UserName")</strong></small> |
+            <a href="@Url.Action("Index", "Admin")" class="btn btn-secondary">← Back to Dashboard</a> |
+            <a href="@Url.Action("Logout", "Account")" class="text-danger">Logout</a>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <h4>📈 Results Dashboard</h4>
+        <p>View and analyze survey responses. This section will show:</p>
+        <ul>
+            <li>Response rates and statistics</li>
+            <li>Individual answer details</li>
+            <li>Analytics and trends</li>
+            <li>Export capabilities</li>
+        </ul>
+    </div>
+
+    <div class="admin-content">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Form Selection</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Select Questionnaire Form:</label>
+                            <select class="form-control" id="formSelector">
+                                <option value="1">Form 1: Општо задоволство</option>
+                                <option value="2">Form 2: Обврска кон компанијата</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" onclick="loadResults()">Load Results</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Quick Stats</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stat-item">
+                            <h4>Total Responses</h4>
+                            <div class="stat-number">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <h4>Completion Rate</h4>
+                            <div class="stat-number">0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3>Response Details</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <p>No response data available yet. Responses will appear here once users start submitting questionnaires.</p>
+                </div>
+
+                @if (Model?.Answers != null && Model.Answers.Any())
+                {
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Question</th>
+                                <th>Answer</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var answer in Model.Answers)
+                            {
+                                <tr>
+                                    <td>User @answer.UserId</td>
+                                    <td>Question @answer.QuestionId</td>
+                                    <td>
+                                        @if (answer.ScaleValue.HasValue)
+                                        {
+                                            <span>Scale: @answer.ScaleValue</span>
+                                        }
+                                        else if (!string.IsNullOrEmpty(answer.TextValue))
+                                        {
+                                            <span>Text: @answer.TextValue</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No answer</span>
+                                        }
+                                    </td>
+                                    <td>@answer.AnsweredDate.ToString("MMM dd, yyyy")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <div style="font-size: 3em;">📭</div>
+                        <h4>No Responses Yet</h4>
+                        <p class="text-muted">Survey responses will appear here once employees start submitting their answers.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+   
+</style>
+
+<script>
+    function loadResults() {
+        const formId = document.getElementById('formSelector').value;
+        alert('Loading results for form ' + formId + '... (This feature is under development)');
+        // In the future, this would make an AJAX call to load the results
+    }
+</script>
