@@ -448,51 +448,61 @@ namespace GlasAnketa.DataAccess.Extensions
                 new Question { Id = 1, Text = "Задоволен сум од мојата моментална работа", QuestionTypeId = 1, QuestionFormId = 1, UserId = 1 },
                 new Question { Id = 2, Text = "Чувствувам дека мојата работа е ценета во рамките на компанијата", QuestionTypeId = 1, QuestionFormId = 1, UserId = 1 },
                 new Question { Id = 3, Text = "Се чувствувам мотивиран да одам на работа секој ден", QuestionTypeId = 1, QuestionFormId = 1, UserId = 1 },
+                new Question { Id = 40, Text = "Vase mislenje za Општо задоволство rabotejki vo kompanijata", QuestionTypeId = 2, QuestionFormId = 1, UserId = 1 },
 
                 // Form 2: Обврска кон компанијата (Scale questions)
                 new Question { Id = 4, Text = "Се чувствувам горд што работам за оваа компанија", QuestionTypeId = 1, QuestionFormId = 2, UserId = 1 },
                 new Question { Id = 5, Text = "Со задоволство ја препорачувам оваа компанија како работно место на пријателите и семејството", QuestionTypeId = 1, QuestionFormId = 2, UserId = 1 },
                 new Question { Id = 6, Text = "Се гледам себеси како долгорочно работам во оваа компанија", QuestionTypeId = 1, QuestionFormId = 2, UserId = 1 },
+                new Question { Id = 41, Text = "Vase mislenje za Обврска кон компанијата", QuestionTypeId = 2, QuestionFormId = 2, UserId = 1 },
 
                 // Form 3: Професионален развој (Scale questions)
                 new Question { Id = 7, Text = "Имам можности за професионален развој и напредување", QuestionTypeId = 1, QuestionFormId = 3, UserId = 1 },
                 new Question { Id = 8, Text = "Добивам конструктивна повратна информација за мојата работа", QuestionTypeId = 1, QuestionFormId = 3, UserId = 1 },
                 new Question { Id = 9, Text = "Компанијата обезбедува соодветна обука и ресурси за мојот развој", QuestionTypeId = 1, QuestionFormId = 3, UserId = 1 },
+                new Question { Id = 42, Text = "Vase mislenje za Професионален развој vo компанијата", QuestionTypeId = 2, QuestionFormId = 3, UserId = 1 },
 
                 // Form 4: "Рамнотежа помеѓу работата и животот" (Scale questions)
                 new Question { Id = 10, Text = "Компанијата поддржува здрава рамнотежа помеѓу работата и личниот живот", QuestionTypeId = 1, QuestionFormId = 4, UserId = 1 },
                 new Question { Id = 11, Text = "Можам ефикасно да управувам со стресот поврзан со работата", QuestionTypeId = 1, QuestionFormId = 4, UserId = 1 },
                 new Question { Id = 12, Text = "Мојот работен распоред ми овозможува да ги исполнувам моите лични обврски", QuestionTypeId = 1, QuestionFormId = 4, UserId = 1 },
+                new Question { Id = 43, Text = "Vase mislenje za Рамнотежа помеѓу работата и животот", QuestionTypeId = 2, QuestionFormId = 4, UserId = 1 },
 
                 // Form 5: "Комуникација и соработка" (Scale questions)
                 new Question { Id = 13, Text = "Комуникацијата во мојот тим е ефикасна", QuestionTypeId = 1, QuestionFormId = 5, UserId = 1 },
                 new Question { Id = 14, Text = "Се чувствувам удобно да ги искажувам моите идеи и мислења на работа", QuestionTypeId = 1, QuestionFormId = 5, UserId = 1 },
                 new Question { Id = 15, Text = "Соработката помеѓу одделенијата е ефикасна", QuestionTypeId = 1, QuestionFormId = 5, UserId = 1 },
+                new Question { Id = 44, Text = "Vase mislenje za Комуникација и соработка", QuestionTypeId = 2, QuestionFormId = 5, UserId = 1 },
 
                 // Form 6: "Лидерство" (Scale questions)
                 new Question { Id = 16, Text = "Му верувам на раководството на компанијата", QuestionTypeId = 1, QuestionFormId = 6, UserId = 1 },
                 new Question { Id = 17, Text = "Мојот директен менаџер ме поддржува во остварувањето на моите цели", QuestionTypeId = 1, QuestionFormId = 6, UserId = 1 },
                 new Question { Id = 18, Text = "Важните одлуки на компанијата се пренесуваат транспарентно", QuestionTypeId = 1, QuestionFormId = 6, UserId = 1 },
+                new Question { Id = 45, Text = "Vase mislenje za Лидерство", QuestionTypeId = 2, QuestionFormId = 6, UserId = 1 },
 
                 // Form 7: "Организациска култура" (Scale questions)
                 new Question { Id = 19, Text = "Вредностите на компанијата се усогласуваат со моите лични вредности", QuestionTypeId = 1, QuestionFormId = 7, UserId = 1 },
                 new Question { Id = 20, Text = "Се чувствувам вклучено и почитувано на работа", QuestionTypeId = 1, QuestionFormId = 7, UserId = 1 },
                 new Question { Id = 21, Text = "Компанијата промовира различност и инклузија", QuestionTypeId = 1, QuestionFormId = 7, UserId = 1 },
+                new Question { Id = 46, Text = "Vase mislenje za Организациска култура", QuestionTypeId = 2, QuestionFormId = 7, UserId = 1 },
 
                 // Form 8: "Работна средина" (Scale questions)
                 new Question { Id = 22, Text = "Ги имам сите ресурси потребни за ефикасно извршување на моите задачи", QuestionTypeId = 1, QuestionFormId = 8, UserId = 1 },
                 new Question { Id = 23, Text = "Физичката работна средина е удобна и поволна за продуктивност", QuestionTypeId = 1, QuestionFormId = 8, UserId = 1 },
                 new Question { Id = 24, Text = "Се чувствувам безбедно на работа", QuestionTypeId = 1, QuestionFormId = 8, UserId = 1 },
+                new Question { Id = 47, Text = "Vase mislenje za Работна средина", QuestionTypeId = 2, QuestionFormId = 8, UserId = 1 },
 
                 // Form 9: "Награди и признанија" (Scale questions)
                 new Question { Id = 25, Text = "Задоволен сум од мојот пакет компензации и бенефиции", QuestionTypeId = 1, QuestionFormId = 9, UserId = 1 },
                 new Question { Id = 26, Text = "Моите напори и достигнувања се препознаени и ценети", QuestionTypeId = 1, QuestionFormId = 9, UserId = 1 },
                 new Question { Id = 27, Text = "Постојат јасни можности за напредување во кариерата во рамките на компанијата", QuestionTypeId = 1, QuestionFormId = 9, UserId = 1 },
+                new Question { Id = 48, Text = "Vase mislenje za Награди и признанија", QuestionTypeId = 2, QuestionFormId = 9, UserId = 1 },
 
                 // Form 10: "Иновации и промени" (Scale questions)
                 new Question { Id = 28, Text = "Компанијата ги поттикнува иновациите и креативното размислување", QuestionTypeId = 1, QuestionFormId = 10, UserId = 1 },
                 new Question { Id = 29, Text = "Подготвен сум да ги усвојам промените имплементирани во компанијата", QuestionTypeId = 1, QuestionFormId = 10, UserId = 1 },
                 new Question { Id = 30, Text = "Идеите и предлозите на вработените се разгледуваат и се спроведуваат кога е соодветно", QuestionTypeId = 1, QuestionFormId = 10, UserId = 1 },
+                new Question { Id = 49, Text = "Vase mislenje za Иновации и промени", QuestionTypeId = 2, QuestionFormId = 10, UserId = 1 },
 
                 // Form 11: "Конечна евалуација" (Scale and text questions)
                 new Question { Id = 31, Text = "Kолку е веројатно да ја препорачате оваа компанија како работно место на пријател или колега", QuestionTypeId = 1, QuestionFormId = 11, UserId = 1 },

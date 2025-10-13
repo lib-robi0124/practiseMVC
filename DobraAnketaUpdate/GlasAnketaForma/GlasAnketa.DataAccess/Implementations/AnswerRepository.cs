@@ -158,5 +158,41 @@ namespace GlasAnketa.DataAccess.Implementations
                 answer.ScaleValue = null;
             }
         }
+
+        public async Task<List<Answer>> GetAnswersWithUsersByFormIdAsync(int formId)
+        {
+            return await _context.Answers
+                .Include(a => a.User)
+                .Include(a => a.Question)
+                .ThenInclude(q => q.QuestionType)
+                .Where(a => a.QuestionFormId == formId)
+                .ToListAsync();
+        }
+
+        public async Task<List<Answer>> GetAnswersWithUsersByQuestionIdAsync(int questionId)
+        {
+            return await _context.Answers
+                .Include(a => a.User)
+                .Include(a => a.Question)
+                .ThenInclude(q => q.QuestionType)
+                .Where(a => a.QuestionId == questionId)
+                .ToListAsync();
+        }
+
+        public async Task<List<string>> GetDistinctOU2ValuesAsync()
+        {
+            return await _context.Users
+                .Select(u => u.OU2)
+                .Distinct()
+                .OrderBy(ou2 => ou2)
+                .ToListAsync();
+        }
+
+        public async Task<Dictionary<string, int>> GetUserCountsByOU2Async()
+        {
+            return await _context.Users
+                .GroupBy(u => u.OU2)
+                .ToDictionaryAsync(g => g.Key, g => g.Count());
+        }
     }
 }

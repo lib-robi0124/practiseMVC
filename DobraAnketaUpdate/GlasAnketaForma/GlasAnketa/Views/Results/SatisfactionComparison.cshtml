@@ -1,0 +1,280 @@
+@model GlasAnketa.ViewModels.Models.SatisfactionComparisonVM
+@{
+    ViewData["Title"] = "Satisfaction Comparison - Individual Users";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">Satisfaction Comparison - Individual Users</h1>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    @if (Context.Session.GetString("UserName") != null)
+                    {
+                        <small class="text-muted me-3">
+                            <strong>@Context.Session.GetString("UserName")</strong> (@Context.Session.GetString("UserRole"))
+                        </small>
+                    }
+                    <a href="@Url.Action("Index", "Results")" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-arrow-left"></i> Back to Analytics
+                    </a>
+                    @if (Context.Session.GetString("UserName") != null)
+                    {
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question Selection -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" action="@Url.Action("SatisfactionComparison")">
+                        <div class="row align-items-end">
+                            <div class="col-9">
+                                <label for="questionId" class="form-label">Select Question to Analyze:</label>
+                                @Html.DropDownList("questionId", (SelectList)ViewBag.Questions, 
+                                    new { @class = "form-select", id = "questionId", onchange = "this.form.submit();" })
+                            </div>
+                            <div class="col-3">
+                                <button type="submit" class="btn btn-primary">Analyze</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title">Current Question</h6>
+                    <p class="mb-0 small text-muted">@Model.QuestionText</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Statistics != null && Model.UserSatisfactions.Any())
+    {
+        <!-- Statistics Overview -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Response Statistics</h5>
+                        <small class="text-muted">Generated on: @Model.GeneratedDate.ToString("MM/dd/yyyy HH:mm")</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-2 text-center">
+                                <h4 class="text-primary">@Model.Statistics.AverageScore.ToString("F2")</h4>
+                                <p class="mb-0 small">Average Score</p>
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <h4 class="text-success">@Model.Statistics.MedianScore.ToString("F1")</h4>
+                                <p class="mb-0 small">Median Score</p>
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <h4 class="text-info">@Model.Statistics.TotalResponses</h4>
+                                <p class="mb-0 small">Total Responses</p>
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <h4 class="text-warning">@Model.Statistics.ResponseRate.ToString("F1")%</h4>
+                                <p class="mb-0 small">Response Rate</p>
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <h4 class="text-danger">@Model.Statistics.MinScore - @Model.Statistics.MaxScore</h4>
+                                <p class="mb-0 small">Score Range</p>
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <h4 class="text-secondary">@Model.Statistics.StandardDeviation.ToString("F2")</h4>
+                                <p class="mb-0 small">Std Deviation</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Score Distribution -->
+        @if (Model.Statistics.ScoreDistribution.Any())
+        {
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Score Distribution (1-10 Scale)</h6>
+                        </div>
+                        <div class="card-body">
+                            @foreach (var scoreCount in Model.Statistics.ScoreDistribution.OrderBy(s => s.Key))
+                            {
+                                var percentage = ((double)scoreCount.Value / Model.Statistics.TotalResponses) * 100;
+                                <div class="mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Score @scoreCount.Key</span>
+                                        <span>@scoreCount.Value (@percentage.ToString("F1")%)</span>
+                                    </div>
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar bg-primary" style="width: @percentage%"></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OU2 Statistics -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Department Breakdown</h6>
+                        </div>
+                        <div class="card-body">
+                            @foreach (var ou2Stat in Model.Statistics.OU2Statistics.OrderByDescending(s => s.Value.AverageScore))
+                            {
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="flex-grow-1">
+                                        <strong class="small">@ou2Stat.Key</strong>
+                                        <div class="small text-muted">@ou2Stat.Value.ResponseCount/@ou2Stat.Value.UserCount responses</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge badge-primary">@ou2Stat.Value.AverageScore.ToString("F2")</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Individual User Responses -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Individual User Responses</h5>
+                        <div>
+                            <span class="badge badge-success">@Model.UserSatisfactions.Count(u => u.HasResponded) Responded</span>
+                            <span class="badge badge-secondary">@Model.UserSatisfactions.Count(u => !u.HasResponded) Not Responded</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Company ID</th>
+                                        <th>Employee Name</th>
+                                        <th>OU</th>
+                                        <th>OU2 Department</th>
+                                        <th>Score</th>
+                                        <th>Response Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var user in Model.UserSatisfactions)
+                                    {
+                                        <tr class="@(user.HasResponded ? "" : "table-secondary")">
+                                            <td class="font-weight-bold">@user.CompanyId</td>
+                                            <td>@user.FullName</td>
+                                            <td><span class="badge badge-info">@user.OU</span></td>
+                                            <td><span class="badge badge-primary">@user.OU2</span></td>
+                                            <td>
+                                                @if (user.HasResponded && user.ScaleValue.HasValue)
+                                                {
+                                                    var scoreColor = user.ScaleValue.Value >= 7 ? "text-success" : 
+                                                                   user.ScaleValue.Value >= 5 ? "text-warning" : "text-danger";
+                                                    <span class="font-weight-bold @scoreColor">@user.ScaleValue.Value</span>
+                                                }
+                                                else if (user.HasResponded && !string.IsNullOrEmpty(user.TextValue))
+                                                {
+                                                    <span class="small text-muted" title="@user.TextValue">Text Response</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (user.HasResponded)
+                                                {
+                                                    <small>@user.AnsweredDate.ToString("MM/dd/yyyy")</small>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (user.HasResponded)
+                                                {
+                                                    <span class="badge badge-success">Responded</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-secondary">Pending</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-info" role="alert">
+                    <h4 class="alert-heading">No Data Available</h4>
+                    <p>No data found for the selected question. Please ensure that:</p>
+                    <ul>
+                        <li>The question exists and is of Scale type</li>
+                        <li>Users are registered in the system</li>
+                        <li>The database connection is working properly</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .progress-sm {
+        height: 0.5rem;
+    }
+    .badge-primary {
+        background-color: #4e73df;
+    }
+    .badge-secondary {
+        background-color: #858796;
+    }
+    .badge-success {
+        background-color: #1cc88a;
+    }
+    .badge-info {
+        background-color: #36b9cc;
+    }
+    .font-weight-bold {
+        font-weight: 700 !important;
+    }
+    .table-secondary {
+        opacity: 0.7;
+    }
+</style>

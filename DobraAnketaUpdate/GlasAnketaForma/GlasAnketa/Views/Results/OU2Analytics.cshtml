@@ -1,0 +1,269 @@
+@model GlasAnketa.ViewModels.Models.OU2AnalyticsVM
+@{
+    ViewData["Title"] = "OU2 Analytics - Department Analysis";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">OU2 Analytics - Department Analysis</h1>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    @if (Context.Session.GetString("UserName") != null)
+                    {
+                        <small class="text-muted me-3">
+                            <strong>@Context.Session.GetString("UserName")</strong> (@Context.Session.GetString("UserRole"))
+                        </small>
+                    }
+                    <a href="@Url.Action("Index", "Results")" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-arrow-left"></i> Back to Analytics
+                    </a>
+                    @if (Context.Session.GetString("UserName") != null)
+                    {
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Selection -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" action="@Url.Action("OU2Analytics")">
+                        <div class="row align-items-end">
+                            <div class="col-8">
+                                <label for="formId" class="form-label">Select Survey Form:</label>
+                                @Html.DropDownList("formId", (SelectList)ViewBag.Forms, 
+                                    new { @class = "form-select", id = "formId", onchange = "this.form.submit();" })
+                            </div>
+                            <div class="col-4">
+                                <button type="submit" class="btn btn-primary">Analyze</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title">Export Options</h6>
+                    <form method="post" action="@Url.Action("ExportResults")" style="display: inline;">
+                        <input type="hidden" name="formId" value="@Model.SelectedFormId" />
+                        <input type="hidden" name="format" value="csv" />
+                        <button type="submit" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-download"></i> Export CSV
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.OU2Results.Any())
+    {
+        <!-- Summary Statistics -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Summary for: @Model.FormTitle</h5>
+                        <small class="text-muted">Generated on: @Model.GeneratedDate.ToString("MM/dd/yyyy HH:mm")</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 text-center">
+                                <h4 class="text-primary">@Model.OU2Results.Count</h4>
+                                <p class="mb-0">Departments</p>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <h4 class="text-success">@Model.OU2Results.Sum(r => r.TotalResponses)</h4>
+                                <p class="mb-0">Total Responses</p>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <h4 class="text-info">@Model.OU2Results.Sum(r => r.EmployeeCount)</h4>
+                                <p class="mb-0">Total Employees</p>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                @{
+                                    var avgResponseRate = Model.OU2Results.Average(r => r.ResponseRate);
+                                }
+                                <h4 class="text-warning">@avgResponseRate.ToString("F1")%</h4>
+                                <p class="mb-0">Avg Response Rate</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OU2 Results -->
+        <div class="row">
+            @foreach (var ou2Result in Model.OU2Results.OrderByDescending(r => r.OverallSatisfactionAverage))
+            {
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 font-weight-bold">@ou2Result.OU2Name</h6>
+                            <span class="badge badge-primary">@ou2Result.OverallSatisfactionAverage.ToString("F2")</span>
+                        </div>
+                        <div class="card-body">
+                            <!-- Quick Stats -->
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Responses</div>
+                                    <div class="h6 mb-0 font-weight-bold text-gray-800">@ou2Result.TotalResponses</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Response Rate</div>
+                                    <div class="h6 mb-0 font-weight-bold text-gray-800">@ou2Result.ResponseRate.ToString("F1")%</div>
+                                </div>
+                            </div>
+
+                            <!-- Progress bars for key questions -->
+                            @foreach (var questionResult in ou2Result.QuestionResults.Where(q => q.QuestionType == "Scale").Take(3))
+                            {
+                                <div class="mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="small">@questionResult.QuestionText.Substring(0, Math.Min(50, questionResult.QuestionText.Length))...</span>
+                                        <span class="small font-weight-bold">@(questionResult.AverageScore?.ToString("F1") ?? "N/A")</span>
+                                    </div>
+                                    @if (questionResult.AverageScore.HasValue)
+                                    {
+                                        var progressWidth = (questionResult.AverageScore.Value / 10.0) * 100;
+                                        var progressColor = questionResult.AverageScore.Value >= 7 ? "bg-success" : 
+                                                          questionResult.AverageScore.Value >= 5 ? "bg-warning" : "bg-danger";
+                                        <div class="progress progress-sm">
+                                            <div class="progress-bar @progressColor" style="width: @progressWidth%"></div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+
+                            <!-- Employee Count -->
+                            <div class="mt-3 pt-2 border-top">
+                                <small class="text-muted">
+                                    <i class="fas fa-users"></i> @ou2Result.EmployeeCount employees
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Detailed Breakdown -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Detailed Question Analysis</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>OU2 Department</th>
+                                        <th>Question</th>
+                                        <th>Type</th>
+                                        <th>Avg Score</th>
+                                        <th>Responses</th>
+                                        <th>Distribution</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var ou2Result in Model.OU2Results.OrderBy(r => r.OU2Name))
+                                    {
+                                        @foreach (var questionResult in ou2Result.QuestionResults)
+                                        {
+                                            <tr>
+                                                <td class="font-weight-bold">@ou2Result.OU2Name</td>
+                                                <td>
+                                                    <small>@questionResult.QuestionText</small>
+                                                </td>
+                                                <td>
+                                                    <span class="badge badge-secondary">@questionResult.QuestionType</span>
+                                                </td>
+                                                <td>
+                                                    @if (questionResult.QuestionType == "Scale" && questionResult.AverageScore.HasValue)
+                                                    {
+                                                        <span class="font-weight-bold">@questionResult.AverageScore.Value.ToString("F2")</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">N/A</span>
+                                                    }
+                                                </td>
+                                                <td>@questionResult.ResponseCount</td>
+                                                <td>
+                                                    @if (questionResult.QuestionType == "Scale" && questionResult.ScaleDistribution.Any())
+                                                    {
+                                                        <small>
+                                                            @foreach (var dist in questionResult.ScaleDistribution.OrderBy(d => d.Key))
+                                                            {
+                                                                <span class="me-1">@dist.Key:@dist.Value</span>
+                                                            }
+                                                        </small>
+                                                    }
+                                                    else if (questionResult.QuestionType == "Text")
+                                                    {
+                                                        <small class="text-muted">@questionResult.TextResponses.Count text responses</small>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-info" role="alert">
+                    <h4 class="alert-heading">No Data Available</h4>
+                    <p>No survey responses found for the selected form. Please ensure that:</p>
+                    <ul>
+                        <li>Users have submitted responses to this form</li>
+                        <li>The form contains questions</li>
+                        <li>The database connection is working properly</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .progress-sm {
+        height: 0.5rem;
+    }
+    .badge-primary {
+        background-color: #4e73df;
+    }
+    .badge-secondary {
+        background-color: #858796;
+    }
+    .text-gray-800 {
+        color: #5a5c69 !important;
+    }
+    .font-weight-bold {
+        font-weight: 700 !important;
+    }
+</style>

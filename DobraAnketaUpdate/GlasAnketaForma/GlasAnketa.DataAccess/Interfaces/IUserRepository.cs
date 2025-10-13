@@ -7,5 +7,7 @@ namespace GlasAnketa.DataAccess.Interfaces
         Task<User> GetByCompanyIdAsync(int companyId);
         Task<User> AuthenticateAsync(int companyId, string password);
         Task<string> GetUserOUAsync(int userId);
+        Task<List<User>> GetAllUsersAsync();
+        Task<Dictionary<string, List<User>>> GetUsersByOU2Async();
     }
 }

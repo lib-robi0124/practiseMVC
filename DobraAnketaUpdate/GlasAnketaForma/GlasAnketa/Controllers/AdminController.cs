@@ -320,30 +320,10 @@ namespace GlasAnketa.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ViewResults(int formId = 1)
+        public IActionResult ViewResults(int formId = 1)
         {
-            try
-            {
-                var answers = await _answerService.GetFormAnswersAsync(formId);
-                var summaries = await _answerService.GetAnswerSummariesAsync(formId);
-
-                var viewModel = new ResultsVM
-                {
-                    Answers = answers,
-                    Summaries = summaries
-                };
-
-                ViewBag.SelectedFormId = formId;
-                var forms = await _formService.GetAllFormsAsync();
-                ViewBag.Forms = new SelectList(forms, "Id", "Title", formId);
-
-                return View(viewModel);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in ViewResults: {ex.Message}");
-                return View(new ResultsVM { Answers = new List<AnswerVM>(), Summaries = new Dictionary<int, AnswerSummaryVM>() });
-            }
+            // Redirect to the dedicated ResultsController
+            return RedirectToAction("ViewResults", "Results", new { formId });
         }
     }
 }

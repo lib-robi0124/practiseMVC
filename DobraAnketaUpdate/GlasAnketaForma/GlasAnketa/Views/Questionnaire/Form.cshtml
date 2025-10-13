@@ -23,22 +23,50 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Анкети за Задоволство на Вработените</title>
-    <link rel="stylesheet" href="~/css/site.css" />
-    <link rel="stylesheet" href="~/css/questionnaire.css" />
-    <!-- Add Bootstrap for consistency -->
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap for utility classes -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Modern Questionnaire Styles -->
+    <link rel="stylesheet" href="~/css/modern-questionnaire.css" />
 </head>
 <body>
+    <!-- Progress Indicator -->
+    <div class="progress-indicator">
+        <div class="progress-bar" style="width: 0%"></div>
+    </div>
+    
     <div class="questionnaire-container">
         <div class="questionnaire-header fade-in">
-                <div class="progress-info">
-                    <h1>@Model.QuestionForm.Title</h1>
-                    <p>@Model.QuestionForm.Description</p>
-                    <div class="form-counter">
-                        Questionnaire @currentFormNumber of @totalForms
-                    </div>
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="user-info">
+                    <small class="text-muted">
+                        Company ID: <strong>@Context.Session.GetInt32("CompanyId")</strong>
+                    </small>
                 </div>
-         </div>
+                <div class="logout-section">
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-danger btn-sm" 
+                                onclick="return confirm('Are you sure you want to logout? Your current progress will be lost.')">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="progress-info">
+                <h1>@Model.QuestionForm.Title</h1>
+                <p>@Model.QuestionForm.Description</p>
+                <div class="form-counter">
+                    Questionnaire @currentFormNumber of @totalForms
+                </div>
+            </div>
+        </div>
 
         <div class="questionnaire-form slide-in">
             <form asp-action="SubmitAnswers" asp-controller="Answer" method="post" id="questionnaireForm">
@@ -99,12 +127,151 @@
         </div>
     </div>
 
+    <!-- Bootstrap JS for utility functions -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
-         document.getElementById('questionnaireForm').addEventListener('submit', function(e) {
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-            btn.innerHTML = 'Submitting...';
-         });
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('questionnaireForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const progressBar = document.querySelector('.progress-bar');
+            const questions = document.querySelectorAll('.question-item');
+            const totalQuestions = questions.length;
+            
+            // Initialize progress
+            updateProgress();
+            
+            // Add change listeners to all inputs
+            form.addEventListener('change', function() {
+                updateProgress();
+            });
+            
+            // Add input listeners for text areas
+            form.addEventListener('input', function(e) {
+                if (e.target.classList.contains('text-answer')) {
+                    updateProgress();
+                }
+            });
+            
+            // Form submission handling
+            form.addEventListener('submit', function(e) {
+                const answeredQuestions = getAnsweredQuestions();
+                
+                if (answeredQuestions < totalQuestions) {
+                    e.preventDefault();
+                    showCompletionPrompt(answeredQuestions);
+                    return;
+                }
+                
+                // Disable button and show loading state
+                submitBtn.disabled = true;
+                const originalText = submitBtn.querySelector('.btn-text').textContent;
+                submitBtn.innerHTML = `
+                    <span class="btn-text">Submitting...</span>
+                    <div class="loading-spinner"></div>
+                `;
+                
+                // Set progress to 100%
+                progressBar.style.width = '100%';
+            });
+            
+            // Enhanced scale option interactions
+            document.querySelectorAll('.scale-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    // Add ripple effect
+                    const ripple = document.createElement('div');
+                    ripple.classList.add('ripple');
+                    this.appendChild(ripple);
+                    
+                    setTimeout(() => ripple.remove(), 600);
+                });
+            });
+            
+            // Auto-save functionality (optional)
+            let autoSaveTimeout;
+            form.addEventListener('input', function() {
+                clearTimeout(autoSaveTimeout);
+                autoSaveTimeout = setTimeout(() => {
+                    saveProgress();
+                }, 2000);
+            });
+            
+            function updateProgress() {
+                const answeredQuestions = getAnsweredQuestions();
+                const progressPercentage = Math.round((answeredQuestions / totalQuestions) * 100);
+                progressBar.style.width = progressPercentage + '%';
+            }
+            
+            function getAnsweredQuestions() {
+                let answered = 0;
+                
+                questions.forEach(question => {
+                    const scaleInputs = question.querySelectorAll('input[type="radio"]');
+                    const textInputs = question.querySelectorAll('textarea');
+                    
+                    // Check scale questions
+                    if (scaleInputs.length > 0) {
+                        const isAnswered = Array.from(scaleInputs).some(input => input.checked);
+                        if (isAnswered) answered++;
+                    }
+                    
+                    // Check text questions
+                    if (textInputs.length > 0) {
+                        const isAnswered = Array.from(textInputs).some(input => input.value.trim() !== '');
+                        if (isAnswered) answered++;
+                    }
+                });
+                
+                return answered;
+            }
+            
+            function showCompletionPrompt(answeredQuestions) {
+                const unanswered = totalQuestions - answeredQuestions;
+                const message = `You have ${unanswered} unanswered question${unanswered > 1 ? 's' : ''}. Would you like to submit anyway?`;
+                
+                if (confirm(message)) {
+                    // Remove the event listener temporarily and submit
+                    form.removeEventListener('submit', arguments.callee);
+                    form.submit();
+                }
+            }
+            
+            function saveProgress() {
+                // Save progress to localStorage for recovery
+                const formData = new FormData(form);
+                const progressData = {};
+                
+                for (let [key, value] of formData.entries()) {
+                    progressData[key] = value;
+                }
+                
+                localStorage.setItem('formProgress_@Model.QuestionFormId', JSON.stringify(progressData));
+            }
+            
+            function loadProgress() {
+                // Load saved progress
+                const savedData = localStorage.getItem('formProgress_@Model.QuestionFormId');
+                if (savedData) {
+                    const progressData = JSON.parse(savedData);
+                    
+                    Object.entries(progressData).forEach(([name, value]) => {
+                        const input = form.querySelector(`[name="${name}"]`);
+                        if (input) {
+                            if (input.type === 'radio') {
+                                input.checked = input.value === value;
+                            } else {
+                                input.value = value;
+                            }
+                        }
+                    });
+                    
+                    updateProgress();
+                }
+            }
+            
+            // Load progress on page load
+            loadProgress();
+        });
     </script>
 </body>
 </html>

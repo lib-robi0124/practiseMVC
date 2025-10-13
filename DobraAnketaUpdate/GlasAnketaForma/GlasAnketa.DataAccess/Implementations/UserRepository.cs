@@ -27,5 +27,21 @@ namespace GlasAnketa.DataAccess.Implementations
                 .Select(u => u.OU)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<List<User>> GetAllUsersAsync()
+        {
+            return await _context.Users
+                .Include(u => u.Role)
+                .OrderBy(u => u.OU2)
+                .ThenBy(u => u.FullName)
+                .ToListAsync();
+        }
+
+        public async Task<Dictionary<string, List<User>>> GetUsersByOU2Async()
+        {
+            var users = await GetAllUsersAsync();
+            return users.GroupBy(u => u.OU2)
+                       .ToDictionary(g => g.Key, g => g.ToList());
+        }
     }
 }
