@@ -57,8 +57,7 @@ namespace GlasAnketa.DataAccess.Migrations
 
                     b.HasIndex("QuestionId");
 
-                    b.HasIndex("UserId", "QuestionId", "QuestionFormId")
-                        .IsUnique();
+                    b.HasIndex("UserId", "QuestionId", "QuestionFormId");
 
                     b.ToTable("Answers");
                 });

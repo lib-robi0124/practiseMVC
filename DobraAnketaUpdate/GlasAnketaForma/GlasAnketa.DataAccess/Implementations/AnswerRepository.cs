@@ -99,6 +99,13 @@ namespace GlasAnketa.DataAccess.Implementations
         public async Task<bool> SubmitAnswersAsync(int userId, int formId, Dictionary<int, object> answers)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
+
+            // Resolve company once per submission
+            var companyId = await _context.Users
+                .Where(u => u.Id == userId)
+                .Select(u => u.CompanyId)
+                .FirstOrDefaultAsync();
+
             foreach (var (questionId, value) in answers)
             {
                 var question = await _context.Questions
@@ -107,30 +114,18 @@ namespace GlasAnketa.DataAccess.Implementations
 
                 if (question == null) continue;
 
-                var answer = await _context.Answers
-                    .FirstOrDefaultAsync(a => a.UserId == userId &&
-                                              a.QuestionId == questionId &&
-                                              a.QuestionFormId == formId);
-
-                if (answer == null)
+                // Always create a new answer record (keep history)
+                var newAnswer = new Answer
                 {
-                    var companyId = await _context.Users
-                        .Where(u => u.Id == userId)
-                        .Select(u => u.CompanyId)
-                        .FirstOrDefaultAsync();
+                    UserId = userId,
+                    CompanyId = companyId,
+                    QuestionId = questionId,
+                    QuestionFormId = formId,
+                    AnsweredDate = DateTime.UtcNow
+                };
 
-                    answer = new Answer
-                    {
-                        UserId = userId,
-                        CompanyId = companyId,
-                        QuestionId = questionId,
-                        QuestionFormId = formId,
-                        AnsweredDate = DateTime.UtcNow
-                    };
-                    _context.Answers.Add(answer);
-                }
-
-                UpdateAnswerValue(answer, question.QuestionType.Name, value);
+                UpdateAnswerValue(newAnswer, question.QuestionType.Name, value);
+                _context.Answers.Add(newAnswer);
             }
 
             var result = await _context.SaveChangesAsync();

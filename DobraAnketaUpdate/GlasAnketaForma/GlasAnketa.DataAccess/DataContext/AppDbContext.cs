@@ -40,9 +40,9 @@ namespace GlasAnketa.DataAccess.DataContext
                         .Property(a => a.CompanyId)
                         .IsRequired();
 
+            // Allow multiple answers over time for the same user/question/form
             modelBuilder.Entity<Answer>()
-                .HasIndex(a => new { a.UserId, a.QuestionId, a.QuestionFormId })
-                .IsUnique();
+                .HasIndex(a => new { a.UserId, a.QuestionId, a.QuestionFormId });
 
            modelBuilder.Entity<Question>()
                 .HasOne(q => q.QuestionForm)

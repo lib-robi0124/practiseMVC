@@ -9,8 +9,11 @@
         <p>Your responses have been successfully recorded and will help us improve the workplace environment.</p>
         <p>We truly value your input and commitment to making our company better.</p>
 
-<div class="mt-4">
-            <a href="@Url.Action("Logout", "Account")" class="btn btn-primary">Return to Login</a>
+        <div class="mt-4">
+            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-primary">Return to Login</button>
+            </form>
         </div>
     </div>
 </div>
