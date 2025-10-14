@@ -39,8 +39,13 @@
                         <div class="form-group">
                             <label>Select Questionnaire Form:</label>
                             <select class="form-control" id="formSelector">
-                                <option value="1">Form 1: Општо задоволство</option>
-                                <option value="2">Form 2: Обврска кон компанијата</option>
+                                @if (ViewBag.Forms != null)
+                                {
+                                    foreach (var item in (Microsoft.AspNetCore.Mvc.Rendering.SelectList)ViewBag.Forms)
+                                    {
+                                        <option value="@item.Value" @(item.Selected ? "selected" : null)>@item.Text</option>
+                                    }
+                                }
                             </select>
                         </div>
                         <button class="btn btn-primary" onclick="loadResults()">Load Results</button>
@@ -54,13 +59,25 @@
                         <h3>Quick Stats</h3>
                     </div>
                     <div class="card-body">
+                        @{ 
+                            var totalResponses = Model?.Answers?.Count ?? 0;
+                            double avgPercent = 0;
+                            if (Model?.Summaries != null && Model.Summaries.Any())
+                            {
+                                var scaleSummaries = Model.Summaries.Values.Where(s => s.AverageScaleValue > 0);
+                                if (scaleSummaries.Any())
+                                {
+                                    avgPercent = scaleSummaries.Average(s => s.AverageScaleValue) / 10.0 * 100.0;
+                                }
+                            }
+                        }
                         <div class="stat-item">
                             <h4>Total Responses</h4>
-                            <div class="stat-number">0</div>
+                            <div class="stat-number">@totalResponses</div>
                         </div>
                         <div class="stat-item">
-                            <h4>Completion Rate</h4>
-                            <div class="stat-number">0%</div>
+                            <h4>Average Score (%)</h4>
+                            <div class="stat-number">@avgPercent.ToString("0.0")%</div>
                         </div>
                     </div>
                 </div>
