@@ -141,21 +141,51 @@ namespace GlasAnketa.DataAccess.Implementations
         {
             if (questionType == "Scale")
             {
+                if (value == null)
+                {
+                    // Explicitly clear any previous value if user left it blank this time
+                    answer.ScaleValue = null;
+                    answer.TextValue = null;
+                    return;
+                }
+
                 if (value is int scaleValue)
                 {
                     answer.ScaleValue = scaleValue;
                     answer.TextValue = null;
+                    return;
                 }
-                else if (value is string stringValue && int.TryParse(stringValue, out int parsedValue))
+                if (value is string stringValue && int.TryParse(stringValue, out int parsedValue))
                 {
                     answer.ScaleValue = parsedValue;
                     answer.TextValue = null;
+                    return;
                 }
+
+                // Fallback: clear if unusable value
+                answer.ScaleValue = null;
+                answer.TextValue = null;
             }
             else if (questionType == "Text")
             {
-                answer.TextValue = value?.ToString();
-                answer.ScaleValue = null;
+                if (value == null)
+                {
+                    answer.TextValue = null;
+                    answer.ScaleValue = null;
+                    return;
+                }
+
+                var text = value.ToString();
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    answer.TextValue = null;
+                    answer.ScaleValue = null;
+                }
+                else
+                {
+                    answer.TextValue = text;
+                    answer.ScaleValue = null;
+                }
             }
         }
 

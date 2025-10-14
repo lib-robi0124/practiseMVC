@@ -69,7 +69,7 @@
         </div>
 
         <div class="questionnaire-form slide-in">
-            <form asp-action="SubmitAnswers" asp-controller="Answer" method="post" id="questionnaireForm">
+            <form asp-action="SubmitAnswers" asp-controller="Answer" method="post" id="questionnaireForm" asp-antiforgery="true">
                 <input type="hidden" asp-for="QuestionFormId" />
 
                 <!-- Add hidden field for next form if you want to track it -->
@@ -186,14 +186,6 @@
                 });
             });
             
-            // Auto-save functionality (optional)
-            let autoSaveTimeout;
-            form.addEventListener('input', function() {
-                clearTimeout(autoSaveTimeout);
-                autoSaveTimeout = setTimeout(() => {
-                    saveProgress();
-                }, 2000);
-            });
             
             function updateProgress() {
                 const answeredQuestions = getAnsweredQuestions();
@@ -235,41 +227,14 @@
                 }
             }
             
-            function saveProgress() {
-                // Save progress to localStorage for recovery
-                const formData = new FormData(form);
-                const progressData = {};
-                
-                for (let [key, value] of formData.entries()) {
-                    progressData[key] = value;
-                }
-                
-                localStorage.setItem('formProgress_@Model.QuestionFormId', JSON.stringify(progressData));
-            }
             
-            function loadProgress() {
-                // Load saved progress
-                const savedData = localStorage.getItem('formProgress_@Model.QuestionFormId');
-                if (savedData) {
-                    const progressData = JSON.parse(savedData);
-                    
-                    Object.entries(progressData).forEach(([name, value]) => {
-                        const input = form.querySelector(`[name="${name}"]`);
-                        if (input) {
-                            if (input.type === 'radio') {
-                                input.checked = input.value === value;
-                            } else {
-                                input.value = value;
-                            }
-                        }
-                    });
-                    
-                    updateProgress();
-                }
-            }
             
-            // Load progress on page load
-            loadProgress();
+            // Clear any locally saved progress for all forms on page load (ensures fresh state per login)
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('formProgress_')) {
+                    localStorage.removeItem(key);
+                }
+            });
         });
     </script>
 </body>
