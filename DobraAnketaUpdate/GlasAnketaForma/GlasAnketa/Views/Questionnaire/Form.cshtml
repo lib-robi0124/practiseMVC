@@ -70,7 +70,6 @@
 
         <div class="questionnaire-form slide-in">
             <form asp-action="SubmitAnswers" asp-controller="Answer" method="post" id="questionnaireForm">
-                @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="QuestionFormId" />
 
                 <!-- Add hidden field for next form if you want to track it -->

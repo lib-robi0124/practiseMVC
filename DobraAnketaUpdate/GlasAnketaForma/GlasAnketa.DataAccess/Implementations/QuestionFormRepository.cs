@@ -19,35 +19,17 @@ namespace GlasAnketa.DataAccess.Implementations
         }
         public async Task<QuestionForm?> GetNextActiveFormAsync(int currentFormId)
         {
-            // Ensure currentFormId stays in the hardcoded 1..13 range
-            if (currentFormId < 1 || currentFormId > 13)
-            {
-                currentFormId = 1;
-            }
-
-            // Preload active forms within the hardcoded range to avoid multiple DB round-trips
-            var activeForms = await _context.QuestionForms
+            // Find the next active form strictly after the current form by Id.
+            // Do NOT wrap around; if none exists, return null (end of sequence).
+            var nextForm = await _context.QuestionForms
                 .AsNoTracking()
-                .Where(f => f.IsActive && f.Id >= 1 && f.Id <= 13)
+                .Where(f => f.IsActive && f.Id > currentFormId)
+                .OrderBy(f => f.Id)
                 .Include(f => f.Questions)
                     .ThenInclude(q => q.QuestionType)
-                .ToListAsync();
+                .FirstOrDefaultAsync();
 
-            if (!activeForms.Any())
-                return null; // none active in 1..13
-
-            // Try next ids in sequence: currentFormId+1 .. 13, then wrap 1 .. currentFormId
-            // Use modular arithmetic to produce the sequence of 12 possible "next" ids (or fewer if you prefer)
-            for (int offset = 1; offset <= 12; offset++)
-            {
-                int candidateId = ((currentFormId - 1 + offset) % 13) + 1; // maps into 1..13
-                var match = activeForms.FirstOrDefault(f => f.Id == candidateId);
-                if (match != null)
-                    return match;
-            }
-
-            // If we get here, there was no active form found in 1..13
-            return null;
+            return nextForm; // will be null if we are at the last active form
         }
         public async Task<QuestionForm> GetQuestionFormByIdAsync(int id)
         {
