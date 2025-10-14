@@ -38,15 +38,7 @@
                     <div class="card-body">
                         <div class="form-group">
                             <label>Select Questionnaire Form:</label>
-                            <select class="form-control" id="formSelector">
-                                @if (ViewBag.Forms != null)
-                                {
-                                    foreach (var item in (Microsoft.AspNetCore.Mvc.Rendering.SelectList)ViewBag.Forms)
-                                    {
-                                        <option value="@item.Value" @(item.Selected ? "selected" : null)>@item.Text</option>
-                                    }
-                                }
-                            </select>
+                            <select class="form-control" id="formSelector" asp-items="ViewBag.Forms"></select>
                         </div>
                         <button class="btn btn-primary" onclick="loadResults()">Load Results</button>
                     </div>
